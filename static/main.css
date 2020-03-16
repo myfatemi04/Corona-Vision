@@ -1,0 +1,56 @@
+@media (min-width: 576px)
+.col-to-row {
+	flex-direction: row!important;
+}
+
+@media (max-width: 576px)
+.col-to-row {
+	flex-direction: column!important;
+}
+
+.box {
+	padding: 0.5rem;
+	margin: 0.5rem;
+	border: 1px solid #dee2e6;
+	border-radius: .25rem;
+}
+
+.do-the-five {
+	margin: auto;
+}
+
+.map {
+	width: 100%;
+	height: 30rem;
+}
+
+.five-list-elem {
+	display: flex;
+	flex-direction: row;
+}
+
+.five-number {
+	font-weight: bold;
+	color: red;
+	padding-left: 0.5rem;
+	padding-right: 0.5rem;
+}
+
+.five-bold {
+	font-weight: bold;
+	padding-left: 0.5rem;
+	padding-right: 0.5rem;
+}
+
+.five-desc {
+	padding-left: 0.5rem;
+	padding-right: 0.5rem;
+}
+
+.display-none {
+	display: none;
+}
+
+.display-block {
+	display: block;
+}

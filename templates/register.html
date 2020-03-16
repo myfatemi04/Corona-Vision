@@ -1,0 +1,36 @@
+<html>
+	<head>
+		{% include 'styles.html' %}
+		<title>Register</title>
+	</head>
+	<body>
+		{% include "navbar.html" %}
+		<div class='container'>
+			<div class='border rounded mx-auto p-3 bg-white'>
+				<h1>Register</h1>
+				{% if message %}
+					<b class='text-danger'>{{message}}</b>
+				{% endif %}
+				<form action='/register' method='POST' autofill=off autocomplete=off>
+					<div class='form-group'>
+						<label for='email'>Email</label><br/>
+						<input autofill=off class='form-control' type='email' name='email' id='email'>
+					</div>
+					<div class='form-group'>
+						<label for='password'>Password</label><br/>
+						<input autofill=off class='form-control' type='password' name='password' id='password'>
+					</div>
+					<div class='form-group'>
+						<label for='firstname'>First name</label><br/>
+						<input autofill=off class='form-control' type='text' name='firstname' id='firstname'>
+					</div>
+					<div class='form-group'>
+						<label for='lastname'>Last name</label><br/>
+						<input autofill=off class='form-control' type='text' name='lastname' id='lastname'>
+					</div>
+					<button type="submit" class='btn btn-primary'>Submit</button>
+				</form>
+			</div>
+		</div>
+	</body>
+</html>

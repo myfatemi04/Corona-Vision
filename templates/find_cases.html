@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Find Nearby Coronavirus Cases</title>
+		{% include 'styles.html' %}
+		<script src="/static/markerclusterer.js"></script>
+		<script src="/static/corona_map.js" type="text/javascript"></script>
+		<script async defer
+		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAMm-5SUX6ELt2KfUfEF49RpvgRIj8J6w4&callback=init_coronamap&libraries=places">
+		</script>
+	</head>
+	<body class="blue-gradient" onload="init()">
+		{% include 'navbar.html' %}
+		<div class="p-2 mx-auto w-75">
+			<h1 class="text-center display-1">Find nearby cases</h1>
+			{% include "head.html" %}
+		</div>
+		<div class="p-2 mx-auto w-50">
+			<div class="box form-inline">
+				<div class="col-auto">
+					Location:
+				</div>
+				<div class="col-auto">
+					<label class="sr-only" for="location">Location:</label>
+					<input class='form-control' type="text" name="location" id="location">
+				</div>
+				<button class="btn btn-primary" onclick="find_cases()">Find cases</button>
+			</div><br/>
+			<div class="box">
+				<noscript>
+					This website requires JavaScript to run.
+				</noscript>
+				<h3>Map of cases</h3>
+				<p class="lead">Hover over a marker to see more information.</p>
+				<div id="map" class="map display-none">
+					
+				</div>
+				<div id="map-message" style="font-weight: 100;">
+					Please input your location above.
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Submit Data</title>
+		{% include 'styles.html' %}
+	</head>
+	<body>
+		{% include 'navbar.html' %}
+		<div class="p-2 text-center">
+			<h1 class="display-1 text-dark">Submit CSV Data</h1>
+			<p class="lead">Submit in CSV format, and we'll add the data to the map.</p>
+			<div style="width: 30%;" class="border rounded mx-auto p-2 text-left">
+				{% if message %}
+					<span class="font-weight-bold">{{message}}</span>
+				{% endif %}
+				<form method="post" enctype="multipart/form-data">
+					<div class="form-group">
+						<label for="datafile">Data file</label><br/>
+						<input type="file" class="form-control-file" id="datafile" name="data">
+					</div>
+					<button class="btn btn-primary">
+						Submit data
+					</button>
+				</form>
+			</div>
+		</div>
+	</body>
+</html>
