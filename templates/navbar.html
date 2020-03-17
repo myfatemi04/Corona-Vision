@@ -1,14 +1,16 @@
 <div class="sticky-top bg-white text-center border-bottom pb-1 mb-4">
 	<a class="no-deco font-weight-bold" style="font-size: 2rem;" href="/">CoronaVision</a>
-	<br/>
-	<small>
-		{% if 'email' not in session %}
-			<a href="/login">Login</a>
-		{% else %}
-			<ul class="list-inline">
-				<li class="list-inline-item"><a href="/logout">Logout</a></li>
-				<li class="list-inline-item"><a href="/approve_data">Reports dashboard</a></li>
-			</ul>
-		{% endif %}
-	</small>
+	{% if False %}
+		<br/>
+		<small>
+			{% if 'email' not in session %}
+				<a href="/login">Login</a>
+			{% else %}
+				<ul class="list-inline">
+					<li class="list-inline-item"><a href="/logout">Logout</a></li>
+					<li class="list-inline-item"><a href="/approve_data">Reports dashboard</a></li>
+				</ul>
+			{% endif %}
+		</small>
+	{% endif %}
 </div>
