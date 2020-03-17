@@ -4,6 +4,7 @@ import os
 import time
 from threading import Thread
 from sqlalchemy import and_
+from whitenoise import WhiteNoise
 
 import corona_sql
 
@@ -14,6 +15,11 @@ app.static_folder = "./static"
 sql_uri = "mysql://root:jinny2yoo@35.226.226.204/corona"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = sql_uri
+app.wsgi_app = WhiteNoise(
+	app.wsgi_app,
+	root="static/",
+	prefix="static/"
+)
 
 corona_sql.db.init_app(app)
 
