@@ -4,6 +4,7 @@ import os
 import time
 from threading import Thread
 from sqlalchemy import and_
+import sys
 
 import corona_sql
 
@@ -183,5 +184,9 @@ def approve_data():
 		return "", 200
 
 if __name__ == "__main__":
-	app.run(host='127.0.0.1', port=80, threaded=True, debug=True)
+	if len(sys.argv) > 1:
+		port = int(sys.argv[1])
+	else:
+		port = 80
+	app.run(host='127.0.0.1', port=port, threaded=True, debug=True)
 	
