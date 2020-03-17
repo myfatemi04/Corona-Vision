@@ -55,6 +55,7 @@ function remove_previous_markers() {
 function find_cases() {
 	$("#map")[0].setAttribute("class", "map display-block");
 	$("#map-message")[0].setAttribute("class", "display-none");
+	let loc = location_autocomplete.getPlace().geometry.location;
 	map.setCenter(loc);
 	reload_cases();
 }
