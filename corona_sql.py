@@ -4,9 +4,17 @@ from sqlalchemy import and_, between
 
 db = SQLAlchemy()
 
+class DataEntry(db.Model):
+	__tablename__ = "data_entries"
+	entry_date = db.Column(db.Date, primary_key=True)
+	total_confirmed = db.Column(db.Integer)
+	total_recovered = db.Column(db.Integer)
+	total_dead = db.Column(db.Integer)
+
 class Datapoint(db.Model):
 	__tablename__ = "datapoints"
 	data_id = db.Column(db.Integer, primary_key=True)
+	entry_date = db.Column(db.Date)
 	location = db.Column(db.String(320))
 	latitude = db.Column(db.Float(10, 6))
 	longitude = db.Column(db.Float(10, 6))
@@ -45,7 +53,7 @@ def calc_distance(latlong1, latlong2):
 				   + func.pow(53.0 * (latlong1[1] - latlong2[1]),2))
 
 
-def find_cases(ne_lat, ne_lng, sw_lat, sw_lng):
+def find_cases(ne_lat, ne_lng, sw_lat, sw_lng, entry_date):
 	min_lat = sw_lat
 	max_lat = ne_lat
 	
@@ -56,7 +64,8 @@ def find_cases(ne_lat, ne_lng, sw_lat, sw_lng):
 		and_(
 			between(Datapoint.latitude, min_lat, max_lat),
 			between(Datapoint.longitude, min_lng, max_lng),
-			Datapoint.status == 1
+			Datapoint.status == 1,
+			Datapoint.entry_date==entry_date
 		)
 	)
 	return result.all()

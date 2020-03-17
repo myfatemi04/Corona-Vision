@@ -6,30 +6,31 @@ import time
 import os
 import requests
 import web_app
+import io
 
-def import_data(datafile):
-	dataframe = pd.read_csv(datafile)
-
-	latitude_col = "Lat"
-	longitude_col = "Long"
+def import_data(csv_text, entry_date):
+	string_io = io.StringIO(csv_text)
+	dataframe = pd.read_csv(string_io)
 	
-	for col in dataframe.columns:
-		if 'lat' in col.lower():
-			latitude_col = col
-		elif 'long' in col.lower():
-			longitude_col = col
+	if 'Latitude' not in dataframe.columns:
+		print("\tNo latitude or longitude data")
+		return
 	
 	with web_app.app.app_context():
-		results = corona_sql.Datapoint.query.all()
-		for result in results:
-			corona_sql.db.session.delete(result)
+		total_confirmed = 0
+		total_recovered = 0
+		total_dead = 0
 		
 		for index, row in dataframe.iterrows():
-			lat, lng = row[latitude_col], row[longitude_col]
+			lat, lng = row['Latitude'], row['Longitude']
+			
 			confirmed = row['Confirmed']
 			dead = row['Deaths']
 			recovered = row['Recovered']
 			
+			total_confirmed += confirmed
+			total_recovered += recovered
+			total_dead += dead
 			
 			location_details = []
 			if not pd.isnull(row['Province/State']):
@@ -41,57 +42,82 @@ def import_data(datafile):
 			location_string = ", ".join(location_details)
 			
 			if not np.isnan(lat):
-				new_data = corona_sql.Datapoint(location=location_string, latitude=lat, longitude=lng, confirmed=confirmed, dead=dead, recovered=recovered, status=1)
+				new_data = corona_sql.Datapoint(
+					entry_date=entry_date,
+					location=location_string,
+					latitude=lat,
+					longitude=lng,
+					confirmed=confirmed,
+					dead=dead,
+					recovered=recovered,
+					status=1
+				)
 				corona_sql.db.session.add(new_data)
+			
+		data_entry = corona_sql.DataEntry(
+			entry_date=entry_date,
+			total_confirmed=total_confirmed,
+			total_recovered=total_recovered,
+			total_dead=total_dead
+		)
 		
-		print(f"Imported data from {datafile}")
+		corona_sql.db.session.add(data_entry)
 		corona_sql.db.session.commit()
+		
+		print(f"\tImported data for date {entry_date}")
 
-def download_by_day(date_formatted):
-	output_filename = f"./data_downloads/{date_formatted}.csv"
+def download_data_for_date(entry_date):
+	date_formatted = entry_date.strftime("%m-%d-%Y")
 	
-	if not os.path.isfile(output_filename):
-		print("Attempting download...")
-		github_raw_url = f"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/{date_formatted}.csv"
-		response = requests.get(github_raw_url)
-		
-		print(f"Response code: {response.status_code}")
-		print(f"Response content length: {len(response.content)}")
-		
-		if response.status_code == 200:
-			csv_content = response.content
-			with open(output_filename, "wb") as out:
-				out.write(csv_content)
+	with web_app.app.app_context():
+		existing_data = corona_sql.Datapoint.query.filter(corona_sql.Datapoint.entry_date==entry_date).all()
+		if not existing_data:
+			print("[DATA IMPORT] Attempting to download " + str(entry_date))
+			github_raw_url = f"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/{date_formatted}.csv"
+			response = requests.get(github_raw_url)
 			
-			import_data(output_filename)
+			print(f"\tResponse code: {response.status_code}")
+			print(f"\tResponse content length: {len(response.text)}")
 			
-			print("Complete")
-			return 'done'
+			if response.status_code == 200:
+				csv_text = response.text
+				import_data(csv_text, entry_date)
+				
+				print("\tComplete")
+				return 'done'
+			
+			print("\tDate not found")
+			return '404'
 		
-		print("Date not found")
-		return '404'
-	
-	print("File already exists")
-	return 'exists'
+		print("\tEntries already made")
+		return 'exists'
 
 # daily reports link: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports
 def data_download():
 	time.sleep(5)
+	# add_date_range(date_1=date(2020, 1, 22), date_2=date.today())
+	# return
+	
 	while True:
 		today = date.today()
 		today_formatted = today.strftime("%m-%d-%Y")
-		
-		result = download_by_day(today_formatted)
-		
-		go_back = timedelta(
-			days=-1
-		)
+		result = download_data_for_date(today)
 		
 		latest_day = today
+		go_back = timedelta(days=-1)
 		while result == '404':
 			latest_day += go_back
 			latest_day_formatted = latest_day.strftime("%m-%d-%Y")
-			print("Day not found... trying", latest_day_formatted)
-			result = download_by_day(latest_day_formatted)
+			print("\tTrying", latest_day_formatted)
+			result = download_data_for_date(latest_day)
 		
 		time.sleep(60)
+	
+
+""" Should only be used when first setting up the app"""	
+def add_date_range(date_1, date_2):
+	next_date = timedelta(days=1)
+	current_date = date_1
+	while current_date <= date_2:
+		download_data_for_date(current_date)
+		current_date += next_date

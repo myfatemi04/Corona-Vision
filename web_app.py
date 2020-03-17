@@ -4,6 +4,7 @@ import os
 import time
 from threading import Thread
 from sqlalchemy import and_
+import datetime
 
 import import_data
 import corona_sql
@@ -92,7 +93,13 @@ def main_page():
 
 @app.route("/findnearme")
 def find_cases_frontend():
-	return render_template("find_cases.html")
+	data_entries = corona_sql.DataEntry.query.all()
+	sorted_data_entries = sorted(
+		data_entries,
+		key=lambda x: x.entry_date,
+		reverse=True
+	)
+	return render_template("find_cases.html", sorted_data_entries=sorted_data_entries)
 
 # example url:
 # /cases/38.9349376/-77.1909653
@@ -103,7 +110,12 @@ def find_cases_backend():
 	ne_lng = float(request.args.get("ne_lng"))
 	sw_lat = float(request.args.get("sw_lat"))
 	sw_lng = float(request.args.get("sw_lng"))
-	cases = corona_sql.find_cases(ne_lat, ne_lng, sw_lat, sw_lng)
+	
+	entry_date_str = request.args.get("date")
+	year, month, day = entry_date_str.split("-")
+	entry_date = datetime.date(int(year), int(month), int(day))
+	cases = corona_sql.find_cases(ne_lat, ne_lng, sw_lat, sw_lng, entry_date)
+	
 	return json.dumps([case.json_serializable() for case in cases])
 
 @app.route("/visual")
@@ -113,7 +125,8 @@ def visual_data_page():
 @app.route("/whattodo")
 def what_to_do_page():
 	return render_template("whattodo.html")
-	
+
+'''
 @app.route("/submit_data_csv", methods=['GET', 'POST'])
 def submit_data_csv():
 	if request.method == 'GET':
@@ -127,7 +140,6 @@ def submit_data_csv():
 		file.save(filename)
 		
 		return render_template("submit_data_csv_complete.html")
-
 @app.route("/submit_data", methods=['GET', 'POST'])
 def submit_data():
 	if request.method == 'GET':
@@ -189,13 +201,14 @@ def approve_data():
 		found_data.status = 1
 		corona_sql.db.session.commit()
 		return "", 200
+'''
 
 @app.route("/recent")
 def recent_page():
 	return render_template("recent.html")
 
 if __name__ == "__main__":
-	data_download_thread = Thread(target=import_data.data_download)
+	data_download_thread = Thread(target=import_data.data_download, daemon=True)
 	data_download_thread.start()
 	
 	if 'PORT' in os.environ:

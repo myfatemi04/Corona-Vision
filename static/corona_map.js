@@ -58,8 +58,12 @@ function remove_previous_markers() {
 function find_cases() {
 	$("#map")[0].setAttribute("class", "map display-block");
 	$("#map-message")[0].setAttribute("class", "display-none");
-	let loc = location_autocomplete.getPlace().geometry.location;
-	map.setCenter(loc);
+	
+	if (typeof(location_autocomplete.getPlace()) !== 'undefined') {
+		let loc = location_autocomplete.getPlace().geometry.location;
+		map.setCenter(loc);
+	}
+	
 	reload_cases();
 }
 
@@ -87,7 +91,8 @@ function reload_cases() {
 	let bounds = map.getBounds();
 	let ne = bounds.getNorthEast();
 	let sw = bounds.getSouthWest();
-	let request_content = `?ne_lat=${ne.lat()}&ne_lng=${ne.lng()}&sw_lat=${sw.lat()}&sw_lng=${sw.lng()}`;
+	let entry_date = $("#date")[0].value;
+	let request_content = `?ne_lat=${ne.lat()}&ne_lng=${ne.lng()}&sw_lat=${sw.lat()}&sw_lng=${sw.lng()}&date=${entry_date}`;
 	xhr.open("GET", "/cases" + request_content);
 	xhr.send();
 }

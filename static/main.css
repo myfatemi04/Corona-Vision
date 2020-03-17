@@ -151,3 +151,12 @@
 	padding: 1rem;
 	margin: 1rem;
 }
+
+.inline-form-item {
+	margin-left: 0.5em;
+	margin-right: 0.5em;
+}
+
+.inline-form-item label {
+	margin-bottom: 0px;
+}
