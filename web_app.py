@@ -6,7 +6,6 @@ from threading import Thread
 from sqlalchemy import and_
 
 import corona_sql
-import import_data
 
 app = Flask(__name__)
 app.secret_key = "10a765caa15fd56b4a95"
