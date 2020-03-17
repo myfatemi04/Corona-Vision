@@ -14,6 +14,9 @@ function init_coronamap() {
 	map.addListener("dragend", function() {
 		reload_cases();
 	});
+	map.addListener("zoom_changed", function() {
+		reload_cases();
+	});
 }
 
 function init() {
@@ -65,7 +68,7 @@ function reload_cases() {
 	let xhr = new XMLHttpRequest();
 	xhr.onreadystatechange = function() {
 		if (this.readyState == 4 && this.status == 200) {
-			//remove_previous_markers();
+			remove_previous_markers();
 			for (let person of JSON.parse(this.responseText)) {
 				let new_marker = new google.maps.Marker({
 					position: {
@@ -76,15 +79,7 @@ function reload_cases() {
 					title: `${person.location}: Confirmed: ${person.confirmed}. Recovered: ${person.recovered}. Dead: ${person.dead}`,
 					label: (person.confirmed + "")
 				});
-				let found_marker = false;
-				for (let marker of markers) {
-					if (marker.position.lat() == new_marker.position.lat() && marker.position.lng() == new_marker.position.lng()) {
-						found_marker = true;
-						break;
-					}
-				}
-				if (!found_marker)
-					markers.push(new_marker);
+				markers.push(new_marker);
 			}
 		}
 	};

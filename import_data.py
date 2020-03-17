@@ -27,11 +27,24 @@ def import_data(datafile):
 		for index, row in dataframe.iterrows():
 			lat, lng = row[latitude_col], row[longitude_col]
 			confirmed = row['Confirmed']
+			dead = row['Deaths']
+			recovered = row['Recovered']
+			
+			
+			location_details = []
+			if not pd.isnull(row['Province/State']):
+				location_details.append(row['Province/State'])
+			
+			if not pd.isnull(row['Country/Region']):
+				location_details.append(row['Country/Region'])
+				
+			location_string = ", ".join(location_details)
+			
 			if not np.isnan(lat):
-				new_data = corona_sql.Datapoint(latitude=lat, longitude=lng, num_cases=confirmed)
+				new_data = corona_sql.Datapoint(location=location_string, latitude=lat, longitude=lng, confirmed=confirmed, dead=dead, recovered=recovered, status=1)
 				corona_sql.db.session.add(new_data)
 		
-		print("Inserted data")
+		print(f"Imported data from {datafile}")
 		corona_sql.db.session.commit()
 
 def download_by_day(date_formatted):

@@ -4,8 +4,8 @@ import os
 import time
 from threading import Thread
 from sqlalchemy import and_
-# from whitenoise import WhiteNoise
 
+import import_data
 import corona_sql
 
 app = Flask(__name__)
@@ -190,10 +190,17 @@ def approve_data():
 		corona_sql.db.session.commit()
 		return "", 200
 
+@app.route("/recent")
+def recent_page():
+	return render_template("recent.html")
+
 if __name__ == "__main__":
+	data_download_thread = Thread(target=import_data.data_download)
+	data_download_thread.start()
+	
 	if 'PORT' in os.environ:
 		port = os.environ['PORT']
 	else:
 		port = 4040
-	app.run(host='0.0.0.0', port=port, threaded=True)
+	app.run(host='0.0.0.0', port=port, threaded=True, debug=True)
 	

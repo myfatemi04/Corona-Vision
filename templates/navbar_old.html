@@ -1,0 +1,34 @@
+<nav class='navbar navbar-expand-lg navbar-light sticky-top bg-white'>
+	<a class='navbar-brand' href='/'>CoronaVision</a>
+	<button class='navbar-toggler' type='button' data-toggle='collapse' data-target='#navContent'>
+		<span class='navbar-toggler-icon'></span>
+	</button>
+	<div class='collapse navbar-collapse' id='navContent'>
+		<ul class='navbar-nav mr-auto'>
+			{% if 'email' not in session %}
+				<li class="nav-item">
+					<a class="nav-link" href='/login'>Log in</a>
+				</li>
+			{% else %}
+				<li class="nav-item">
+					<a class="nav-link" href='/logout'>Log out</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href='/approve_data'>Approve data</a>
+				</li>
+			{% endif %}
+			<li class="nav-item">
+				<a class="nav-link" href='/visual'>Charts</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href='/whattodo'>How to help</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href='/findnearme'>Find nearby cases</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href='/submit_data'>Report cases</a>
+			</li>
+		</ul>
+	</div>
+</nav>

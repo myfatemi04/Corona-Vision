@@ -5,13 +5,22 @@
 	</head>
 	<body>
 		{% include "navbar.html" %}
-		<div class="p-2 text-center">
-			<h1 class="display-1">Coronavirus: Visually</h1>
+		<div class="p-2 text-center good-width">
 			{% include "head.html" %}
-			     <iframe width="600" height="371" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRlpWa4s-Z9UVpHEoutXFHfdxXVxJVwp8jmXuF1UTzHLG45RPJlFIA2GYSze-wsUwp3FRNPelv3jRz0/pubchart?oid=2131811449&amp;format=interactive"></iframe>
-			<br/><iframe width="600" height="371" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRlpWa4s-Z9UVpHEoutXFHfdxXVxJVwp8jmXuF1UTzHLG45RPJlFIA2GYSze-wsUwp3FRNPelv3jRz0/pubchart?oid=522390504&amp;format=interactive"></iframe>
-			<br/><iframe width="600" height="371" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRlpWa4s-Z9UVpHEoutXFHfdxXVxJVwp8jmXuF1UTzHLG45RPJlFIA2GYSze-wsUwp3FRNPelv3jRz0/pubchart?oid=560369173&amp;format=interactive"></iframe>
+			<h1 class="display-1">Charts</h1>
+			<script>
+				function remove_loading() {
+					$("#loading")[0].remove();
+				}
+			</script>
+			<div class="d-flex flex-column box" style="align-items: center;">
+				<span id="loading" class="font-weight-bold" style="font-size: 2rem;">
+					Loading charts...
+				</span>
+			    <iframe onload="remove_loading();" width="600" height="371" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRlpWa4s-Z9UVpHEoutXFHfdxXVxJVwp8jmXuF1UTzHLG45RPJlFIA2GYSze-wsUwp3FRNPelv3jRz0/pubchart?oid=2131811449&amp;format=interactive"></iframe>
+				<iframe width="600" height="371" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRlpWa4s-Z9UVpHEoutXFHfdxXVxJVwp8jmXuF1UTzHLG45RPJlFIA2GYSze-wsUwp3FRNPelv3jRz0/pubchart?oid=522390504&amp;format=interactive"></iframe>
+				<iframe width="600" height="371" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRlpWa4s-Z9UVpHEoutXFHfdxXVxJVwp8jmXuF1UTzHLG45RPJlFIA2GYSze-wsUwp3FRNPelv3jRz0/pubchart?oid=560369173&amp;format=interactive"></iframe>
+			</div>
 		</div>
-		
 	</body>
 </html>

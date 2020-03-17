@@ -15,13 +15,6 @@
 	border-radius: .25rem;
 }
 
-.do-the-five {
-	margin: auto;
-	width: 50%;
-	display: flex;
-	flex-direction: column;
-}
-
 @media (max-width: 900px) {
 	.do-the-five {
 		width: 90%;
@@ -80,7 +73,20 @@
 	width: 100%;
 }
 
+
 .head-container {
+	display: flex;
+	justify-content: center;
+	padding-bottom: 10px;
+}
+
+@media (max-width: 568px) {
+	.head-container {
+		flex-direction: column;
+	}
+}
+
+.head-btn {
 	width: 100%;
 }
 
@@ -89,19 +95,15 @@
 	padding-bottom: 1em;
 }
 
-@media (max-width: 600px) {
-	.head-btn {
-		width: 50%;
-	}
-	h1.display-1 {
-		font-size: 3rem;
-	}
+.good-width {
+	margin-left: auto;
+	margin-right: auto;
 }
 
-@media (min-width: 600px) {
-	.head-btn {
-		
-	}
+@import url('https://fonts.googleapis.com/css?family=Lato&display=swap');
+
+.lato {
+	font-family: "Lato";
 }
 
 @media (min-width: 720px) and (max-width: 1440px) {
@@ -127,4 +129,25 @@
 	.map {
 		height: 25rem;
 	}
+}
+
+.no-deco {
+	text-decoration: none;
+	color: #111;
+}
+
+.no-deco:hover {
+	text-decoration: none;
+	color: #333;
+}
+
+.important-info {
+	font-size: 1.5rem;
+	letter-spacing: -0.1px;
+	font-weight: bold;
+}
+
+.news-container {
+	padding: 1rem;
+	margin: 1rem;
 }

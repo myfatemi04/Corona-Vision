@@ -11,7 +11,7 @@
 	<body onload="init()">
 		{% include 'navbar.html' %}
 		<div class="p-2 text-center">
-			<h1 class="display-1 text-dark">Update Data</h1>
+			<h1 class="display-1 text-dark">Report a case</h1>
 			<p class="lead">Thank you for submitting data!</p>
 			<div style="width: 30%;" class="border rounded mx-auto p-2 text-left">
 				<span class="font-weight-bold" id="message">{{message}}</span>
@@ -20,15 +20,15 @@
 					<input class="form-control mb-2" id="location">
 				</div>
 				<div class="form-group">
-					<label for="confirmed">How many total confirmed?</label><br/>
+					<label for="confirmed">How many total have been confirmed there?</label><br/>
 					<input class="form-control mb-2" id="confirmed" type=number>
 				</div>
 				<div class="form-group">
-					<label for="recovered">How many total recovered?</label><br/>
+					<label for="recovered">How many total have recovered there?</label><br/>
 					<input class="form-control mb-2" id="recovered" type=number>
 				</div>
 				<div class="form-group">
-					<label for="dead">How many total dead?</label><br/>
+					<label for="dead">How many total have died there?</label><br/>
 					<input class="form-control mb-2" id="dead" type=number>
 				</div>
 				<div class="form-group">

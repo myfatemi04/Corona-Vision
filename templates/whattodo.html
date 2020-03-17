@@ -5,30 +5,62 @@
 	</head>
 	<body>
 		{% include "navbar.html" %}
-		<div class="p-2 mx-auto w-75 text-center">
-			<h1 class="display-1">How can I help?</h1>
-			{% include "head.html" %}
-			<div class="container my-5 font-weight-light" style="font-size: 2rem;">
-				<div class="row">
-					<div class="col-sm mx-2">
-						Wash your hands
-					</div>
-					<div class="col-sm mx-2">
-						Avoid touching your face
-					</div>
-					<div class="col-sm mx-2">
-						Social distancing
+		<div class="p-2 good-width">
+			<div class="text-center">
+				{% include "head.html" %}
+				<h1 class="display-1">How can I help?</h1>
+			</div>
+			<div class="d-flex flex-column border rounded">
+				<div class="p-2 m-auto">
+					<img src="/static/Do_The_Five.gif" style="width: 240px;" class="m-auto" alt="Do the Five"><br/>
+					<div class="five-list">
+						<div class="five-list-elem">
+							<div class="five-number">1</div><span class="five-bold">HANDS</span><span class="five-desc">Wash them often</span>
+						</div>
+						<div class="five-list-elem">
+							<div class="five-number">2</div><span class="five-bold">ELBOW</span><span class="five-desc">Cough into it</span>
+						</div>
+						<div class="five-list-elem">
+							<div class="five-number">3</div><span class="five-bold">FACE</span><span class="five-desc">Don't touch it</span>
+						</div>
+						<div class="five-list-elem">
+							<div class="five-number">4</div><span class="five-bold">FEET</span><span class="five-desc">Stay more than 3ft apart</span>
+						</div>
+						<div class="five-list-elem">
+							<div class="five-number">5</div><span class="five-bold">FEEL</span><span class="five-desc">sick? Stay home</span>
+						</div>
 					</div>
 				</div>
+				<div class="do-the-five-footer p-2">
+					<small>Provided by Google</small>
+					<a href="https://www.who.int/emergencies/diseases/novel-coronavirus-2019/advice-for-public"
+						class="btn btn-primary">
+						Learn more
+					</a>
+				</div>
 			</div>
-			<h1 class="font-weight-light">Why are these important, if I'm not at risk?</h3>
-			<img class="w-75" src="/static/Flatten-The-Curve.png"><br/>
-			<p class="lead">
-				The United States doesn't have enough hospital beds.
-			</p>
-			<p class="lead">
-				The mortality rate of people over 80 years old is 14.80%.
-			</p>
+			<div class="text-left box">
+				<div class="px-2">
+					<h1 class="font-weight-light">Everybody's help matters.</h3>
+					<p class="font-weight-light pl-1">
+						If the virus spreads too rapidly, <b>hospitals will be overwhelmed.</b><br/>
+						Our current system <b>cannot afford to have a spike in cases.</b>
+					</p>
+					<a href="https://bgr.com/2020/03/13/flatten-the-curve-what-does-it-mean-coronavirus-covid-19/">
+						Source: BGR
+					</a>
+				</div>
+				
+				<img class="w-100 border" src="/static/Flatten-The-Curve.png"><br/>
+				
+				
+				
+				
+				
+				
+				
+				
+			</div>
 		</div>
 	</body>
 </html>
