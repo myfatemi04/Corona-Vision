@@ -4,7 +4,7 @@ import os
 import time
 from threading import Thread
 from sqlalchemy import and_
-from whitenoise import WhiteNoise
+# from whitenoise import WhiteNoise
 
 import corona_sql
 
@@ -15,11 +15,11 @@ app.static_folder = "./static"
 sql_uri = "mysql://root:jinny2yoo@35.226.226.204/corona"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = sql_uri
-app.wsgi_app = WhiteNoise(
-	app.wsgi_app,
-	root="static/",
-	prefix="static/"
-)
+# app.wsgi_app = WhiteNoise(
+# 	app.wsgi_app,
+# 	root="static/",
+# 	prefix="static/"
+# )
 
 corona_sql.db.init_app(app)
 
@@ -97,11 +97,13 @@ def find_cases_frontend():
 # example url:
 # /cases/38.9349376/-77.1909653
 # = http://localhost:4040/cases/38.9349376/-77.1909653
-@app.route("/cases/<string:latitude_str>/<string:longitude_str>")
-def find_cases_backend(latitude_str, longitude_str):
-	latitude = float(latitude_str)
-	longitude = float(longitude_str)
-	cases = corona_sql.find_cases(latitude, longitude)
+@app.route("/cases")
+def find_cases_backend():
+	ne_lat = float(request.args.get("ne_lat"))
+	ne_lng = float(request.args.get("ne_lng"))
+	sw_lat = float(request.args.get("sw_lat"))
+	sw_lng = float(request.args.get("sw_lng"))
+	cases = corona_sql.find_cases(ne_lat, ne_lng, sw_lat, sw_lng)
 	return json.dumps([case.json_serializable() for case in cases])
 
 @app.route("/visual")
@@ -193,5 +195,5 @@ if __name__ == "__main__":
 		port = os.environ['PORT']
 	else:
 		port = 4040
-	app.run(host='0.0.0.0', port=port, threaded=True, debug=True)
+	app.run(host='0.0.0.0', port=port, threaded=True)
 	

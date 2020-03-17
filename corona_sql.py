@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func
-from sqlalchemy import and_
+from sqlalchemy import and_, between
 
 db = SQLAlchemy()
 
@@ -45,13 +45,17 @@ def calc_distance(latlong1, latlong2):
 				   + func.pow(53.0 * (latlong1[1] - latlong2[1]),2))
 
 
-def find_cases(latitude, longitude, radius=250):
+def find_cases(ne_lat, ne_lng, sw_lat, sw_lng):
+	min_lat = sw_lat
+	max_lat = ne_lat
+	
+	min_lng = sw_lng
+	max_lng = ne_lng
+	
 	result = Datapoint.query.filter(
 		and_(
-			calc_distance(
-				(latitude, longitude),
-				(Datapoint.latitude, Datapoint.longitude)
-			) < radius, 
+			between(Datapoint.latitude, min_lat, max_lat),
+			between(Datapoint.longitude, min_lng, max_lng),
 			Datapoint.status == 1
 		)
 	)

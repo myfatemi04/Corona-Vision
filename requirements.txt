@@ -2,4 +2,4 @@ flask-sqlalchemy
 sqlalchemy
 mysqlclient
 flask
-whitenoise
+pandas

@@ -17,16 +17,35 @@
 
 .do-the-five {
 	margin: auto;
+	width: 50%;
+	display: flex;
+	flex-direction: column;
 }
 
-.map {
-	width: 100%;
-	height: 30rem;
+@media (max-width: 900px) {
+	.do-the-five {
+		width: 90%;
+		font-size: 1.5rem;
+	}
+}
+
+.do-the-five-footer {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-evenly;
+}
+
+.do-the-five-footer small {
+	padding-top: 8px;
+}
+
+.five-list {
+	margin: auto;
+	align-items: center;
 }
 
 .five-list-elem {
-	display: flex;
-	flex-direction: row;
+	display: block;
 }
 
 .five-number {
@@ -34,6 +53,8 @@
 	color: red;
 	padding-left: 0.5rem;
 	padding-right: 0.5rem;
+	width: 10px;
+	display: inline-block;
 }
 
 .five-bold {
@@ -53,4 +74,57 @@
 
 .display-block {
 	display: block;
+}
+
+.map {
+	width: 100%;
+}
+
+.head-container {
+	width: 100%;
+}
+
+.form-inline .col-auto {
+	padding-top: 1em;
+	padding-bottom: 1em;
+}
+
+@media (max-width: 600px) {
+	.head-btn {
+		width: 50%;
+	}
+	h1.display-1 {
+		font-size: 3rem;
+	}
+}
+
+@media (min-width: 600px) {
+	.head-btn {
+		
+	}
+}
+
+@media (min-width: 720px) and (max-width: 1440px) {
+	.good-width {
+		width: 75%;
+	}
+	.map {
+		height: 30rem;
+	}
+}
+
+@media (min-width: 1440px) {
+	.good-width {
+		width: 67.5%;
+	}
+	
+	.map {
+		height: 30rem;
+	}
+}
+
+@media (max-width: 720px) {
+	.map {
+		height: 25rem;
+	}
 }

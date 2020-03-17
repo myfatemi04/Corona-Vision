@@ -6,28 +6,37 @@
 	</head>
 	<body>
 		{% include 'navbar.html' %}
-		<div class="p-2 text-center">
-			<h1 class="display-1text-dark">Coronavirus Awareness</h1>
+		<div class="p-2">
+			<h1 class="display-1 text-center text-dark">Coronavirus Awareness</h1>
 			{% include "head.html" %}
 			<br/>
-			<div class="mx-auto pb-2" style="display: block;">
-				<img src="/static/Do_The_Five.gif" style="width: 240px;" alt="Do the Five"><br/>
-			</div>
-			<div class="do-the-five" style="width: 300px">
-				<div class="five-list-elem">
-					<div class="five-number">1</div><div class="five-bold">HANDS</div><div class="five-desc">Wash them often</div>
+			<div class="do-the-five border rounded">
+				<div class="p-2 m-auto">
+					<img src="/static/Do_The_Five.gif" style="width: 240px;" class="m-auto" alt="Do the Five"><br/>
+					<div class="five-list">
+						<div class="five-list-elem">
+							<div class="five-number">1</div><span class="five-bold">HANDS</span><span class="five-desc">Wash them often</span>
+						</div>
+						<div class="five-list-elem">
+							<div class="five-number">2</div><span class="five-bold">ELBOW</span><span class="five-desc">Cough into it</span>
+						</div>
+						<div class="five-list-elem">
+							<div class="five-number">3</div><span class="five-bold">FACE</span><span class="five-desc">Don't touch it</span>
+						</div>
+						<div class="five-list-elem">
+							<div class="five-number">4</div><span class="five-bold">FEET</span><span class="five-desc">Stay more than 3ft apart</span>
+						</div>
+						<div class="five-list-elem">
+							<div class="five-number">5</div><span class="five-bold">FEEL</span><span class="five-desc">sick? Stay home</span>
+						</div>
+					</div>
 				</div>
-				<div class="five-list-elem">
-					<div class="five-number">2</div><div class="five-bold">ELBOW</div><div class="five-desc">Cough into it</div>
-				</div>
-				<div class="five-list-elem">
-					<div class="five-number">3</div><div class="five-bold">FACE</div><div class="five-desc">Don't touch it</div>
-				</div>
-				<div class="five-list-elem">
-					<div class="five-number">4</div><div class="five-bold">FEET</div><div class="five-desc">Stay more than 3ft apart</div>
-				</div>
-				<div class="five-list-elem">
-					<div class="five-number">5</div><div class="five-bold">FEEL</div><div class="five-desc">sick? Stay home</div>
+				<div class="do-the-five-footer p-2">
+					<small>Provided by Google</small>
+					<a href="https://www.who.int/emergencies/diseases/novel-coronavirus-2019/advice-for-public"
+						class="btn btn-primary">
+						Learn more
+					</a>
 				</div>
 			</div>
 		</div>

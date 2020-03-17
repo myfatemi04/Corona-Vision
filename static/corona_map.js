@@ -11,8 +11,8 @@ function init_coronamap() {
 			center: my_location,
 			streetViewControl: false
 		});
-	map.addListener("center_changed", function() {
-		show_cases(map.center.lat(), map.center.lng());
+	map.addListener("dragend", function() {
+		reload_cases();
 	});
 }
 
@@ -42,7 +42,7 @@ function show_location(position) {
 		lng: longitude
 	};
 	map.setCenter(my_location);
-	show_cases(latitude, longitude);
+	setTimeout(reload_cases, 1000);
 }
 
 function remove_previous_markers() {
@@ -55,12 +55,12 @@ function remove_previous_markers() {
 function find_cases() {
 	$("#map")[0].setAttribute("class", "map display-block");
 	$("#map-message")[0].setAttribute("class", "display-none");
-	let loc = location_autocomplete.getPlace().geometry.location;
-	show_cases(loc.lat(), loc.lng());
 	map.setCenter(loc);
+	reload_cases();
 }
 
-function show_cases(latitude, longitude) {
+function reload_cases() {
+	
 	let xhr = new XMLHttpRequest();
 	xhr.onreadystatechange = function() {
 		if (this.readyState == 4 && this.status == 200) {
@@ -85,20 +85,13 @@ function show_cases(latitude, longitude) {
 				if (!found_marker)
 					markers.push(new_marker);
 			}
-			//marker_cluster = new MarkerClusterer(map, markers,
-            //{imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'});
 		}
 	};
 	
-	if (location_autocomplete !== null) {	
-		let place = location_autocomplete.getPlace();
-		if (typeof place !== 'undefined') {
-			my_location = place.geometry.location;
-		}
-	}
-	
-	let cases_url = "/cases/" + latitude + "/" + longitude;
-	
-	xhr.open("GET", cases_url);
-	xhr.send()
+	let bounds = map.getBounds();
+	let ne = bounds.getNorthEast();
+	let sw = bounds.getSouthWest();
+	let request_content = `?ne_lat=${ne.lat()}&ne_lng=${ne.lng()}&sw_lat=${sw.lat()}&sw_lng=${sw.lng()}`;
+	xhr.open("GET", "/cases" + request_content);
+	xhr.send();
 }
