@@ -11,7 +11,7 @@ app = Flask(__name__)
 app.secret_key = "10a765caa15fd56b4a95"
 app.static_folder = "./static"
 
-sql_uri = "mysql://site_coronavisio:WKHrAwcTRjaqGFVmybJ8amTC@mysql1.csl.tjhsst.edu:3306/site_coronavision" # "mysql://site_coronavisio:WKHrAwcTRjaqGFVmybJ8amTC@mysql1.csl.tjhsst.edu:3306/site_coronavision"
+sql_uri = "mysql://root:jinny2yoo@35.226.226.204/corona"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = sql_uri
 

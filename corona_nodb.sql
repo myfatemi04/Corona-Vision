@@ -1,5 +1,3 @@
-create database if not exists corona;
-use corona;
 drop table if exists users;
 create table users (
 	user_id int not null auto_increment primary key,
