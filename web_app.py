@@ -187,5 +187,5 @@ if __name__ == "__main__":
 		port = os.environ['PORT']
 	else:
 		port = 4040
-	app.run(host='127.0.0.1', port=port, threaded=True, debug=True)
+	app.run(host='0.0.0.0', port=port, threaded=True, debug=True)
 	
