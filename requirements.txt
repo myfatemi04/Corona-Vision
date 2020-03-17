@@ -1,4 +1,4 @@
 flask-sqlalchemy
 sqlalchemy
-mysql-python
+mysqlclient
 flask
