@@ -83,7 +83,7 @@ function load_country_total(country, datestr) {
 		if (this.readyState == 4 && this.status == 200) {
 			let parsed_data = JSON.parse(this.responseText);
 			console.log(parsed_data);
-			$("#country-info")[0].innerHTML = `<b>Country info</b><br/>Confirmed: ${parsed_data.total_confirmed}<br/>Recovered: ${parsed_data.total_recovered}<br/>Dead: ${parsed_data.total_dead}<br/>Active: ${parsed_data.total_active}`;
+			$("#country-info")[0].innerHTML = `<b>Country info: ${country}</b><br/>Confirmed: ${parsed_data.total_confirmed}<br/>Recovered: ${parsed_data.total_recovered}<br/>Dead: ${parsed_data.total_dead}<br/>Active: ${parsed_data.total_active}`;
 		}
 	}
 	xhr.open("GET", `/cases/total/${country}/${datestr}`)

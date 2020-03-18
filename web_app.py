@@ -10,10 +10,10 @@ import import_data
 import corona_sql
 
 app = Flask(__name__)
-app.secret_key = "10a765caa15fd56b4a95"
+app.secret_key = os.environ['APP_SECRET_KEY']
 app.static_folder = "./static"
 
-sql_uri = "mysql://root:jinny2yoo@35.226.226.204/corona"
+sql_uri = os.environ['DATABASE_URL']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = sql_uri
 # app.wsgi_app = WhiteNoise(
