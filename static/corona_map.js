@@ -1,4 +1,3 @@
-var my_location = null;
 var map = null;
 var markers = [];
 var location_autocomplete = null;
@@ -8,7 +7,6 @@ function init_coronamap() {
 	map = new google.maps.Map($("#map")[0],
 		{
 			zoom: 8,
-			center: my_location,
 			streetViewControl: false
 		});
 	map.addListener("dragend", function() {
@@ -40,7 +38,7 @@ function show_location(position) {
 	let longitude = position.coords.longitude;
 	$("#map")[0].setAttribute("class", "map display-block");
 	$("#map-message")[0].setAttribute("class", "display-none");
-	my_location = {
+	let my_location = {
 		lat: latitude,
 		lng: longitude
 	};
@@ -64,11 +62,35 @@ function find_cases() {
 		map.setCenter(loc);
 	}
 	
-	reload_cases();
+	setTimeout(reload_cases, 1000);
+}
+
+function get_icon_url_based_on_severity(num_cases) {
+	let base_url = "http://maps.google.com/mapfiles/ms/icons/";
+	let log_n = Math.log(num_cases)/Math.log(2);
+	let color = "blue";
+	if (log_n < 4) color = "blue";
+	else if (log_n < 8) color = "green";
+	else if (log_n < 12) color = "yellow";
+	else if (log_n < 16) color = "orange";
+	else color = "red";
+	return base_url + color + ".png";
+}
+
+function load_country_total(country, datestr) {
+	let xhr = new XMLHttpRequest();
+	xhr.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			let parsed_data = JSON.parse(this.responseText);
+			console.log(parsed_data);
+			$("#country-info")[0].innerHTML = `<b>Country info</b><br/>Confirmed: ${parsed_data.total_confirmed}<br/>Recovered: ${parsed_data.total_recovered}<br/>Dead: ${parsed_data.total_dead}<br/>Active: ${parsed_data.total_active}`;
+		}
+	}
+	xhr.open("GET", `/cases/total/${country}/${datestr}`)
+	xhr.send()
 }
 
 function reload_cases() {
-	
 	let xhr = new XMLHttpRequest();
 	xhr.onreadystatechange = function() {
 		if (this.readyState == 4 && this.status == 200) {
@@ -80,8 +102,14 @@ function reload_cases() {
 						lng: person.longitude
 					},
 					map: map,
-					title: `${person.location}: Confirmed: ${person.confirmed}. Recovered: ${person.recovered}. Dead: ${person.dead}`,
-					label: (person.confirmed + "")
+					title: `[${person.country}] ${person.province}: Confirmed: ${person.confirmed}. Recovered: ${person.recovered}. Dead: ${person.dead}. Active: ${person.active}.`,
+					icon: get_icon_url_based_on_severity(person.active)
+				});
+				
+				new_marker.addListener('click', function() {
+					let marker_info = $("#marker-info")[0];
+					marker_info.innerHTML = `<b>Region Info</b><br/>Region: ${person.province}<br/>Confirmed: ${person.confirmed}<br/>Recovered: ${person.recovered}<br/>Dead: ${person.dead}. Active: ${person.active}`;
+					load_country_total(person.country, $("#date")[0].value);
 				});
 				markers.push(new_marker);
 			}

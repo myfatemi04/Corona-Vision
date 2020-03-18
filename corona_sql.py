@@ -10,29 +10,35 @@ class DataEntry(db.Model):
 	total_confirmed = db.Column(db.Integer)
 	total_recovered = db.Column(db.Integer)
 	total_dead = db.Column(db.Integer)
+	total_active = db.Column(db.Integer)
 
 class Datapoint(db.Model):
 	__tablename__ = "datapoints"
 	data_id = db.Column(db.Integer, primary_key=True)
 	entry_date = db.Column(db.Date)
-	location = db.Column(db.String(320))
+	
+	province = db.Column(db.String(320))
+	country = db.Column(db.String(320))
+	
 	latitude = db.Column(db.Float(10, 6))
 	longitude = db.Column(db.Float(10, 6))
+	
 	confirmed = db.Column(db.Integer)
 	recovered = db.Column(db.Integer)
 	dead = db.Column(db.Integer)
-	email = db.Column(db.String(320))
-	status = db.Column(db.Integer)  # 0 = pending, -1 = denied, 1 = accepted
+	active = db.Column(db.Integer)
 	
 	def json_serializable(self):
 		return {
 			"data_id": self.data_id,
-			"location": self.location,
+			"province": self.province,
+			"country": self.country,
 			"latitude": float(self.latitude),
 			"longitude": float(self.longitude),
 			"confirmed": float(self.confirmed),
 			"recovered": float(self.recovered),
-			"dead": float(self.dead)
+			"dead": float(self.dead),
+			"active": float(self.active)
 		}
 
 class User(db.Model):
@@ -43,15 +49,31 @@ class User(db.Model):
 	lastname = db.Column(db.String(32))
 	password_encrypt = db.Column(db.String(256))
 
-def find_email(email):
-	result = User.query.filter_by(email=email).first()
-	return result
-
-# miles
-def calc_distance(latlong1, latlong2):
-	return func.sqrt(func.pow(69.1 * (latlong1[0] - latlong2[0]),2)
-				   + func.pow(53.0 * (latlong1[1] - latlong2[1]),2))
-
+def find_country_total(country, date_):
+	result = Datapoint.query.filter(
+		and_(
+			Datapoint.country == country,
+			Datapoint.entry_date == date_
+		)
+	).all()
+	
+	total_confirmed = 0
+	total_recovered = 0
+	total_dead = 0
+	total_active = 0
+	
+	for case in result:
+		total_confirmed += case.confirmed
+		total_recovered += case.recovered
+		total_dead += case.dead
+		total_active += case.active
+		
+	return {
+		"total_confirmed": total_confirmed,
+		"total_recovered": total_recovered,
+		"total_dead": total_dead,
+		"total_active": total_active
+	}
 
 def find_cases(ne_lat, ne_lng, sw_lat, sw_lng, entry_date):
 	min_lat = sw_lat
@@ -64,12 +86,7 @@ def find_cases(ne_lat, ne_lng, sw_lat, sw_lng, entry_date):
 		and_(
 			between(Datapoint.latitude, min_lat, max_lat),
 			between(Datapoint.longitude, min_lng, max_lng),
-			Datapoint.status == 1,
 			Datapoint.entry_date==entry_date
 		)
 	)
-	return result.all()
-
-def find_pending():
-	result = Datapoint.query.filter(Datapoint.status == 0)
 	return result.all()

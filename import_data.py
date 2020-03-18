@@ -20,45 +20,66 @@ def import_data(csv_text, entry_date):
 		total_confirmed = 0
 		total_recovered = 0
 		total_dead = 0
+		total_active = 0
+		
+		country_total_confirmed = {}
+		country_total_recovered = {}
+		country_total_dead = {}
+		country_total_active = {}
 		
 		for index, row in dataframe.iterrows():
-			lat, lng = row['Latitude'], row['Longitude']
+			country = row['Country/Region']
+			province = ''
+			
+			if not pd.isnull(row['Province/State']):
+				province = row['Province/State']
 			
 			confirmed = row['Confirmed']
 			dead = row['Deaths']
 			recovered = row['Recovered']
+			active = confirmed - dead - recovered
 			
 			total_confirmed += confirmed
 			total_recovered += recovered
 			total_dead += dead
 			
-			location_details = []
-			if not pd.isnull(row['Province/State']):
-				location_details.append(row['Province/State'])
-			
-			if not pd.isnull(row['Country/Region']):
-				location_details.append(row['Country/Region'])
+			if country not in country_total_confirmed:
+				country_total_confirmed[country] = 0
+				country_total_recovered[country] = 0
+				country_total_dead[country] = 0
+				country_total_active[country] = 0
 				
-			location_string = ", ".join(location_details)
+			country_total_confirmed[country] += confirmed
+			country_total_recovered[country] += recovered
+			country_total_dead[country] += dead
+			country_total_active[country] += active
+			
+			lat, lng = row['Latitude'], row['Longitude']
 			
 			if not np.isnan(lat):
 				new_data = corona_sql.Datapoint(
 					entry_date=entry_date,
-					location=location_string,
+					
+					province=province,
+					country=country,
+					
 					latitude=lat,
 					longitude=lng,
+					
 					confirmed=confirmed,
 					dead=dead,
 					recovered=recovered,
-					status=1
+					active=confirmed - recovered - dead
 				)
 				corona_sql.db.session.add(new_data)
-			
+		
+		total_active = total_confirmed - total_recovered - total_dead
 		data_entry = corona_sql.DataEntry(
 			entry_date=entry_date,
 			total_confirmed=total_confirmed,
 			total_recovered=total_recovered,
-			total_dead=total_dead
+			total_dead=total_dead,
+			total_active=total_active
 		)
 		
 		corona_sql.db.session.add(data_entry)
@@ -95,8 +116,7 @@ def download_data_for_date(entry_date):
 # daily reports link: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports
 def data_download():
 	time.sleep(5)
-	# add_date_range(date_1=date(2020, 1, 22), date_2=date.today())
-	# return
+	add_date_range(date_1=date(2020, 1, 22), date_2=date.today())
 	
 	while True:
 		today = date.today()
@@ -112,6 +132,7 @@ def data_download():
 			result = download_data_for_date(latest_day)
 		
 		time.sleep(60)
+	
 	
 
 """ Should only be used when first setting up the app"""	
