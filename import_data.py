@@ -97,9 +97,6 @@ def download_data_for_date(entry_date):
 			github_raw_url = f"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/{date_formatted}.csv"
 			response = requests.get(github_raw_url)
 			
-			print(f"\tResponse code: {response.status_code}")
-			print(f"\tResponse content length: {len(response.text)}")
-			
 			if response.status_code == 200:
 				csv_text = response.text
 				import_data(csv_text, entry_date)
@@ -119,26 +116,17 @@ def data_download():
 	add_date_range(date_1=date(2020, 1, 22), date_2=date.today())
 	
 	while True:
-		today = date.today()
-		today_formatted = today.strftime("%m-%d-%Y")
-		result = download_data_for_date(today)
+		status = download_data_for_date(date.today())
 		
-		latest_day = today
-		go_back = timedelta(days=-1)
-		while result == '404':
-			latest_day += go_back
-			latest_day_formatted = latest_day.strftime("%m-%d-%Y")
-			print("\tTrying", latest_day_formatted)
-			result = download_data_for_date(latest_day)
-		
-		time.sleep(60)
-	
-	
+		if status == '404':
+			time.sleep(60)
 
 """ Should only be used when first setting up the app"""	
 def add_date_range(date_1, date_2):
 	next_date = timedelta(days=1)
 	current_date = date_1
 	while current_date <= date_2:
-		download_data_for_date(current_date)
+		result = download_data_for_date(current_date)
+		if result == '404':
+			return
 		current_date += next_date

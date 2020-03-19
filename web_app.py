@@ -16,11 +16,6 @@ app.static_folder = "./static"
 sql_uri = os.environ['DATABASE_URL']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = sql_uri
-# app.wsgi_app = WhiteNoise(
-# 	app.wsgi_app,
-# 	root="static/",
-# 	prefix="static/"
-# )
 
 corona_sql.db.init_app(app)
 
@@ -102,5 +97,5 @@ if __name__ == "__main__":
 		port = os.environ['PORT']
 	else:
 		port = 4040
-	app.run(host='0.0.0.0', port=port, threaded=True, debug=True)
+	app.run(host='0.0.0.0', port=port, threaded=True)
 	

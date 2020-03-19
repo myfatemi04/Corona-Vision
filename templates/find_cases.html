@@ -22,7 +22,7 @@
 					<input class='form-control' type="text" name="location" id="location">
 				</div>
 				<div class="inline-form-item">
-					<label for="date">Find cases from date:</label>
+					<label for="date">Date:</label>
 				</div>
 				<div class="inline-form-item">
 					<select class="form-control" id="date" onchange="reload_cases();">
@@ -32,7 +32,7 @@
 					</select>
 				</div>
 				<div class="inline-form-item">
-					<button class="btn btn-primary" onclick="find_cases()">Find cases</button>
+					<button class="btn btn-primary" onclick="find_cases()">Find</button>
 				</div>
 			</div><br/>
 			<div class="box">
@@ -40,7 +40,17 @@
 					This website requires JavaScript to run.
 				</noscript>
 				<h3>Map of cases</h3>
-				<p class="lead">Click on any marker to see more information.</p>
+				<p>Click on any marker to see more information.</p>
+				<p>
+					Key:<br/>
+					<ul>
+						<li>Blue: &lt; 16 active cases</li>
+						<li>Green: &lt; 256 active cases</li>
+						<li>Yellow: &lt; 4096 active cases</li>
+						<li>Orange: &lt; 65536 active cases</li>
+						<li>Red: &gt; 65536 active cases</li>
+					</ul>
+				</p>
 				<a class="small" href="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports">Data source</a>
 				<div class="row">
 					<p class="col" id="marker-info"></p>
