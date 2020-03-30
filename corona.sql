@@ -14,6 +14,7 @@ create table datapoints (
 	data_id int not null auto_increment primary key,
 	entry_date date,
 	
+	admin2 varchar(320),
 	province varchar(320),
 	country varchar(320),
 	

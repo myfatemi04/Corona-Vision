@@ -17,6 +17,7 @@ class Datapoint(db.Model):
 	data_id = db.Column(db.Integer, primary_key=True)
 	entry_date = db.Column(db.Date)
 	
+	admin2 = db.Column(db.String(320))
 	province = db.Column(db.String(320))
 	country = db.Column(db.String(320))
 	
@@ -31,6 +32,7 @@ class Datapoint(db.Model):
 	def json_serializable(self):
 		return {
 			"data_id": self.data_id,
+			"admin2": self.admin2,
 			"province": self.province,
 			"country": self.country,
 			"latitude": float(self.latitude),

@@ -12,7 +12,24 @@ def import_data(csv_text, entry_date):
 	string_io = io.StringIO(csv_text)
 	dataframe = pd.read_csv(string_io)
 	
-	if 'Latitude' not in dataframe.columns:
+	lat_col = ""
+	lng_col = ""
+	country_col = ""
+	province_col = ""
+	admin2_col = ""
+	for col in dataframe.columns:
+		if 'lat' in col.lower():
+			lat_col = col
+		elif 'long' in col.lower():
+			lng_col = col
+		elif 'country' in col.lower():
+			country_col = col
+		elif 'province' in col.lower():
+			province_col = col
+		elif 'admin2' in col.lower():
+			admin2_col = col
+			
+	if not lat_col or not lng_col:
 		print("\tNo latitude or longitude data")
 		return
 	
@@ -28,11 +45,16 @@ def import_data(csv_text, entry_date):
 		country_total_active = {}
 		
 		for index, row in dataframe.iterrows():
-			country = row['Country/Region']
+			country = row[country_col]
 			province = ''
+			admin2 = ''
 			
-			if not pd.isnull(row['Province/State']):
-				province = row['Province/State']
+			if not pd.isnull(row[province_col]):
+				province = row[province_col]
+			
+			if 'Admin2' in dataframe.columns:
+				if not pd.isnull(row[admin2_col]):
+					admin2 = row[admin2_col]
 			
 			confirmed = row['Confirmed']
 			dead = row['Deaths']
@@ -54,12 +76,13 @@ def import_data(csv_text, entry_date):
 			country_total_dead[country] += dead
 			country_total_active[country] += active
 			
-			lat, lng = row['Latitude'], row['Longitude']
+			lat, lng = row[lat_col], row[lng_col]
 			
 			if not np.isnan(lat):
 				new_data = corona_sql.Datapoint(
 					entry_date=entry_date,
 					
+					admin2=admin2,
 					province=province,
 					country=country,
 					
@@ -113,7 +136,7 @@ def download_data_for_date(entry_date):
 # daily reports link: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports
 def data_download():
 	time.sleep(5)
-	add_date_range(date_1=date(2020, 1, 22), date_2=date.today())
+	add_date_range(date_1=date(2020, 3, 1), date_2=date.today())
 	
 	while True:
 		status = download_data_for_date(date.today())

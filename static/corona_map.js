@@ -1,5 +1,7 @@
 var map = null;
-var markers = [];
+var active_markers = [];
+var markers_by_country = {};
+var locations = {};
 var location_autocomplete = null;
 var marker_cluster = null;
 
@@ -47,10 +49,11 @@ function show_location(position) {
 }
 
 function remove_previous_markers() {
-	for (let marker of markers) {
+	for (let marker of active_markers) {
 		marker.setMap(null);
 	}
-	markers = [];
+	active_markers = [];
+	markers_by_country = {};
 }
 
 function find_cases() {
@@ -67,6 +70,9 @@ function find_cases() {
 
 function get_icon_url_based_on_severity(num_cases) {
 	let base_url = "http://maps.google.com/mapfiles/ms/icons/";
+	if (num_cases < 0) {
+		return base_url + "blue.png"
+	}
 	let log_n = Math.log(num_cases)/Math.log(2);
 	let color = "blue";
 	if (log_n < 4) color = "blue";
@@ -96,22 +102,26 @@ function reload_cases() {
 		if (this.readyState == 4 && this.status == 200) {
 			remove_previous_markers();
 			for (let person of JSON.parse(this.responseText)) {
-				let new_marker = new google.maps.Marker({
-					position: {
-						lat: person.latitude,
-						lng: person.longitude
-					},
-					map: map,
-					title: `[${person.country}] ${person.province}: Confirmed: ${person.confirmed}. Recovered: ${person.recovered}. Dead: ${person.dead}. Active: ${person.active}.`,
-					icon: get_icon_url_based_on_severity(person.active)
-				});
-				
-				new_marker.addListener('click', function() {
-					let marker_info = $("#marker-info")[0];
-					marker_info.innerHTML = `<b>Region Info</b><br/>Region: ${person.province}<br/>Confirmed: ${person.confirmed}<br/>Recovered: ${person.recovered}<br/>Dead: ${person.dead}. Active: ${person.active}`;
-					load_country_total(person.country, $("#date")[0].value);
-				});
-				markers.push(new_marker);
+				console.log(person);
+				if (person.confirmed > 0) {
+					let new_marker = new google.maps.Marker({
+						position: {
+							lat: person.latitude,
+							lng: person.longitude
+						},
+						title: `[${person.country}]: Confirmed: ${person.confirmed}. Recovered: ${person.recovered}. Dead: ${person.dead}. Active: ${person.active}.`,
+						icon: get_icon_url_based_on_severity(person.active)
+					});
+					
+					new_marker.addListener('click', function() {
+						let marker_info = $("#marker-info")[0];
+						marker_info.innerHTML = `<b>Region Info</b><br/>${person.country} ${person.province} ${person.admin2}<br/>Confirmed: ${person.confirmed}<br/>Recovered: ${person.recovered}<br/>Dead: ${person.dead}. Active: ${person.active}`;
+						load_country_total(person.country, $("#date")[0].value);
+					});
+					
+					new_marker.setMap(map);
+					active_markers.push(new_marker);
+				}
 			}
 		}
 	};
