@@ -8,29 +8,6 @@ import requests
 import web_app
 import io
 
-def add_tuple_values(a, b):
-	return tuple(sum(x) for x in zip(a, b))
-
-def add_to_dict(dct, country, province, admin2, value_list):
-	
-	# use a set so that if for example province = "", we don't add the values to (country, "", "") twice
-	combinations = set(
-		[
-			(country, province, admin2),
-			(country, province, ""),
-			(country, "", ""),
-			("", "", "")
-		]
-	)
-
-	for combination in combinations:
-		if combination not in dct:
-			dct[combination] = value_list
-		else:
-			dct[combination] = add_tuple_values(dct[combination], value_list)
-
-	return dct
-
 def import_data(csv_text, entry_date):
 	string_io = io.StringIO(csv_text)
 	dataframe = pd.read_csv(string_io)
@@ -57,60 +34,70 @@ def import_data(csv_text, entry_date):
 		print("\tNo latitude or longitude data")
 		return
 	
-	data_points = {}
-		
-	for _, row in dataframe.iterrows():
-		country = row[country_col]
-		province = ''
-		admin2 = ''
-		
-		if not pd.isnull(row[province_col]):
-			province = row[province_col]
-		
-		if admin2_col:
-			if not pd.isnull(row[admin2_col]):
-				admin2 = row[admin2_col]
-		
-		confirmed = row['Confirmed']
-		dead = row['Deaths']
-		recovered = row['Recovered']
-		active = confirmed - dead - recovered
-		
-		lat, lng = row[lat_col], row[lng_col]
-		
-		if np.isnan(lat):
-			continue
-			
-		data_points = add_to_dict(data_points, country, province, admin2, (confirmed, dead, recovered, active, 1, lat, lng))
-
 	with web_app.app.app_context():
-		for region, stats in data_points.items():
-			country, province, admin2 = region
-			confirmed, dead, recovered, active, num_regions, lat_sum, lng_sum = stats
-
-			lat = lat_avg = lat_sum/num_regions
-			lng = lng_avg = lng_sum/num_regions
-
-			new_data = corona_sql.Datapoint(
-				entry_date=entry_date,
-				
-				admin2=admin2,
-				province=province,
-				country=country,
-				
-				latitude=lat,
-				longitude=lng,
-				
-				confirmed=confirmed,
-				dead=dead,
-				recovered=recovered,
-				active=confirmed - recovered - dead
-			)
-
-			corona_sql.db.session.add(new_data)
+		total_confirmed = 0
+		total_recovered = 0
+		total_dead = 0
+		total_active = 0
 		
-		total_confirmed, total_recovered, total_dead, total_active, _, _, _ = data_points[("", "", "")]
-
+		country_total_confirmed = {}
+		country_total_recovered = {}
+		country_total_dead = {}
+		country_total_active = {}
+		
+		for index, row in dataframe.iterrows():
+			country = row[country_col]
+			province = ''
+			admin2 = ''
+			
+			if not pd.isnull(row[province_col]):
+				province = row[province_col]
+			
+			if 'Admin2' in dataframe.columns:
+				if not pd.isnull(row[admin2_col]):
+					admin2 = row[admin2_col]
+			
+			confirmed = row['Confirmed']
+			dead = row['Deaths']
+			recovered = row['Recovered']
+			active = confirmed - dead - recovered
+			
+			total_confirmed += confirmed
+			total_recovered += recovered
+			total_dead += dead
+			
+			if country not in country_total_confirmed:
+				country_total_confirmed[country] = 0
+				country_total_recovered[country] = 0
+				country_total_dead[country] = 0
+				country_total_active[country] = 0
+				
+			country_total_confirmed[country] += confirmed
+			country_total_recovered[country] += recovered
+			country_total_dead[country] += dead
+			country_total_active[country] += active
+			
+			lat, lng = row[lat_col], row[lng_col]
+			
+			if not np.isnan(lat):
+				new_data = corona_sql.Datapoint(
+					entry_date=entry_date,
+					
+					admin2=admin2,
+					province=province,
+					country=country,
+					
+					latitude=lat,
+					longitude=lng,
+					
+					confirmed=confirmed,
+					dead=dead,
+					recovered=recovered,
+					active=confirmed - recovered - dead
+				)
+				corona_sql.db.session.add(new_data)
+		
+		total_active = total_confirmed - total_recovered - total_dead
 		data_entry = corona_sql.DataEntry(
 			entry_date=entry_date,
 			total_confirmed=total_confirmed,
@@ -118,7 +105,7 @@ def import_data(csv_text, entry_date):
 			total_dead=total_dead,
 			total_active=total_active
 		)
-			
+		
 		corona_sql.db.session.add(data_entry)
 		corona_sql.db.session.commit()
 		
@@ -158,6 +145,7 @@ def data_download():
 		if status == '404':
 			time.sleep(60)
 
+""" Should only be used when first setting up the app"""	
 def add_date_range(date_1, date_2):
 	next_date = timedelta(days=1)
 	current_date = date_1
