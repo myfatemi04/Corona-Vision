@@ -9,7 +9,8 @@ function init_coronamap() {
 	map = new google.maps.Map($("#map")[0],
 		{
 			zoom: 8,
-			streetViewControl: false
+			streetViewControl: false,
+			minZoom: 2
 		});
 	map.addListener("dragend", function() {
 		reload_cases();
@@ -83,17 +84,42 @@ function get_icon_url_based_on_severity(num_cases) {
 	return base_url + color + ".png";
 }
 
-function load_country_total(country, datestr) {
-	let xhr = new XMLHttpRequest();
-	xhr.onreadystatechange = function() {
-		if (this.readyState == 4 && this.status == 200) {
-			let parsed_data = JSON.parse(this.responseText);
-			console.log(parsed_data);
-			$("#country-info")[0].innerHTML = `<b>Country info: ${country}</b><br/>Confirmed: ${parsed_data.total_confirmed}<br/>Recovered: ${parsed_data.total_recovered}<br/>Dead: ${parsed_data.total_dead}<br/>Active: ${parsed_data.total_active}`;
+function add_country_info(person, entry_date) {
+	if (person.country) {
+		let xhr = new XMLHttpRequest();
+		xhr.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				let parsed_data = JSON.parse(this.responseText);
+				$("#country-info")[0].innerHTML = `<b>Country info: ${person.country}</b><br/>Confirmed: ${parsed_data.total_confirmed}<br/>Recovered: ${parsed_data.total_recovered}<br/>Dead: ${parsed_data.total_dead}<br/>Active: ${parsed_data.total_active}`;
+			}
 		}
+		xhr.open("GET", `/cases/country_total/${person.country}/${entry_date}`)
+		xhr.send()
 	}
-	xhr.open("GET", `/cases/total/${country}/${datestr}`)
-	xhr.send()
+}
+
+function add_county_info(person, entry_date) {
+	if (person.admin2) {
+		$("#county-info")[0].innerHTML = `<b>County Info</b><br/>${person.admin2}<br/>Confirmed: ${person.confirmed}<br/>Recovered: ${person.recovered}<br/>Dead: ${person.dead}. Active: ${person.active}`;	
+	} else {
+		$("#county-info")[0].innerHTML = '';
+	}
+}
+
+function add_province_info(person, entry_date) {
+	if (person.province) {
+		let xhr = new XMLHttpRequest();
+		xhr.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				let parsed_data = JSON.parse(this.responseText);
+				$("#province-info")[0].innerHTML = `<b>State info: ${person.province}</b><br/>Confirmed: ${parsed_data.total_confirmed}<br/>Recovered: ${parsed_data.total_recovered}<br/>Dead: ${parsed_data.total_dead}<br/>Active: ${parsed_data.total_active}`;
+			}
+		}
+		xhr.open("GET", `/cases/province_total/${person.province}/${person.country}/${entry_date}`)
+		xhr.send()
+	} else {
+		$("#province-info")[0].innerHTML = '';
+	}
 }
 
 function reload_cases() {
@@ -102,21 +128,21 @@ function reload_cases() {
 		if (this.readyState == 4 && this.status == 200) {
 			remove_previous_markers();
 			for (let person of JSON.parse(this.responseText)) {
-				console.log(person);
-				if (person.confirmed > 0) {
+				if (person.confirmed > 0 && person.country) {
 					let new_marker = new google.maps.Marker({
 						position: {
 							lat: person.latitude,
 							lng: person.longitude
 						},
-						title: `[${person.country}]: Confirmed: ${person.confirmed}. Recovered: ${person.recovered}. Dead: ${person.dead}. Active: ${person.active}.`,
+						title: `[${person.country} ${person.province} ${person.admin2}]: Confirmed: ${person.confirmed}. Recovered: ${person.recovered}. Dead: ${person.dead}. Active: ${person.active}.`,
 						icon: get_icon_url_based_on_severity(person.active)
 					});
 					
 					new_marker.addListener('click', function() {
-						let marker_info = $("#marker-info")[0];
-						marker_info.innerHTML = `<b>Region Info</b><br/>${person.country} ${person.province} ${person.admin2}<br/>Confirmed: ${person.confirmed}<br/>Recovered: ${person.recovered}<br/>Dead: ${person.dead}. Active: ${person.active}`;
-						load_country_total(person.country, $("#date")[0].value);
+						let entry_date = $("#date")[0].value;
+						add_country_info(person, entry_date);
+						add_province_info(person, entry_date);
+						add_county_info(person, entry_date);
 					});
 					
 					new_marker.setMap(map);
@@ -130,7 +156,13 @@ function reload_cases() {
 	let ne = bounds.getNorthEast();
 	let sw = bounds.getSouthWest();
 	let entry_date = $("#date")[0].value;
-	let request_content = `?ne_lat=${ne.lat()}&ne_lng=${ne.lng()}&sw_lat=${sw.lat()}&sw_lng=${sw.lng()}&date=${entry_date}`;
+	let exclude_level = "none";
+	if (map.zoom < 4) {
+		exclude_level = "province";
+	} else if (map.zoom < 8) {
+		exclude_level = "admin2";
+	}
+	let request_content = `?ne_lat=${ne.lat()}&ne_lng=${ne.lng()}&sw_lat=${sw.lat()}&sw_lng=${sw.lng()}&date=${entry_date}&exclude_level=${exclude_level}`;
 	xhr.open("GET", "/cases" + request_content);
 	xhr.send();
 }

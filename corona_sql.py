@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func
-from sqlalchemy import and_, between
+from sqlalchemy import and_, between, not_
 
 db = SQLAlchemy()
 
@@ -51,10 +51,12 @@ class User(db.Model):
 	lastname = db.Column(db.String(32))
 	password_encrypt = db.Column(db.String(256))
 
-def find_country_total(country, date_):
+def total_cases(country, province, date_):
 	result = Datapoint.query.filter(
 		and_(
 			Datapoint.country == country,
+			Datapoint.province == province,
+			Datapoint.admin2 == '',
 			Datapoint.entry_date == date_
 		)
 	).all()
@@ -77,18 +79,40 @@ def find_country_total(country, date_):
 		"total_active": total_active
 	}
 
-def find_cases(ne_lat, ne_lng, sw_lat, sw_lng, entry_date):
+def find_cases(ne_lat, ne_lng, sw_lat, sw_lng, entry_date, exclude_level):
 	min_lat = sw_lat
 	max_lat = ne_lat
 	
 	min_lng = sw_lng
 	max_lng = ne_lng
-	
-	result = Datapoint.query.filter(
-		and_(
-			between(Datapoint.latitude, min_lat, max_lat),
-			between(Datapoint.longitude, min_lng, max_lng),
-			Datapoint.entry_date==entry_date
+
+	lng_condition = between(Datapoint.longitude, min_lng, max_lng)
+
+	if max_lng < min_lng:
+		lng_condition = not_(between(Datapoint.longitude, max_lng, min_lng))
+
+	levels = {
+		"admin2": Datapoint.admin2,
+		"province": Datapoint.province,
+		"country": Datapoint.country
+	}
+
+	if exclude_level != 'none' and exclude_level in levels:
+		result = Datapoint.query.filter(
+			and_(
+				between(Datapoint.latitude, min_lat, max_lat),
+				lng_condition,
+				Datapoint.entry_date==entry_date,
+				levels[exclude_level]==''
+			)
 		)
-	)
+	else:
+		result = Datapoint.query.filter(
+			and_(
+				between(Datapoint.latitude, min_lat, max_lat),
+				lng_condition,
+				Datapoint.entry_date==entry_date
+			)
+		)
+	
 	return result.all()

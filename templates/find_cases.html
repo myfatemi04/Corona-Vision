@@ -3,7 +3,6 @@
 	<head>
 		<title>Find Nearby Coronavirus Cases</title>
 		{% include 'styles.html' %}
-		<script src="/static/markerclusterer.js"></script>
 		<script src="/static/corona_map.js" type="text/javascript"></script>
 		<script async defer
 		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAMm-5SUX6ELt2KfUfEF49RpvgRIj8J6w4&callback=init_coronamap&libraries=places">
@@ -53,8 +52,9 @@
 				</p>
 				<a class="small" href="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports">Data source</a>
 				<div class="row">
-					<p class="col" id="marker-info"></p>
 					<p class="col" id="country-info"></p>
+					<p class="col" id="province-info"></p>
+					<p class="col" id="county-info"></p>
 				</div>
 				<div id="map" class="map display-none">
 					

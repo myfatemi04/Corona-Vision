@@ -33,11 +33,19 @@ def find_cases_frontend():
 	)
 	return render_template("find_cases.html", sorted_data_entries=sorted_data_entries)
 
-@app.route("/cases/total/<string:country>/<string:datestr>")
+@app.route("/cases/country_total/<string:country>/<string:datestr>")
 def find_country_total(country, datestr):
 	year, month, day = datestr.split("-")
-	results = corona_sql.find_country_total(country, datetime.date(int(year), int(month), int(day)))
+	results = corona_sql.total_cases(country=country, province='', date_=datetime.date(int(year), int(month), int(day)))
 	return json.dumps(results)
+
+@app.route("/cases/province_total/<string:province>/<string:country>/<string:datestr>")
+def find_province_total(province, country, datestr):
+	year, month, day = datestr.split("-")
+	results = corona_sql.total_cases(country=country, province=province, date_=datetime.date(int(year), int(month), int(day)))
+	return json.dumps(results)
+
+
 
 # example url:
 # /cases/38.9349376/-77.1909653
@@ -48,11 +56,12 @@ def find_cases_backend():
 	ne_lng = float(request.args.get("ne_lng"))
 	sw_lat = float(request.args.get("sw_lat"))
 	sw_lng = float(request.args.get("sw_lng"))
+	exclude_level = request.args.get("exclude_level")
 	
 	entry_date_str = request.args.get("date")
 	year, month, day = entry_date_str.split("-")
 	entry_date = datetime.date(int(year), int(month), int(day))
-	cases = corona_sql.find_cases(ne_lat, ne_lng, sw_lat, sw_lng, entry_date)
+	cases = corona_sql.find_cases(ne_lat, ne_lng, sw_lat, sw_lng, entry_date, exclude_level)
 	
 	return json.dumps([case.json_serializable() for case in cases])
 
@@ -97,5 +106,5 @@ if __name__ == "__main__":
 		port = os.environ['PORT']
 	else:
 		port = 4040
-	app.run(host='0.0.0.0', port=port, threaded=True)
+	app.run(host='0.0.0.0', port=port, threaded=True, debug=True)
 	

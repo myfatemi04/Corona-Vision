@@ -81,7 +81,10 @@ def import_data(csv_text, entry_date):
 		if np.isnan(lat):
 			continue
 			
-		data_points = add_to_dict(data_points, country, province, admin2, (confirmed, dead, recovered, active, 1, lat, lng))
+		if lat != 0 and lng != 0:
+			data_points = add_to_dict(data_points, country, province, admin2, (confirmed, dead, recovered, active, 1, lat, lng))
+		else:
+			data_points = add_to_dict(data_points, country, province, admin2, (confirmed, dead, recovered, active, 0, 0, 0))
 
 	with web_app.app.app_context():
 		for region, stats in data_points.items():
