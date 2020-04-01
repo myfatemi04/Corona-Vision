@@ -45,8 +45,6 @@ def find_province_total(province, country, datestr):
 	results = corona_sql.total_cases(country=country, province=province, date_=datetime.date(int(year), int(month), int(day)))
 	return json.dumps(results)
 
-
-
 # example url:
 # /cases/38.9349376/-77.1909653
 # = http://localhost:4040/cases/38.9349376/-77.1909653
@@ -98,10 +96,12 @@ def calculate_risk_page():
 	else:
 		return render_template("calculate_risk.html")
 
-if __name__ == "__main__":
+@app.before_first_request
+def start_downloader():
 	data_download_thread = Thread(target=import_data.data_download, daemon=True)
 	data_download_thread.start()
-	
+
+if __name__ == "__main__":
 	if 'PORT' in os.environ:
 		port = os.environ['PORT']
 	else:
