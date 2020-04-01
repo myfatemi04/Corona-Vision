@@ -81,9 +81,9 @@ def import_data(csv_text, entry_date):
 		if np.isnan(lat):
 			continue
 			
-		if lat != 0 and lng != 0:
+		if not (lat == 0 and lng == 0): # this data is assigned
 			data_points = add_to_dict(data_points, country, province, admin2, (confirmed, dead, recovered, active, 1, lat, lng))
-		else:
+		else: # this data is unassigned
 			data_points = add_to_dict(data_points, country, province, admin2, (confirmed, dead, recovered, active, 0, 0, 0))
 
 	with web_app.app.app_context():
@@ -91,8 +91,12 @@ def import_data(csv_text, entry_date):
 			country, province, admin2 = region
 			confirmed, dead, recovered, active, num_regions, lat_sum, lng_sum = stats
 
-			lat = lat_avg = lat_sum/num_regions
-			lng = lng_avg = lng_sum/num_regions
+			if num_regions == 0:
+				lat = 0
+				lng = 0
+			else:
+				lat = lat_sum/num_regions
+				lng = lng_sum/num_regions
 
 			new_data = corona_sql.Datapoint(
 				entry_date=entry_date,
