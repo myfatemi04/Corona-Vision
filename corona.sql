@@ -11,17 +11,17 @@ create table datapoints (
 	
 	latitude float(10, 6) not null,
 	longitude float(10, 6) not null,
+
+	location_labelled boolean,
+	is_first_day boolean,
 	
 	confirmed int,
 	recovered int,
 	dead int,
-	active int
-);
-drop table if exists data_entries;
-create table data_entries (
-	entry_date date primary key,
-	total_confirmed int,
-	total_recovered int,
-	total_dead int,
-	total_active int
+	active int,
+
+	dconfirmed int,
+	drecovered int,
+	ddead int,
+	dactive int
 );

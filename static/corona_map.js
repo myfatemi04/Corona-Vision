@@ -163,6 +163,6 @@ function reload_cases() {
 		exclude_level = "admin2";
 	}
 	let request_content = `?ne_lat=${ne.lat()}&ne_lng=${ne.lng()}&sw_lat=${sw.lat()}&sw_lng=${sw.lng()}&date=${entry_date}&exclude_level=${exclude_level}`;
-	xhr.open("GET", "/cases" + request_content);
+	xhr.open("GET", "/cases/box" + request_content);
 	xhr.send();
 }

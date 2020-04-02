@@ -25,8 +25,8 @@
 				</div>
 				<div class="inline-form-item">
 					<select class="form-control" id="date" onchange="reload_cases();">
-						{% for entry in sorted_data_entries %}
-							<option value="{{entry.entry_date}}">{{entry.entry_date}}</option>
+						{% for date in sorted_dates %}
+							<option value="{{date}}">{{date}}</option>
 						{% endfor %}
 					</select>
 				</div>

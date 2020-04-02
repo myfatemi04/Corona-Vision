@@ -3,21 +3,15 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import time
 from threading import Thread
-from sqlalchemy import and_
 import datetime
+import json
 
 import import_data
-import corona_sql
+from corona_sql import *
 
 app = Flask(__name__)
 app.secret_key = os.environ['APP_SECRET_KEY']
 app.static_folder = "./static"
-
-sql_uri = os.environ['DATABASE_URL']
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = sql_uri
-
-corona_sql.db.init_app(app)
 
 @app.route("/")
 def main_page():
@@ -25,43 +19,78 @@ def main_page():
 
 @app.route("/findnearme")
 def find_cases_frontend():
-	data_entries = corona_sql.DataEntry.query.all()
-	sorted_data_entries = sorted(
-		data_entries,
-		key=lambda x: x.entry_date,
-		reverse=True
-	)
-	return render_template("find_cases.html", sorted_data_entries=sorted_data_entries)
+	dates = []
+	for tup in session.query(Datapoint.entry_date).distinct():
+		dates.append(tup[0])
+	
+	return render_template("find_cases.html", sorted_dates=sorted(dates, reverse=True))
 
-@app.route("/cases/country_total/<string:country>/<string:datestr>")
-def find_country_total(country, datestr):
-	year, month, day = datestr.split("-")
-	results = corona_sql.total_cases(country=country, province='', date_=datetime.date(int(year), int(month), int(day)))
-	return json.dumps(results)
+def get_bounding_box():
+	ne_lat = float(request.args.get("ne_lat") or 90)
+	ne_lng = float(request.args.get("ne_lng") or 180)
+	sw_lat = float(request.args.get("sw_lat") or -90)
+	sw_lng = float(request.args.get("sw_lng") or -180)
+	return sw_lat, sw_lng, ne_lat, ne_lng
 
-@app.route("/cases/province_total/<string:province>/<string:country>/<string:datestr>")
-def find_province_total(province, country, datestr):
-	year, month, day = datestr.split("-")
-	results = corona_sql.total_cases(country=country, province=province, date_=datetime.date(int(year), int(month), int(day)))
-	return json.dumps(results)
+def get_entry_date():
+	entry_date_str = request.args.get("date")
+
+	try:
+		year, month, day = entry_date_str.split("-")
+		entry_date = datetime.date(int(year), int(month), int(day))
+		return entry_date
+	except:
+		return None
+
+def get_country_province_admin2():
+	country = request.args.get("country") or ""
+	province = request.args.get("province") or ""
+	admin2 = request.args.get("admin2") or ""
+	return {"country": country, "province": province, "admin2": admin2}
 
 # example url:
-# /cases/38.9349376/-77.1909653
-# = http://localhost:4040/cases/38.9349376/-77.1909653
-@app.route("/cases")
+# /cases/?ne_lat=...se_lat=...
+@app.route("/cases/box")
 def find_cases_backend():
-	ne_lat = float(request.args.get("ne_lat"))
-	ne_lng = float(request.args.get("ne_lng"))
-	sw_lat = float(request.args.get("sw_lat"))
-	sw_lng = float(request.args.get("sw_lng"))
-	exclude_level = request.args.get("exclude_level")
-	
-	entry_date_str = request.args.get("date")
-	year, month, day = entry_date_str.split("-")
-	entry_date = datetime.date(int(year), int(month), int(day))
-	cases = corona_sql.find_cases(ne_lat, ne_lng, sw_lat, sw_lng, entry_date, exclude_level)
-	
-	return json.dumps([case.json_serializable() for case in cases])
+	cases = find_cases_by_location(*get_bounding_box())
+	entry_date = get_entry_date()
+
+	if entry_date:
+		cases = cases.filter_by(
+			entry_date=entry_date
+		)
+
+		return json_list(cases.all())
+	else:
+		return "Please specify a date"
+
+@app.route("/cases/totals/world")
+def find_total_world_cases():
+	cases = find_cases_by_location(*get_bounding_box())
+	entry_date = get_entry_date()
+	if entry_date:
+		cases = cases.filter_by(
+			entry_date=entry_date,
+			country=''
+		)
+
+		return json_list(cases.all())
+	else:
+		return "Please specify a date"
+
+@app.route("/cases/totals")
+def find_total_nation_cases():
+	entry_date = get_entry_date()
+	if entry_date:
+		nation = get_country_province_admin2()
+		cases = find_cases_by_nation(**nation)
+		cases = cases.filter_by(
+			entry_date=entry_date
+		)
+
+		return json_list(cases.all())
+	else:
+		return "Please specify a date"
 
 @app.route("/visual")
 def visual_data_page():
