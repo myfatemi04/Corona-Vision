@@ -4,6 +4,7 @@ var markers_by_country = {};
 var locations = {};
 var location_autocomplete = null;
 var marker_cluster = null;
+var most_recent_person = null;
 
 function init_coronamap() {
 	map = new google.maps.Map($("#map")[0],
@@ -84,38 +85,56 @@ function get_icon_url_based_on_severity(num_cases) {
 	return base_url + color + ".png";
 }
 
+function format_data(label, data) {
+	let formatted = `<b>${label}</b><br/>`
+	+ `Confirmed: ${data.confirmed} (+${data.dconfirmed})<br/>`
+	+ `Recovered: ${data.recovered} (+${data.drecovered})<br/>`
+	+ `Dead: ${data.dead} (+${data.ddead})<br/>`
+	+ `Active: ${data.active} (+${data.dactive})<br/>`;
+
+	return formatted;
+}
+
 function add_country_info(person, entry_date) {
-	if (person.country) {
+	if (person && person.country) {
 		let xhr = new XMLHttpRequest();
 		xhr.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				let parsed_data = JSON.parse(this.responseText);
-				$("#country-info")[0].innerHTML = `<b>Country info: ${person.country}</b><br/>Confirmed: ${parsed_data.total_confirmed}<br/>Recovered: ${parsed_data.total_recovered}<br/>Dead: ${parsed_data.total_dead}<br/>Active: ${parsed_data.total_active}`;
+				let data = JSON.parse(this.responseText)[0];
+				if (data)
+					$("#country-info")[0].innerHTML = format_data(`Country: ${data.country}`, data);	
+				else
+					$("#country-info")[0].innerHTML = '';
 			}
 		}
-		xhr.open("GET", `/cases/country_total/${person.country}/${entry_date}`)
+		xhr.open("GET", `/cases/totals?country=${person.country}&date=${entry_date}`)
 		xhr.send()
+	} else {
+		$("#country-info")[0].innerHTML = '';
 	}
 }
 
 function add_county_info(person, entry_date) {
-	if (person.admin2) {
-		$("#county-info")[0].innerHTML = `<b>County Info</b><br/>${person.admin2}<br/>Confirmed: ${person.confirmed}<br/>Recovered: ${person.recovered}<br/>Dead: ${person.dead}. Active: ${person.active}`;	
+	if (person && person.admin2) {
+		$("#county-info")[0].innerHTML = format_data(`County: ${person.admin2}`, person);	
 	} else {
 		$("#county-info")[0].innerHTML = '';
 	}
 }
 
 function add_province_info(person, entry_date) {
-	if (person.province) {
+	if (person && person.province) {
 		let xhr = new XMLHttpRequest();
 		xhr.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				let parsed_data = JSON.parse(this.responseText);
-				$("#province-info")[0].innerHTML = `<b>State info: ${person.province}</b><br/>Confirmed: ${parsed_data.total_confirmed}<br/>Recovered: ${parsed_data.total_recovered}<br/>Dead: ${parsed_data.total_dead}<br/>Active: ${parsed_data.total_active}`;
+				let data = JSON.parse(this.responseText)[0];
+				if (data)
+					$("#province-info")[0].innerHTML = format_data(`State: ${data.province}`, data);
+				else
+					$("#province-info")[0].innerHTML = '';
 			}
 		}
-		xhr.open("GET", `/cases/province_total/${person.province}/${person.country}/${entry_date}`)
+		xhr.open("GET", `/cases/totals?country=${person.country}&province=${person.province}&date=${entry_date}`)
 		xhr.send()
 	} else {
 		$("#province-info")[0].innerHTML = '';
@@ -127,6 +146,12 @@ function reload_cases() {
 	xhr.onreadystatechange = function() {
 		if (this.readyState == 4 && this.status == 200) {
 			remove_previous_markers();
+
+			let entry_date = $("#date")[0].value;
+			add_country_info(most_recent_person, entry_date);
+			add_province_info(most_recent_person, entry_date);
+			add_county_info(most_recent_person, entry_date);
+			let county_found = false;
 			for (let person of JSON.parse(this.responseText)) {
 				if (person.confirmed > 0 && person.country) {
 					let new_marker = new google.maps.Marker({
@@ -137,17 +162,31 @@ function reload_cases() {
 						title: `[${person.country} ${person.province} ${person.admin2}]: Confirmed: ${person.confirmed}. Recovered: ${person.recovered}. Dead: ${person.dead}. Active: ${person.active}.`,
 						icon: get_icon_url_based_on_severity(person.active)
 					});
+					if (most_recent_person) {
+						if (person.country == most_recent_person.country &&
+							person.province == most_recent_person.province &&
+							person.admin2 == most_recent_person.admin2) {
+								add_county_info(person, entry_date);
+								county_found = true;
+							}
+					}
+					
 					
 					new_marker.addListener('click', function() {
 						let entry_date = $("#date")[0].value;
 						add_country_info(person, entry_date);
 						add_province_info(person, entry_date);
 						add_county_info(person, entry_date);
+						most_recent_person = person;
 					});
 					
 					new_marker.setMap(map);
 					active_markers.push(new_marker);
 				}
+			}
+
+			if (!county_found) {
+				$("#county-info")[0].innerHTML = '';
 			}
 		}
 	};
@@ -156,13 +195,7 @@ function reload_cases() {
 	let ne = bounds.getNorthEast();
 	let sw = bounds.getSouthWest();
 	let entry_date = $("#date")[0].value;
-	let exclude_level = "none";
-	if (map.zoom < 4) {
-		exclude_level = "province";
-	} else if (map.zoom < 8) {
-		exclude_level = "admin2";
-	}
-	let request_content = `?ne_lat=${ne.lat()}&ne_lng=${ne.lng()}&sw_lat=${sw.lat()}&sw_lng=${sw.lng()}&date=${entry_date}&exclude_level=${exclude_level}`;
+	let request_content = `?ne_lat=${ne.lat()}&ne_lng=${ne.lng()}&sw_lat=${sw.lat()}&sw_lng=${sw.lng()}&date=${entry_date}`;
 	xhr.open("GET", "/cases/box" + request_content);
 	xhr.send();
 }

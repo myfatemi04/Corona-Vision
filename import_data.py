@@ -190,7 +190,7 @@ def download_data_for_date(entry_date):
 def data_download():
 	time.sleep(5)
 	
-	add_date_range(date_1=date(2020, 3, 10), date_2=date.today())
+	add_date_range(date_1=date(2020, 1, 22), date_2=date.today())
 	
 	while True:
 		status = download_data_for_date(date.today())
