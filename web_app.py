@@ -2,6 +2,7 @@ from flask import *
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import time
+import datetime
 from threading import Thread
 import datetime
 import json
@@ -13,6 +14,12 @@ app = Flask(__name__)
 app.secret_key = os.environ['APP_SECRET_KEY']
 app.static_folder = "./static"
 
+sql_uri = os.environ['DATABASE_URL']
+app.config['SQLALCHEMY_DATABASE_URI'] = sql_uri
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db.init_app(app)
+
 @app.route("/")
 def main_page():
 	return render_template("main_page.html")
@@ -20,6 +27,7 @@ def main_page():
 @app.route("/findnearme")
 def find_cases_frontend():
 	dates = []
+	session = db.session()
 	for tup in session.query(Datapoint.entry_date).distinct():
 		dates.append(tup[0])
 	
@@ -32,9 +40,7 @@ def get_bounding_box():
 	sw_lng = float(request.args.get("sw_lng") or -180)
 	return sw_lat, sw_lng, ne_lat, ne_lng
 
-def get_entry_date():
-	entry_date_str = request.args.get("date")
-
+def parse_date(entry_date_str):
 	try:
 		year, month, day = entry_date_str.split("-")
 		entry_date = datetime.date(int(year), int(month), int(day))
@@ -53,11 +59,13 @@ def get_country_province_admin2():
 @app.route("/cases/box")
 def find_cases_backend():
 	cases = find_cases_by_location(*get_bounding_box())
-	entry_date = get_entry_date()
+	entry_date = parse_date(request.args.get("date"))
 
 	if entry_date:
 		cases = cases.filter_by(
-			entry_date=entry_date
+			entry_date=entry_date,
+			is_primary=True,
+			location_labelled=True
 		)
 
 		return json_list(cases.all())
@@ -67,7 +75,7 @@ def find_cases_backend():
 @app.route("/cases/totals/world")
 def find_total_world_cases():
 	cases = find_cases_by_location(*get_bounding_box())
-	entry_date = get_entry_date()
+	entry_date = parse_date(request.args.get("date"))
 	if entry_date:
 		cases = cases.filter_by(
 			entry_date=entry_date,
@@ -80,7 +88,7 @@ def find_total_world_cases():
 
 @app.route("/cases/totals")
 def find_total_nation_cases():
-	entry_date = get_entry_date()
+	entry_date = parse_date(request.args.get("date"))
 	if entry_date:
 		nation = get_country_province_admin2()
 		cases = find_cases_by_nation(**nation)
@@ -91,6 +99,21 @@ def find_total_nation_cases():
 		return json_list(cases.all())
 	else:
 		return "Please specify a date"
+
+@app.route("/cases/first_days")
+def get_first_days():
+	session = db.session()
+	results = session.query(Datapoint).filter_by(is_first_day=True).all()
+	return json_list(results)
+
+@app.route("/cases/totals_sequence")
+def find_total_nation_cases_sequences():
+	nation = get_country_province_admin2()
+
+	session = db.session()
+	results = session.query(Datapoint).filter_by(**nation).order_by(Datapoint.entry_date).all()
+
+	return json_list(results)
 
 @app.route("/visual")
 def visual_data_page():

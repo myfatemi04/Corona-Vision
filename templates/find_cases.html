@@ -4,15 +4,15 @@
 		<title>Find Nearby Coronavirus Cases</title>
 		{% include 'styles.html' %}
 		<script src="/static/corona_map.js" type="text/javascript"></script>
+		<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
 		<script async defer
 		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAMm-5SUX6ELt2KfUfEF49RpvgRIj8J6w4&callback=init_coronamap&libraries=places">
 		</script>
 	</head>
-	<body class="blue-gradient" onload="init()">
+	<body onload="init()">
 		{% include 'navbar.html' %}
-		<div class="p-2 good-width">
+		<div class="container-fluid">
 			{% include "head.html" %}
-			<h1 class="text-center display-1">Find nearby cases</h1>
 			<div class="box d-flex" style="align-items: center;">
 				<div class="inline-form-item">
 					<label for="location">Location:</label>
@@ -33,36 +33,62 @@
 				<div class="inline-form-item">
 					<button class="btn btn-primary" onclick="find_cases()">Find</button>
 				</div>
-			</div><br/>
-			<div class="box">
-				<noscript>
-					This website requires JavaScript to run.
-				</noscript>
-				<h3>Map of cases</h3>
-				<p>Click on any marker to see more information.</p>
-				<!--
-				<p>
-					Key:<br/>
-					<ul>
-						<li>Blue: &lt; 16 active cases</li>
-						<li>Green: &lt; 256 active cases</li>
-						<li>Yellow: &lt; 4096 active cases</li>
-						<li>Orange: &lt; 65536 active cases</li>
-						<li>Red: &gt; 65536 active cases</li>
-					</ul>
-				</p>
-				-->
-				<a class="small" href="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports">Data source</a>
-				<div class="row">
-					<p class="col" id="country-info"></p>
-					<p class="col" id="province-info"></p>
-					<p class="col" id="county-info"></p>
+			</div>
+			<div class="row">
+				<div class="col-lg-4">
+					<div class="box h-100 text-center">
+						<h3>Graph of cases</h3>
+						<div data-toggle="buttons">
+							<label class="btn btn-primary" for="set-linear">
+								Linear scale
+								<input id="set-linear" type="radio" name="scale-type" value="linear" checked>
+							</label>
+							<label class="btn btn-primary" for="set-logarithmic">
+								Logarithmic scale
+								<input id="set-logarithmic" type="radio" name="scale-type" value="logarithmic">
+							</label>
+						</div>
+						<div data-toggle="buttons">
+							<label class="btn btn-primary" for="set-total">
+								Total
+								<input id="set-total" type="radio" name="graph-type" value="total" checked>
+							</label>
+							<label class="btn btn-primary" for="set-daily-change">
+								Daily change
+								<input id="set-daily-change" type="radio" name="graph-type" value="daily-change">
+							</label>
+						</div>
+						<canvas id="world-total"></canvas><br/>
+						<canvas id="country-total"></canvas><br/>
+						<canvas id="province-total"></canvas><br/>
+						<canvas id="admin2-total"></canvas>
+					</div>
 				</div>
-				<div id="map" class="map display-none">
-					
-				</div>
-				<div id="map-message" style="font-weight: 100;">
-					Please input your location above.
+				<div class="col-lg-8">
+					<div class="box map-box h-100">
+						<div class="mb-top">
+							<noscript>
+								This website requires JavaScript to run.
+							</noscript>
+							<h3>Map of cases</h3>
+							<p>Click on any marker to see more information.</p>
+							<a class="small" href="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports">Data source</a>
+						</div>
+						<div class="mb-mid">
+							<div class="row location-info">
+								<p class="col" id="world-info"></p>
+								<p class="col" id="country-info"></p>
+								<p class="col" id="province-info"></p>
+								<p class="col" id="county-info"></p>
+							</div>
+						</div>
+						<div class="mb-bot">
+							<div id="map" class="map display-none"></div>
+							<div id="map-message" style="font-weight: 100;">
+								Please input your location above.
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

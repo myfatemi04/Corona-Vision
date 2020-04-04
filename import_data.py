@@ -1,5 +1,5 @@
 import pandas as pd
-import corona_sql
+from corona_sql import *
 import numpy as np
 from datetime import date, timedelta
 import time
@@ -7,6 +7,7 @@ import os
 import requests
 import web_app
 import io
+import locations
 
 def add_tuple_values(a, b):
 	return tuple(sum(x) for x in zip(a, b))
@@ -60,11 +61,21 @@ def import_data(csv_text, entry_date):
 	
 	data_points = {}
 	location_data = {}
+	accurate = set()
+	primary = set()
 		
 	for _, row in df.iterrows():
 		country = row[country_col].strip()
 		if "china" in country.lower():
 			country = "China"  # normalizes "Mainland China"
+		if "korea" in country.lower():
+			if "south" in country.lower():
+				country = "South Korea"
+			elif "republic" in country.lower():
+				country = "South Korea"
+			elif "north" in country.lower():
+				country = "North Korea"
+		
 		province = ''
 		admin2 = ''
 		
@@ -75,6 +86,8 @@ def import_data(csv_text, entry_date):
 			if not pd.isnull(row[admin2_col]):
 				admin2 = row[admin2_col].strip()
 		
+		primary.add((country, province, admin2))
+		
 		confirmed = row[confirmed_col]
 		dead = row[death_col]
 		recovered = row[recovered_col]
@@ -84,7 +97,11 @@ def import_data(csv_text, entry_date):
 		if np.isnan(recovered): recovered = 0
 
 		active = confirmed - dead - recovered
-		
+
+		admin2_region = country, province, admin2
+		province_region = country, province, ''
+		country_region = country, '', ''
+
 		# save the location data if we can
 		if lat_col in df.columns and lng_col in df.columns:
 			lat, lng = row[lat_col], row[lng_col]
@@ -92,7 +109,26 @@ def import_data(csv_text, entry_date):
 			if np.isnan(lng): lng = 0
 
 			if not (lat == 0 and lng == 0):
-				location_data[country, province, admin2] = lat, lng
+				location_data[admin2_region] = lat, lng
+				accurate.add(admin2_region)
+		
+		province_location = locations.get_location(country, province)
+		if province_location:
+			if province_region not in location_data:
+				location_data[province_region] = province_location
+				accurate.add(province_region)
+			if admin2_region not in location_data:
+				location_data[admin2_region] = province_location  # estimate to province location
+			
+		country_location = locations.get_location(country)
+		if country_location:
+			if country_region not in location_data:
+				location_data[country_region] = country_location
+				accurate.add(country_region)
+			if province_region not in location_data:
+				location_data[province_region] = country_location
+			if admin2_region not in location_data:
+				location_data[admin2_region] = country_location
 		
 		data_points = add_to_dict(data_points, country, province, admin2, (confirmed, dead, recovered, active))
 
@@ -100,20 +136,22 @@ def import_data(csv_text, entry_date):
 	print("\tUploading...")
 
 	with web_app.app.app_context():
+		session = db.session()
 		for region, stats in data_points.items():
 			country, province, admin2 = region
 			confirmed, dead, recovered, active = stats
-			
+			is_primary = region in primary
+
 			active = confirmed - recovered - dead
 
 			lat, lng = (0, 0)
-			location_labelled = False
+			location_labelled = region in location_data
+			location_accurate = region in accurate
 
 			if region in location_data:
 				lat, lng = location_data[region]
-				location_labelled = True
 
-			yesterday_data = corona_sql.session.query(corona_sql.Datapoint).filter_by(
+			yesterday_data = session.query(Datapoint).filter_by(
 				entry_date=yesterday,
 				
 				admin2=admin2,
@@ -133,7 +171,7 @@ def import_data(csv_text, entry_date):
 				yesterday_dead = datapoint.dead
 				yesterday_active = datapoint.active
 
-			new_data = corona_sql.Datapoint(
+			new_data = Datapoint(
 				entry_date=entry_date,
 				
 				admin2=admin2,
@@ -144,7 +182,9 @@ def import_data(csv_text, entry_date):
 				longitude=lng,
 
 				location_labelled=location_labelled,
+				location_accurate=location_accurate,
 				is_first_day=is_first_day,
+				is_primary=is_primary,
 				
 				confirmed=confirmed,
 				dead=dead,
@@ -157,9 +197,9 @@ def import_data(csv_text, entry_date):
 				dactive=active-yesterday_active
 			)
 
-			corona_sql.session.add(new_data)
+			session.add(new_data)
 		
-		corona_sql.session.commit()
+		session.commit()
 		
 		print(f"\tImported data for date {entry_date}")
 
@@ -167,7 +207,8 @@ def download_data_for_date(entry_date):
 	date_formatted = entry_date.strftime("%m-%d-%Y")
 	
 	with web_app.app.app_context():
-		existing_data = corona_sql.session.query(corona_sql.Datapoint).filter_by(entry_date=entry_date).all()
+		session = db.session()
+		existing_data = session.query(Datapoint).filter_by(entry_date=entry_date).all()
 		if existing_data:
 			print("\tEntries already made")
 			return 'exists'
@@ -188,7 +229,7 @@ def download_data_for_date(entry_date):
 
 # daily reports link: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports
 def data_download():
-	time.sleep(5)
+	time.sleep(2)
 	
 	add_date_range(date_1=date(2020, 1, 22), date_2=date.today())
 	
@@ -207,5 +248,28 @@ def add_date_range(date_1, date_2):
 			return
 		current_date += next_date
 
+def fix_locations():
+	with web_app.app.app_context():
+		session = db.session()
+		state_list = session.query(Datapoint.country, Datapoint.province).distinct()
+		for country, province in state_list:
+			location = locations.get_location(country, province)
+			if location:
+				latitude, longitude = location
+				session.query(Datapoint).filter(
+					Datapoint.country==country,
+					Datapoint.province==province,
+					Datapoint.location_labelled==False
+				).update(
+					dict(
+						location_labelled=True,
+						latitude=latitude,
+						longitude=longitude
+					)
+				)
+
+				print("Updated ", country, province, " to ", latitude, longitude)
+		session.commit()
+
 if __name__ == "__main__":
-	data_download()
+	pass # fix_locations()

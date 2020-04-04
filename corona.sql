@@ -9,11 +9,13 @@ create table datapoints (
 	province varchar(320),
 	country varchar(320),
 	
-	latitude float(10, 6) not null,
-	longitude float(10, 6) not null,
+	latitude float(10, 6) not null default 0,
+	longitude float(10, 6) not null default 0,
 
 	location_labelled boolean,
+	location_accurate boolean,
 	is_first_day boolean,
+	is_primary boolean,
 	
 	confirmed int,
 	recovered int,
