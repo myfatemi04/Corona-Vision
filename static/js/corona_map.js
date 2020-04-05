@@ -137,22 +137,22 @@ function init_coronamap() {
 }
 
 function init() {
-	init_autocomplete();
-	for (let chart_level of ['world', 'country', 'province', 'admin2']) {
-		charts[chart_level] = new_chart(chart_level + "-total");
-	}
-	$("input[name=scale-type]").change(
+	init_selectors(update_info);
+
+	chart = new_chart("chart");
+	
+	$("select[name=scale-type]").change(
 		function() {
 			if (this.value == 'logarithmic' || this.value == 'linear') {
 				set_scale_type(this.value);
-				update_charts();
+				show_chart(country, province, admin2, generate_name(country, province, admin2), chart);
 			}
 		}
 	)
-	$("input[name=chart-type]").change(
+	$("select[name=chart-type]").change(
 		function() {
 			chart_type = this.value;
-			update_charts();
+			show_chart(country, province, admin2, generate_name(country, province, admin2), chart);
 		}
 	)
 	$("select[name=map-type]").change(
@@ -167,27 +167,19 @@ function init() {
 			reload_cases();
 		}
 	)
-	update_charts();
+	
+	show_chart('', '', '', 'World', chart);
 }
 
-let charts = {
-	world: null,
-	country: null,
-	province: null,
-	admin2: null
-}
+let chart = null;
 
 function set_scale_type(scale_type) {
-	for (let chart_level in charts) {
-		let chart = charts[chart_level];
-		chart.options.scales.yAxes[0].type = scale_type;
-		chart.update();
-	}
+	chart.options.scales.yAxes[0].type = scale_type;
+	chart.update();
 }
 
 function init_autocomplete() {
-	let map_options = {};
-	location_autocomplete = new google.maps.places.Autocomplete($("#location")[0], map_options);
+	location_autocomplete = new google.maps.places.Autocomplete($("#location")[0], {});
 }
 
 function show_location(position) {
@@ -220,14 +212,12 @@ function find_cases() {
 
 function format_data(label, data) {
 	let formatted = `
-	<div class="font-weight-bold" style="font-size: 1.5rem;">
-		<span>${label}</span>
-		<hr class="custom-hr"/>
+	<div class="font-weight-bold" style="font-size: 1.5rem; background-color: #212121;">
+		<span style="color: #f5f5f5;">${label}</span><br/>
 		<span style="color: ${circle_colors.confirmed}">${data.confirmed} (+${data.dconfirmed}) Confirmed</span><br/>
 		<span style="color: ${circle_colors.active}">${data.active} (+${data.dactive}) Active</span><br/>
 		<span style="color: ${circle_colors.dead}">${data.dead} (+${data.ddead}) Dead</span><br/>
 		<span style="color: ${circle_colors.recovered}">${data.recovered} (+${data.drecovered}) Recovered</span><br/>
-		<br/>
 	</div>
 	`;
 
@@ -240,7 +230,6 @@ function add_world_info(person, entry_date) {
 		if (this.readyState == 4 && this.status == 200) {
 			let data = JSON.parse(this.responseText)[0];
 			if (data) {
-				$("#world-info")[0].innerHTML = format_data(`World: ${data.country}`, data);	
 				zoomins.confirmed = data.confirmed/data.confirmed;
 				zoomins.active = data.confirmed/data.active;
 				zoomins.dead = data.confirmed/data.dead;
@@ -250,7 +239,6 @@ function add_world_info(person, entry_date) {
 				zoomins.ddead = data.confirmed/data.ddead;
 				zoomins.drecovered = data.confirmed/data.drecovered;
 			} else {
-				$("#world-info")[0].innerHTML = '';
 			}
 		}
 	}
@@ -258,42 +246,22 @@ function add_world_info(person, entry_date) {
 	xhr.send()
 }
 
-function add_country_info(person, entry_date) {
-	if (person && person.country) {
-		let xhr = new XMLHttpRequest();
-		xhr.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				let data = JSON.parse(this.responseText)[0];
-				if (data)
-					$("#country-info")[0].innerHTML = format_data(`Selected country: ${data.country}`, data);	
-				else
-					$("#country-info")[0].innerHTML = '';
+function update_info() {
+	let entry_date = $("#date")[0].value;
+	let xhr = new XMLHttpRequest();
+	xhr.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			let data = JSON.parse(this.responseText)[0];
+			if (data) {
+				$("#stats-info")[0].innerHTML = format_data(generate_name(country, province, admin2), data);
+			} else {
+				$("#stats-info")[0].innerHTML = '';
 			}
 		}
-		xhr.open("GET", `/cases/totals?country=${person.country}&date=${entry_date}`)
-		xhr.send()
-	} else {
-		$("#country-info")[0].innerHTML = '';
 	}
-}
-
-function add_county_info(person, entry_date) {
-	if (person && person.admin2) {
-		let xhr = new XMLHttpRequest();
-		xhr.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				let data = JSON.parse(this.responseText)[0];
-				if (data)
-					$("#county-info")[0].innerHTML = format_data(`Selected county: ${person.admin2}`, person);	
-				else
-					$("#county-info")[0].innerHTML = '';
-			}
-		}
-		xhr.open("GET", `/cases/totals?country=${person.country}&province=${person.province}&admin2=${person.admin2}&date=${entry_date}`)
-		xhr.send()
-	} else {
-		$("#county-info")[0].innerHTML = '';
-	}
+	show_chart(country, province, admin2, generate_name(country, province, admin2), chart);
+	xhr.open("GET", `/cases/totals?country=${country}&province=${province}&admin2=${admin2}&date=${entry_date}`)
+	xhr.send()
 }
 
 function add_province_info(person, entry_date) {
@@ -317,35 +285,7 @@ function add_province_info(person, entry_date) {
 
 function update_most_recent(entry_date) {
 	add_world_info(most_recent_person, entry_date);
-	add_country_info(most_recent_person, entry_date);
-	add_province_info(most_recent_person, entry_date);
-	add_county_info(most_recent_person, entry_date);
-}
-function update_charts() {
-	show_chart('', '', '', 'World', charts.world);
-	if (most_recent_person) {
-		if (most_recent_person.country) {
-			$("#ctc")[0].style.display = "block";
-			show_chart(most_recent_person.country, '', '', most_recent_person.country, charts.country);
-		} else {
-			reset_chart(charts.country);
-			$("#ctc")[0].style.display = "none";
-		}
-		if (most_recent_person.province) {
-			$("#ptc")[0].style.display = "block";
-			show_chart(most_recent_person.country, most_recent_person.province, '', most_recent_person.province, charts.province);
-		} else {
-			reset_chart(charts.province);
-			$("#ptc")[0].style.display = "none";
-		}
-		if (most_recent_person.admin2) {
-			$("#atc")[0].style.display = "block";
-			show_chart(most_recent_person.country, most_recent_person.province, most_recent_person.admin2, most_recent_person.admin2, charts.admin2);
-		} else {
-			reset_chart(charts.admin2);
-			$("#atc")[0].style.display = "none";
-		}
-	}
+	update_info();
 }
 
 function generate_name(country, province, admin2) {
@@ -402,7 +342,6 @@ function reload_cases() {
 						infowindow.setPosition(ev.latLng);
 						infowindow.open(map);
 						update_most_recent(entry_date);
-						update_charts();
 					});
 
 					active_markers.push(new_marker);

@@ -48,7 +48,10 @@ function new_chart(canvas_id) {
 			title: {
 				display: true,
 				text: "Cases",
-				fontColor: "#f5f5f5"
+				fontColor: "#f5f5f5",
+				fontSize: 30,
+				fontStyle: "",
+				fontFamily: "Lato"
 			},
 			legend: {
 				display: true,

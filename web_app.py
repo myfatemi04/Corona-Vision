@@ -120,14 +120,32 @@ def find_total_nation_cases_sequences():
 
 	return json_list(results)
 
+def get_(key, default=True):
+	return default if key not in request.args else request.args.get(key)
+
 @app.route("/cases/date")
 def find_all_for_date():
 	entry_date = parse_date(request.args.get("date"))
 
-	session = db.session()
-	results = session.query(Datapoint).filter_by(entry_date=entry_date).all()
+	location_labelled = get_("location_labelled", default=1)
+	is_primary = get_("is_primary", default=1)
+	is_first_day = get_("is_first_day", default=0)
 
-	return json_list(results)
+	country = get_("country", default="all")
+	province = get_("province", default="all")
+	admin2 = get_("admin2", default="all")
+
+	session = db.session()
+	results = session.query(Datapoint).filter_by(
+		entry_date=entry_date,
+		location_labelled=location_labelled,
+		is_primary=is_primary,
+		is_first_day=is_first_day
+	)
+	
+	results = filter_by_nation(results, country, province, admin2)
+
+	return json_list(results.all())
 
 @app.route("/list/countries")
 def list_all_countries():

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Find Nearby Coronavirus Cases</title>
+		{% include 'styles.html' %}
+		<!-- <link rel="stylesheet" href="/static/css/leaflet.css">
+		<script src="/static/js/leaflet.js" type="text/javascript"></script> -->
+
+		<script src="/static/js/corona_chart.js" type="text/javascript"></script>
+		<script src="/static/js/corona_map.js" type="text/javascript"></script>
+		<script src="/static/js/chart.min.js" type="text/javascript"></script>
+		<script src="/static/js/selector.js" type="text/javascript"></script>
+		<script async defer
+			src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAMm-5SUX6ELt2KfUfEF49RpvgRIj8J6w4&callback=init_coronamap&libraries=places">
+		</script>
+		<script>
+			function download_canvas(canvas_id) {
+				let url = $("#" + canvas_id)[0].toDataURL("image/png;base64");
+				let filename = 'COVID19_Chart.png';
+
+				$("#download-chart")[0].href = url;
+				$("#download-chart")[0].setAttribute("download", filename);
+				$("#download-chart")[0].click();
+			}
+		</script>
+	</head>
+	<body onload="init()">
+		{% include 'navbar.html' %}
+		<div class="container-fluid">
+			<!-- Map and charts -->
+			<div class="container-fluid box dashboard-container py-2">
+				<!-- Map -->
+				<div class="map-box scroll dash-4">
+					<h3>Map
+						<select name="map-type" class="custom-input-color form-control my-2">
+							<option value="total">Total</option>
+							<option value="daily-change">Change since yesterday</option>
+						</select>
+						<select name="map-display" class="custom-input-color form-control my-2">
+							<option value="active">Active cases</option>
+							<option value="confirmed">Confirmed cases</option>
+							<option value="recovered">Recovered cases</option>
+							<option value="dead">Dead cases</option>
+						</select>
+						<select class="custom-input-color form-control" id="date" onchange="reload_cases();">
+							{% for date in sorted_dates %}
+								<option value="{{date}}">Date: {{date}}</option>
+							{% endfor %}
+						</select>
+					</h3>
+					<div class="mb-top">
+						<noscript>
+							This website requires JavaScript to run.
+						</noscript>
+						<a class="small" href="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports">
+							Source
+						</a>
+					</div>
+					<div class="mb-bot">
+						<div id="map" class="map"></div>
+					</div><br/>
+				</div>
+				<!-- stats -->
+				<div class="container-fluid dash-2 scroll">
+					<h3>Stats</h3>
+					<div class="location-info d-flex flex-column">
+						<select id="country-selector" class="custom-input-color inline-form-item mb-2">
+							<option value="">All countries</option>
+						</select>
+						<select id="province-selector" class="custom-input-color inline-form-item mb-2" disabled>
+							<option value="">All provinces/states</option>
+						</select>
+						<select id="admin2-selector" class="custom-input-color inline-form-item mb-2" disabled>
+							<option value="">All counties</option>
+						</select>
+						<div id="stats-info" class="mx-2"></div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Charts -->
+			<div class="box w-50">
+				<h3 class="text-center">Charts</h3>
+				<a id="download-chart" style="display: none;"></a>
+				<div>
+					<select name="scale-type" class="custom-input-color form-control my-2">
+						<option value="linear">Linear scale</option>
+						<option value="logarithmic">Logarithmic scale</option>
+					</select>
+					<select name="chart-type" class="custom-input-color form-control my-2">
+						<option value="total">Total</option>
+						<option value="daily-change">Daily change</option>
+					</select>
+				</div>
+				<div>
+					<canvas id="world-total"></canvas><br/>
+					<button class="btn custom-button-color" onclick="download_canvas('world-total')">Download world chart</button>
+				</div>
+				<div id="ctc" style="display: none;">
+					<canvas id="country-total"></canvas><br/>
+					<button class="btn custom-button-color" onclick="download_canvas('country-total')">Download country-based chart</button>
+				</div>
+				<div id="ptc" style="display: none;">
+					<canvas id="province-total"></canvas><br/>
+					<button class="btn custom-button-color" onclick="download_canvas('province-total')">Download state-based chart</button>
+				</div>
+				<div id="atc" style="display: none;">
+					<canvas id="admin2-total"></canvas><br/>
+					<button class="btn custom-button-color" onclick="download_canvas('admin2-total')">Download county-based chart</button>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

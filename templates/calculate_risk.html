@@ -6,9 +6,7 @@
 	<body>
 		{% include "navbar.html" %}
 		<div class="container p-2">
-			<div class="text-center">
-				<h1 class="display-1">Calculate your risk</h1>
-			</div>
+			<h1 class="text-center">Calculate your risk</h1>
 			{% if "submitted" in request.form %}
 				<div class="container box d-flex flex-column">
 					<span style="font-size: 3rem;">Results</span>
@@ -74,7 +72,7 @@
 								<a class="small" href="https://www.worldometers.info/coronavirus/coronavirus-age-sex-demographics/">Source</a>
 							</div>
 							<div class="col text-left">
-								<input class="custom-input-color" type="number" id="age" name="age" required>
+								<input class="custom-input-color form-control" type="number" id="age" name="age" required>
 							</div>
 						</div>
 						<div class="row my-1">
@@ -109,7 +107,7 @@
 								<a class="small" href="https://www.worldometers.info/coronavirus/#repro">More info</a>
 							</div>
 							<div class="col text-left">
-								<input class="custom-input-color" type="number" id="contact" name="contact">
+								<input class="custom-input-color form-control" type="number" id="contact" name="contact">
 							</div>
 						</div>
 						<div class="row pt-2">

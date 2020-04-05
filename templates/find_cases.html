@@ -9,44 +9,40 @@
 		<script src="/static/js/corona_chart.js" type="text/javascript"></script>
 		<script src="/static/js/corona_map.js" type="text/javascript"></script>
 		<script src="/static/js/chart.min.js" type="text/javascript"></script>
+		<script src="/static/js/selector.js" type="text/javascript"></script>
 		<script async defer
 			src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAMm-5SUX6ELt2KfUfEF49RpvgRIj8J6w4&callback=init_coronamap&libraries=places">
+		</script>
+		<script>
+			function download_canvas(canvas_id) {
+				let url = $("#" + canvas_id)[0].toDataURL("image/png;base64");
+				let filename = 'COVID19_Chart.png';
+
+				$("#download-chart")[0].href = url;
+				$("#download-chart")[0].setAttribute("download", filename);
+				$("#download-chart")[0].click();
+			}
 		</script>
 	</head>
 	<body onload="init()">
 		{% include 'navbar.html' %}
 		<div class="container-fluid">
-			<!-- location selection -->
-			<div class="container-fluid box d-flex" style="align-items: center;">
-				<div class="inline-form-item">
-					<label for="location">Location:</label>
-				</div>
-				<div class="inline-form-item">
-					<input class='custom-input-color form-control' type="text" name="location" id="location">
-				</div>
-				<div class="inline-form-item">
-					<label for="date">Date:</label>
-				</div>
-				<div class="inline-form-item">
-					<select class="custom-input-color form-control" id="date" onchange="reload_cases();">
-						{% for date in sorted_dates %}
-							<option value="{{date}}">{{date}}</option>
-						{% endfor %}
-					</select>
-				</div>
-				<div class="inline-form-item">
-					<button class="btn custom-button-color" onclick="find_cases()">Find</button>
-				</div>
-			</div>
-			
 			<!-- Map and charts -->
 			<div class="container-fluid box dashboard-container py-2">
 				<!-- Map -->
 				<div class="map-box scroll dash-4">
-					<h3>Map of
+					<h3>Map
+						<a style="font-size: 0.5rem;" href="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports">
+							Source
+						</a>
+					</h3>
+					<div class="d-flex flex-column">
+						<noscript>
+							This website requires JavaScript to run.
+						</noscript>
 						<select name="map-type" class="custom-input-color form-control my-2">
 							<option value="total">Total</option>
-							<option value="daily-change">Daily change</option>
+							<option value="daily-change">Change since yesterday</option>
 						</select>
 						<select name="map-display" class="custom-input-color form-control my-2">
 							<option value="active">Active cases</option>
@@ -54,65 +50,43 @@
 							<option value="recovered">Recovered cases</option>
 							<option value="dead">Dead cases</option>
 						</select>
-					</h3>
-					<div class="mb-top">
-						<noscript>
-							This website requires JavaScript to run.
-						</noscript>
-						<a class="small" href="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports">
-							Source
-						</a>
+						<select class="custom-input-color form-control my-2" id="date" onchange="reload_cases();">
+							{% for date in sorted_dates %}
+								<option value="{{date}}">Date: {{date}}</option>
+							{% endfor %}
+						</select>
 					</div>
 					<div class="mb-bot">
-						<div id="map" class="map"></div>
+						<div id="map" class="map my-2"></div>
 					</div><br/>
 				</div>
 				<!-- stats -->
 				<div class="container-fluid dash-2 scroll">
-					<h3>Stats</h3>
-					<div class="location-info d-flex flex-column">
-						<div id="world-info" class="mr-2" style="flex: 1;"></div>
-						<div id="country-info" class="mr-2" style="flex: 1;"></div>
-						<div id="province-info" class="mr-2" style="flex: 1;"></div>
-						<div id="county-info"></div>
+					<div class="d-flex flex-column">
+						<h3>Stats</h3>
+						{% include "selectors.html" %}
+						<div id="stats-info"></div>
 					</div>
-				</div>
-			</div>
-
-			<!-- Charts -->
-			<div class="box text-center">
-				<h3>Charts</h3>
-				<div>
-					<div data-toggle="buttons">
-						<label class="btn custom-button-color" for="set-linear">
-							Linear scale
-							<input id="set-linear" type="radio" name="scale-type" value="linear" checked>
-						</label>
-						<label class="btn custom-button-color" for="set-logarithmic">
-							Logarithmic scale
-							<input id="set-logarithmic" type="radio" name="scale-type" value="logarithmic">
-						</label>
+					<hr class="custom-hr"/>
+					<div class="d-flex flex-column">
+						<h3>Charts</h3>
+						<a id="download-chart" style="display: none;"></a>
+						<div>
+							<select name="scale-type" class="custom-input-color form-control my-2">
+								<option value="linear">Scale: Linear</option>
+								<option value="logarithmic">Scale: Logarithmic</option>
+							</select>
+							<select name="chart-type" class="custom-input-color form-control my-2">
+								<option value="total">Displaying: Total</option>
+								<option value="daily-change">Displaying: Daily change</option>
+							</select>
+						</div>
+						<div>
+							<canvas id="chart"></canvas><br/>
+							<button class="btn custom-button-color" onclick="download_canvas('chart')">Download world chart</button>
+						</div>
 					</div>
-					<div data-toggle="buttons">
-						<label class="btn custom-button-color" for="set-total">
-							Total
-							<input id="set-total" type="radio" name="chart-type" value="total" checked>
-						</label>
-						<label class="btn custom-button-color" for="set-daily-change">
-							Daily change
-							<input id="set-daily-change" type="radio" name="chart-type" value="daily-change">
-						</label>
-					</div>
-				</div>
-				<canvas id="world-total"></canvas><br/>
-				<div id="ctc" style="display: none;">
-					<canvas id="country-total"></canvas><br/>
-				</div>
-				<div id="ptc" style="display: none;">
-					<canvas id="province-total"></canvas><br/>
-				</div>
-				<div id="atc" style="display: none;">
-					<canvas id="admin2-total"></canvas><br/>
+					
 				</div>
 			</div>
 		</div>
