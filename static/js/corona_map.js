@@ -173,7 +173,6 @@ function remove_previous_markers() {
 
 function find_cases() {
 	$("#map")[0].setAttribute("class", "map display-block");
-	$("#map-message")[0].setAttribute("class", "display-none");
 	
 	if (typeof(location_autocomplete.getPlace()) !== 'undefined') {
 		let loc = location_autocomplete.getPlace().geometry.location;
@@ -198,11 +197,11 @@ function get_icon_url_based_on_severity(num_cases) {
 }
 
 function format_data(label, data) {
-	let formatted = `<b>${label}</b><br/>`
-	+ `Confirmed: ${data.confirmed} (+${data.dconfirmed})<br/>`
-	+ `Recovered: ${data.recovered} (+${data.drecovered})<br/>`
-	+ `Dead: ${data.dead} (+${data.ddead})<br/>`
-	+ `Active: ${data.active} (+${data.dactive})<br/>`;
+	let formatted = `<b>${label}</b><hr class="custom-hr"/>`
+	+ `<b>Confirmed:</b> ${data.confirmed} (+${data.dconfirmed})<br/>`
+	+ `<b>Recovered:</b> ${data.recovered} (+${data.drecovered})<br/>`
+	+ `<b>Dead:</b> ${data.dead} (+${data.ddead})<br/>`
+	+ `<b>Active:</b> ${data.active} (+${data.dactive})<br/>`;
 
 	return formatted;
 }

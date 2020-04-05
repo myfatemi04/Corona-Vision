@@ -7,3 +7,28 @@
 	display: flex;
 	flex-direction: column;
 }
+
+@media(min-width: 992px) {
+	.dashboard-container {
+		display: flex;
+	}
+	.dash-6 {
+		flex: 6;
+	}
+	.dash-4 {
+		flex: 4;
+	}
+	.dash-2 {
+		flex: 2;
+	}
+	.scroll {
+		overflow-y: auto;
+	}
+}
+
+@media(max-width: 992px) {
+	.dashboard-container {
+		display: flex;
+		flex-direction: column;
+	}
+}

@@ -6,33 +6,54 @@
 	<body>
 		{% include "navbar.html" %}
 		<div class="container p-2">
-			<h1 class="display-1 text-center">The outcome of COVID-19 is in <b>our</b> hands.</h1>
+			<h1 class="text-center" style="margin-top: 2rem; margin-bottom: 2rem;">The outcome of COVID-19 is in <b>our</b> hands.</h1>
 			<div class="text-left box">
 				<div class="px-2">
 					<div style="font-size: 2rem; font-weight: 200;">
 						Here are some things you can do:
-						<ol>
-							<li>Stay 6 feet away from others</li>
-						</ol>
 					</div>
-					
-					<a href="https://bgr.com/2020/03/13/flatten-the-curve-what-does-it-mean-coronavirus-covid-19/">
+					<div>
+						<span style="font-size: 1.5rem;">
+							Leave a 6-foot space between yourself and others.<br/>
+						</span>
+						<p>
+							Six feet is like...<br/>
+							<ul>
+								<li>
+									A refrigerator on its side
+								</li>
+								<li>
+									The height of your tall friend
+								</li>
+								<li>
+									2-3 strides
+								</li>
+							</ul>
+						</p>
+						<span style="font-size: 1.5rem;">
+							Wash your hands frequently.<br/>
+						</span>
+						<p>
+							Soap can break down the protective layer of viruses and wash them away. The process takes 20 seconds.<br/>
+							Twenty seconds is like...
+							<ul>
+								<li>Singing "Happy Birthday" twice</li>
+								<li>Singing the chorus to "Lose Yourself" by Eminem twice</li>
+								<li>Singing the chorus to "Take on Me" by A-Ha</li>
+								<li>Singing the chorus to "Stayin' Alive" by Bee Gees</li>
+							</ul>
+						</p>
+					</div>
+					<!-- <a href="https://bgr.com/2020/03/13/flatten-the-curve-what-does-it-mean-coronavirus-covid-19/">
 						Source: BGR
-					</a>
+					</a> -->
 				</div>
 				
-				<img class="w-50 border mx-auto" src="/static/img/Flatten-The-Curve.png"><br/>
-				
-				
-				
-				
-				
-				
-				
+				<!-- <img class="w-50 border mx-auto" src="/static/img/Flatten-The-Curve.png"><br/> -->
 				
 			</div>
 			
-			<div class="d-flex flex-column border rounded">
+			<div class="container">
 				{% include "do_the_five.html" %}
 			</div>
 		</div>

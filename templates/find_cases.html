@@ -35,10 +35,11 @@
 					<button class="btn custom-button-color" onclick="find_cases()">Find</button>
 				</div>
 			</div>
-
-			<div class="container-fluid box d-flex" style="height: 35rem;">
+			
+			<!-- Map and charts -->
+			<div class="container-fluid box dashboard-container" style="height: 25rem;">
 				<!-- Map -->
-				<div class="box map-box scroll" style="flex: 6;">
+				<div class="box map-box scroll dash-6">
 					<div class="mb-top">
 						<noscript>
 							This website requires JavaScript to run.
@@ -53,7 +54,7 @@
 					</div>
 				</div>
 				<!-- Charts -->
-				<div class="box text-center scroll" style="flex: 4;">
+				<div class="box text-center scroll dash-6">
 					<h3>Charts</h3>
 					<div>
 						<div data-toggle="buttons">
@@ -82,14 +83,15 @@
 					<canvas id="province-total"></canvas><br/>
 					<canvas id="admin2-total"></canvas>
 				</div>
-				<div class="box scroll" style="flex: 2;">
-					<h3>Stats</h3>
-					<div class="location-info">
-						<p id="world-info"></p>
-						<p id="country-info"></p>
-						<p id="province-info"></p>
-						<p id="county-info"></p>
-					</div>
+			</div>
+			<!-- stats -->
+			<div class="container-fluid box">
+				<h3>Stats</h3>
+				<div class="location-info d-flex">
+					<div id="world-info" class="mr-2" style="flex: 1;"></div>
+					<div id="country-info" class="mr-2" style="flex: 1;"></div>
+					<div id="province-info" class="mr-2" style="flex: 1;"></div>
+					<div id="county-info"></div>
 				</div>
 			</div>
 		</div>
