@@ -58,7 +58,7 @@ def get_country_code(country_name):
         return country_name
     else:
         return NOT_FOUND
-        
+
 def get_state_code(country_code, state_name):
     if country_code not in state_codes:
         return NOT_FOUND
@@ -80,4 +80,3 @@ def get_state_name(country_code, state_code):
             return state_code
     
     return None
-

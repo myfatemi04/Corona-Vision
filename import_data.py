@@ -76,6 +76,11 @@ def import_data(csv_text, entry_date):
 			elif "north" in country.lower():
 				country = "North Korea"
 		
+		if country.lower() == "uk":
+			country = "United Kingdom"
+		elif country.lower() == "us":
+			country = "United States"
+		
 		province = ''
 		admin2 = ''
 		
@@ -92,6 +97,8 @@ def import_data(csv_text, entry_date):
 				county, state_code = province[:comma_index], province[comma_index + 2:]
 				admin2 = county
 				province = locations.get_state_name("US", state_code) or state_code
+				if province == 'D.C.':
+					province = "District of Columbia"
 		
 		primary.add((country, province, admin2))
 		
