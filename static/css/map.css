@@ -8,7 +8,7 @@
 	flex-direction: column;
 }
 
-@media(min-width: 992px) {
+@media(min-width: 576px) {
 	.dashboard-container {
 		display: flex;
 	}
@@ -24,10 +24,23 @@
 	.scroll {
 		overflow-y: auto;
 	}
+	.chart-box-row {
+		display: flex;
+	}
 }
 
-@media(max-width: 992px) {
+.chart-box-col {
+	display: flex;
+	flex-direction: column;
+}
+
+@media(max-width: 576px) {
 	.dashboard-container {
+		clear: both;
+		display: flex;
+		flex-direction: column;
+	}
+	.chart-box-row {
 		display: flex;
 		flex-direction: column;
 	}

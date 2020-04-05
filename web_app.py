@@ -14,11 +14,16 @@ app = Flask(__name__)
 app.secret_key = os.environ['APP_SECRET_KEY']
 app.static_folder = "./static"
 
-sql_uri = os.environ['DATABASE_URL']
+sql_uri = "sqlite:///datapoints.db" #os.environ['DATABASE_URL']
 app.config['SQLALCHEMY_DATABASE_URI'] = sql_uri
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
+
+# used to initially create the database
+if not os.path.isfile("datapoints.db"):
+	with app.app_context():
+		db.create_all()
 
 @app.route("/")
 def main_page():

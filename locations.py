@@ -8,12 +8,12 @@ state_names = {}
 country_locations = {}
 country_codes = {}
 
-loc_df = pd.read_csv("country_locations.tsv", sep='\t')
+loc_df = pd.read_csv("location_data/country_locations.tsv", sep='\t')
 for index, row in loc_df.iterrows():
     country_code, lat, lng, country_name = row
     country_locations[country_code] = (lat, lng)
 
-code_df = pd.read_csv("country_codes.csv")
+code_df = pd.read_csv("location_data/country_codes.csv")
 for index, row in code_df.iterrows():
     code = row['Code']
     name = row['Name']
@@ -23,7 +23,7 @@ for index, row in code_df.iterrows():
     state_names[code] = {}
     state_locations[code] = {}
 
-loc_df = pd.read_csv("us_state_locations.tsv", sep='\t')
+loc_df = pd.read_csv("location_data/us_state_locations.tsv", sep='\t')
 for index, row in loc_df.iterrows():
     state_code, lat, lng, state_name = row
     state_locations["US"][state_code] = (lat, lng)
