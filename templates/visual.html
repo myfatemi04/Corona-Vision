@@ -2,24 +2,234 @@
 	<head>
 		<title>About the Coronavirus</title>
 		{% include "styles.html" %}
+		<script src="/static/js/corona_chart.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+		<script type="text/javascript">
+			let main_chart = null;
+
+			let country_list = [];
+			let province_list = {};
+			let admin2_list = {};
+
+			let country = null;
+			let province = null;
+			let admin2 = null;
+
+			let province_head = '<option value="">All provinces/states</option>';
+			let country_head = '<option value="">All countries</option>';
+			let admin2_head = '<option value="">All counties</option>';
+
+			function add_list(elem, head, country_list) {
+				elem.innerHTML = head;
+				for (let country of country_list) {
+					elem.innerHTML += `<option value="${country}">${country}</option>`;
+				}
+			}
+
+			function init() {
+				main_chart = new_chart("main-canvas");
+
+				$.getJSON(
+					"/list/countries",
+					{},
+					function(data) {
+						add_list($("#country-selector")[0], country_head, data);
+						country_list = data;
+					}
+				)
+
+				$("#country-selector").change(
+					function() {
+						country = this.value;
+						province = null;
+						admin2 = null;
+
+						update_chart_location();
+
+						if (!this.value) {
+							$("#province-selector")[0].disabled = true;
+							$("#province-selector")[0].innerHTML = province_head;
+							$("#admin2-selector")[0].disabled = true;
+							$("#admin2-selector")[0].innerHTML = admin2_head;
+						} else {
+							$("#province-selector")[0].disabled = false;
+							$("#admin2-selector")[0].disabled = true;
+							$("#admin2-selector")[0].innerHTML = admin2_head;
+							
+
+							if (!province_list.hasOwnProperty(country)) {
+								$.getJSON(
+									"/list/provinces",
+									{ country: country },
+									function(data) {
+										province_list[country] = data;
+										add_list($("#province-selector")[0], province_head, province_list[country]);
+									}
+								)
+							} else {
+								add_list($("#province-selector")[0], province_head, province_list[country]);
+							}
+						}
+					}
+				);
+
+				$("#province-selector").change(
+					function() {
+						province = this.value;
+						admin2 = null;
+
+						update_chart_location();
+
+						if (!this.value) {
+							$("#admin2-selector")[0].disabled = true;
+							$("#admin2-selector")[0].innerHTML = admin2_head;
+						} else {
+							$("#admin2-selector")[0].disabled = false;
+
+							if (!admin2_list.hasOwnProperty(country)) {
+								admin2_list[country] = {};
+							}
+
+							if (!admin2_list[country].hasOwnProperty(province)) {
+								$.getJSON(
+									"/list/admin2",
+									{ country: country, province: province },
+									function(data) {
+										admin2_list[country][province] = data;
+										add_list($("#admin2-selector")[0], admin2_head, admin2_list[country][province]);
+									}
+								);
+							} else {
+								add_list($("#admin2-selector")[0], admin2_head, admin2_list[country][province]);
+							}
+						}
+					}
+				);
+
+				$("#admin2-selector").change(
+					function() {
+						admin2 = $("#admin2-selector")[0].value;
+						update_chart_location();
+					}
+				);
+
+				$("input[type=radio][name=scale-type]").change(
+					function() {
+						if (this.value == 'logarithmic' || this.value == 'linear') {
+							main_chart.options.scales.yAxes[0].type = this.value;
+							main_chart.update();
+						}
+					}
+				);
+
+				$("input[type=radio][name=chart-type]").change(
+					function() {
+						chart_type = this.value;
+						update_chart_location();
+					}
+				);
+
+				update_chart_location();
+			}
+			
+			function generate_name(country, province, admin2) {
+				let l = '';
+				if (admin2) {
+					l += admin2 + ", ";
+				}
+				if (province) {
+					l += province + ", ";
+				}
+				if (country) {
+					l += country;
+				}
+				if (!l) {
+					return "World";
+				}
+				return l;
+			}
+
+			function update_chart_location() {
+				let country = $("#country-selector")[0].value;
+				let province = $("#province-selector")[0].value;
+				let admin2 = $("#admin2-selector")[0].value;
+				
+				let label = generate_name(country, province, admin2);
+				
+				show_chart(country, province, admin2, label, main_chart);
+			}
+
+			function download_canvas() {
+				let url = $("#main-canvas")[0].toDataURL("image/png;base64");
+				let filename = 'COVID19_Chart';
+				if (country) filename += `_${country}`;
+				if (province) filename += `_${province}`;
+				if (admin2) filename += `_${admin2}`;
+				filename += '.png';
+
+				$("#download-chart")[0].href = url;
+				$("#download-chart")[0].setAttribute("download", filename);
+				$("#download-chart")[0].click();
+			}
+		</script>
+		<script>
+			function remove_loading() {
+				$("#loading")[0].remove();
+			}
+		</script>
 	</head>
-	<body>
+	<body onload="init()">
 		{% include "navbar.html" %}
 		<div class="container p-2 text-center">
-			{% include "head.html" %}
 			<h1 class="display-1">Charts</h1>
-			<script>
-				function remove_loading() {
-					$("#loading")[0].remove();
-				}
-			</script>
+			<div class="text-left box d-flex flex-column">
+				<select id="country-selector" class="custom-input-color inline-form-item mb-2">
+					<option value="">All countries</option>
+				</select>
+				<select id="province-selector" class="custom-input-color inline-form-item mb-2" disabled>
+					<option value="">All provinces/states</option>
+				</select>
+				<select id="admin2-selector" class="custom-input-color inline-form-item mb-2" disabled>
+					<option value="">All counties</option>
+				</select>
+				<div class="m-2">
+					<div data-toggle="buttons">
+						<label class="btn custom-button-color" for="set-linear">
+							Linear scale
+							<input id="set-linear" type="radio" name="scale-type" value="linear" checked>
+						</label>
+						<label class="btn custom-button-color" for="set-logarithmic">
+							Logarithmic scale
+							<input id="set-logarithmic" type="radio" name="scale-type" value="logarithmic">
+						</label>
+					</div>
+					<div data-toggle="buttons">
+						<label class="btn custom-button-color" for="set-total">
+							Chart the total
+							<input id="set-total" type="radio" name="chart-type" value="total" checked>
+						</label>
+						<label class="btn custom-button-color" for="set-daily-change">
+							Chart the daily change
+							<input id="set-daily-change" type="radio" name="chart-type" value="daily-change">
+						</label>
+					</div>
+				</div>
+				<a id="download-chart" style="display: none;"></a>
+			</div>
 			<div class="d-flex flex-column box" style="align-items: center;">
-				<span id="loading" class="font-weight-bold" style="font-size: 2rem;">
-					Loading charts...
-				</span>
-			    <iframe onload="remove_loading();" width="600" height="371" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRlpWa4s-Z9UVpHEoutXFHfdxXVxJVwp8jmXuF1UTzHLG45RPJlFIA2GYSze-wsUwp3FRNPelv3jRz0/pubchart?oid=2131811449&amp;format=interactive"></iframe>
-				<iframe width="600" height="371" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRlpWa4s-Z9UVpHEoutXFHfdxXVxJVwp8jmXuF1UTzHLG45RPJlFIA2GYSze-wsUwp3FRNPelv3jRz0/pubchart?oid=522390504&amp;format=interactive"></iframe>
-				<iframe width="600" height="371" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRlpWa4s-Z9UVpHEoutXFHfdxXVxJVwp8jmXuF1UTzHLG45RPJlFIA2GYSze-wsUwp3FRNPelv3jRz0/pubchart?oid=560369173&amp;format=interactive"></iframe>
+				<button class="btn custom-button-color mt-2" onclick="download_canvas()">
+					Save Image
+				</button>
+				<canvas id="main-canvas"></canvas>
+				<!--
+					<span id="loading" class="font-weight-bold" style="font-size: 2rem;">
+						Loading charts...
+					</span>
+					<iframe onload="remove_loading();" width="600" height="371" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRlpWa4s-Z9UVpHEoutXFHfdxXVxJVwp8jmXuF1UTzHLG45RPJlFIA2GYSze-wsUwp3FRNPelv3jRz0/pubchart?oid=2131811449&amp;format=interactive"></iframe>
+					<iframe width="600" height="371" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRlpWa4s-Z9UVpHEoutXFHfdxXVxJVwp8jmXuF1UTzHLG45RPJlFIA2GYSze-wsUwp3FRNPelv3jRz0/pubchart?oid=522390504&amp;format=interactive"></iframe>
+					<iframe width="600" height="371" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRlpWa4s-Z9UVpHEoutXFHfdxXVxJVwp8jmXuF1UTzHLG45RPJlFIA2GYSze-wsUwp3FRNPelv3jRz0/pubchart?oid=560369173&amp;format=interactive"></iframe>
+			
+				-->
 			</div>
 		</div>
 	</body>

@@ -1,43 +1,20 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>CoronAwareness</title>
+		<title>Corona Vision</title>
 		{% include 'styles.html' %}
 	</head>
 	<body>
 		{% include 'navbar.html' %}
-		<div class="container p-2">
-			{% include "head.html" %}
-			<h1 class="display-1 text-center text-dark">Coronavirus Awareness</h1>
+		<div class="container p-2 text-center">
+			<a style="font-size: 2rem;" href="/findnearme">COVID-19 Map</a><br/>
+			<a style="font-size: 2rem;" href="/history">COVID-19 Important Dates</a><br/>
+			<a style="font-size: 2rem;" href="/visual">Create Custom Charts</a><br/>
+			<a style="font-size: 2rem;" href="/calculaterisk">Calculate Your Risk</a><br/>
+			
 			<br/>
-			<div class="d-flex flex-column border rounded">
-				<div class="p-2 m-auto">
-					<img src="/static/Do_The_Five.gif" style="width: 240px;" class="m-auto" alt="Do the Five"><br/>
-					<div class="five-list">
-						<div class="five-list-elem">
-							<div class="five-number">1</div><span class="five-bold">HANDS</span><span class="five-desc">Wash them often</span>
-						</div>
-						<div class="five-list-elem">
-							<div class="five-number">2</div><span class="five-bold">ELBOW</span><span class="five-desc">Cough into it</span>
-						</div>
-						<div class="five-list-elem">
-							<div class="five-number">3</div><span class="five-bold">FACE</span><span class="five-desc">Don't touch it</span>
-						</div>
-						<div class="five-list-elem">
-							<div class="five-number">4</div><span class="five-bold">FEET</span><span class="five-desc">Stay more than 3ft apart</span>
-						</div>
-						<div class="five-list-elem">
-							<div class="five-number">5</div><span class="five-bold">FEEL</span><span class="five-desc">sick? Stay home</span>
-						</div>
-					</div>
-				</div>
-				<div class="do-the-five-footer p-2">
-					<small>Provided by Google</small>
-					<a href="https://www.who.int/emergencies/diseases/novel-coronavirus-2019/advice-for-public"
-						class="btn btn-primary">
-						Learn more
-					</a>
-				</div>
+			<div class="container d-flex flex-column border rounded bg-white text-dark">
+				{% include "do_the_five.html" %}
 			</div>
 		</div>
 	</body>

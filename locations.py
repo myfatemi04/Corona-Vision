@@ -3,6 +3,7 @@ import numpy as np
 
 state_locations = {}
 state_codes = {}
+state_names = {}
 
 country_locations = {}
 country_codes = {}
@@ -19,6 +20,7 @@ for index, row in code_df.iterrows():
     country_codes[name.lower()] = code
     country_codes[name.split(",")[0].lower()] = code
     state_codes[code] = {}
+    state_names[code] = {}
     state_locations[code] = {}
 
 loc_df = pd.read_csv("us_state_locations.tsv", sep='\t')
@@ -26,6 +28,7 @@ for index, row in loc_df.iterrows():
     state_code, lat, lng, state_name = row
     state_locations["US"][state_code] = (lat, lng)
     state_codes["US"][state_name.lower()] = state_code
+    state_names["US"][state_code] = state_name
 
 NOT_FOUND = None
 
@@ -68,3 +71,13 @@ def get_state_code(country_code, state_name):
         return state_name
     else:
         return NOT_FOUND
+
+def get_state_name(country_code, state_code):
+    if country_code in state_names:
+        if state_code in state_names[country_code]:
+            return state_names[country_code][state_code]
+        elif state_code in state_names[country_code].values():
+            return state_code
+    
+    return None
+

@@ -5,14 +5,94 @@ var locations = {};
 var location_autocomplete = null;
 var marker_cluster = null;
 var most_recent_person = null;
-var graph_type = 'total';
+var dark_mode_style = [
+	{elementType: 'geometry', stylers: [{color: '#242f3e'}]},
+	{elementType: 'labels.text.stroke', stylers: [{color: '#242f3e'}]},
+	{elementType: 'labels.text.fill', stylers: [{color: '#746855'}]},
+	{
+		featureType: 'administrative.locality',
+		elementType: 'labels.text.fill',
+		stylers: [{color: '#d59563'}]
+	},
+	{
+		featureType: 'poi',
+		elementType: 'labels.text.fill',
+		stylers: [{color: '#d59563'}]
+	},
+	{
+		featureType: 'poi.park',
+		elementType: 'geometry',
+		stylers: [{color: '#263c3f'}]
+	},
+	{
+		featureType: 'poi.park',
+		elementType: 'labels.text.fill',
+		stylers: [{color: '#6b9a76'}]
+	},
+	{
+		featureType: 'road',
+		elementType: 'geometry',
+		stylers: [{color: '#38414e'}]
+	},
+	{
+		featureType: 'road',
+		elementType: 'geometry.stroke',
+		stylers: [{color: '#212a37'}]
+	},
+	{
+		featureType: 'road',
+		elementType: 'labels.text.fill',
+		stylers: [{color: '#9ca5b3'}]
+	},
+	{
+		featureType: 'road.highway',
+		elementType: 'geometry',
+		stylers: [{color: '#746855'}]
+	},
+	{
+		featureType: 'road.highway',
+		elementType: 'geometry.stroke',
+		stylers: [{color: '#1f2835'}]
+	},
+	{
+		featureType: 'road.highway',
+		elementType: 'labels.text.fill',
+		stylers: [{color: '#f3d19c'}]
+	},
+	{
+		featureType: 'transit',
+		elementType: 'geometry',
+		stylers: [{color: '#2f3948'}]
+	},
+	{
+		featureType: 'transit.station',
+		elementType: 'labels.text.fill',
+		stylers: [{color: '#d59563'}]
+	},
+	{
+		featureType: 'water',
+		elementType: 'geometry',
+		stylers: [{color: '#17263c'}]
+	},
+	{
+		featureType: 'water',
+		elementType: 'labels.text.fill',
+		stylers: [{color: '#515c6d'}]
+	},
+	{
+		featureType: 'water',
+		elementType: 'labels.text.stroke',
+		stylers: [{color: '#17263c'}]
+	}
+];
 
 function init_coronamap() {
 	map = new google.maps.Map($("#map")[0],
 		{
 			zoom: 8,
 			streetViewControl: false,
-			minZoom: 2
+			minZoom: 2,
+			styles: dark_mode_style
 		});
 	map.addListener("dragend", function() {
 		reload_cases();
@@ -26,137 +106,38 @@ function init() {
 	get_location();
 	init_autocomplete();
 	for (let chart_level of ['world', 'country', 'province', 'admin2']) {
-		graphs[chart_level] = new_chart(chart_level);
+		charts[chart_level] = new_chart(chart_level + "-total");
 	}
 	$("input[type=radio][name=scale-type]").change(
 		function() {
 			if (this.value == 'logarithmic' || this.value == 'linear') {
 				set_scale_type(this.value);
-				update_graphs();
+				update_charts();
 			}
 		}
 	)
-	$("input[type=radio][name=graph-type]").change(
+	$("input[type=radio][name=chart-type]").change(
 		function() {
-			graph_type = this.value;
-			update_graphs();
+			chart_type = this.value;
+			update_charts();
 		}
 	)
-	update_graphs();
+	update_charts();
 }
 
-let graphs = {
+let charts = {
 	world: null,
 	country: null,
 	province: null,
 	admin2: null
 }
 
-let CONFIRMED_IX = 0;
-let DEAD_IX = 1;
-let RECOVERED_IX = 2;
-
-function get_canvas(a) {
-	return document.getElementById(a + "-total").getContext('2d');
-}
-
-function update_chart(chart_level, totals_list) {
-	let graph = graphs[chart_level];
-	reset_chart(chart_level);
-	for (let total of totals_list) {
-		graph.data.labels.push(total.entry_date);
-		if (graph_type == 'total') {
-			graph.data.datasets[CONFIRMED_IX].data.push(total.confirmed);
-			graph.data.datasets[DEAD_IX].data.push(total.dead);
-			graph.data.datasets[RECOVERED_IX].data.push(total.recovered);
-		} else if (graph_type == 'daily-change') {
-			graph.data.datasets[CONFIRMED_IX].data.push(total.dconfirmed);
-			graph.data.datasets[DEAD_IX].data.push(total.ddead);
-			graph.data.datasets[RECOVERED_IX].data.push(total.drecovered);
-		}
-	}
-	graph.update()
-}
-
-function new_chart(chart_level) {
-	let data = {
-		labels: [],
-		datasets: [
-			{
-				label: 'Confirmed cases',
-				backgroundColor: 'yellow',
-				borderColor: 'yellow',
-				fill: false,
-				data: []
-			},
-			{
-				label: 'Dead',
-				backgroundColor: 'red',
-				borderColor: 'red',
-				fill: false,
-				data: []
-			},
-			{
-				label: 'Recovered',
-				backgroundColor: 'green',
-				borderColor: 'green',
-				fill: false,
-				data: []
-			}
-		]
-	};
-	return new Chart(get_canvas(chart_level), {
-		type: 'line',
-		data: data,
-		options: {
-			responsive: true,
-			title: {
-				display: true,
-				text: "Cases"
-			},
-			hover: {
-				mode: 'nearest',
-				intersect: true
-			}
-		}
-	});
-}
-
-function reset_chart(chart_level) {
-	let graph = graphs[chart_level];
-	graph.options.title.text = 'Cases';
-	graph.data.labels = [];
-	for (let i = 0; i < graph.data.datasets.length; i++) {
-		graph.data.datasets[i].data = [];
-	}
-	graph.update();
-}
-
 function set_scale_type(scale_type) {
-	for (let chart_level in graphs) {
-		let graph = graphs[chart_level];
-		graph.options.scales.yAxes[0].type = scale_type;
-		graph.update();
+	for (let chart_level in charts) {
+		let chart = charts[chart_level];
+		chart.options.scales.yAxes[0].type = scale_type;
+		chart.update();
 	}
-}
-
-function show_totals_graph(country, province, admin2, chart_level) {
-	reset_chart(chart_level);
-	let params = {
-		country: country,
-		province: province,
-		admin2: admin2,
-		world: "world"
-	}
-	$.getJSON(
-		"/cases/totals_sequence",
-		params,
-		function(data) {
-			update_chart(chart_level, data);
-			graphs[chart_level].options.title.text = 'Cases in: ' + params[chart_level];
-			graphs[chart_level].update();
-		}
-	)
 }
 
 function init_autocomplete() {
@@ -173,8 +154,7 @@ function get_location() {
 function show_location(position) {
 	let latitude = position.coords.latitude;
 	let longitude = position.coords.longitude;
-	$("#map")[0].setAttribute("class", "map display-block");
-	$("#map-message")[0].setAttribute("class", "display-none");
+	$("#map")[0].setAttribute("class", "map");
 	let my_location = {
 		lat: latitude,
 		lng: longitude
@@ -294,23 +274,23 @@ function update_most_recent(entry_date) {
 	add_province_info(most_recent_person, entry_date);
 	add_county_info(most_recent_person, entry_date);
 }
-function update_graphs() {
-	show_totals_graph('', '', '', 'world');
+function update_charts() {
+	show_chart('', '', '', 'World', charts.world);
 	if (most_recent_person) {
 		if (most_recent_person.country) {
-			show_totals_graph(most_recent_person.country, '', '', 'country');
+			show_chart(most_recent_person.country, '', '', most_recent_person.country, charts.country);
 		} else {
-			reset_chart('country');
+			reset_chart(charts.country);
 		}
 		if (most_recent_person.province) {
-			show_totals_graph(most_recent_person.country, most_recent_person.province, '', 'province');
+			show_chart(most_recent_person.country, most_recent_person.province, '', most_recent_person.province, charts.province);
 		} else {
-			reset_chart('province');
+			reset_chart(charts.province);
 		}
 		if (most_recent_person.admin2) {
-			show_totals_graph(most_recent_person.country, most_recent_person.province, most_recent_person.admin2, 'admin2');
+			show_chart(most_recent_person.country, most_recent_person.province, most_recent_person.admin2, most_recent_person.admin2, charts.admin2);
 		} else {
-			reset_chart('admin2');
+			reset_chart(charts.admin2);
 		}
 	}
 }
@@ -349,7 +329,7 @@ function reload_cases() {
 						let entry_date = $("#date")[0].value;
 						most_recent_person = person;
 						update_most_recent(entry_date);
-						update_graphs();
+						update_charts();
 					});
 					
 					new_marker.setMap(map);

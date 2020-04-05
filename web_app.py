@@ -103,7 +103,7 @@ def find_total_nation_cases():
 @app.route("/cases/first_days")
 def get_first_days():
 	session = db.session()
-	results = session.query(Datapoint).filter_by(is_first_day=True).all()
+	results = session.query(Datapoint).filter_by(is_first_day=True).order_by(Datapoint.entry_date).all()
 	return json_list(results)
 
 @app.route("/cases/totals_sequence")
@@ -114,6 +114,39 @@ def find_total_nation_cases_sequences():
 	results = session.query(Datapoint).filter_by(**nation).order_by(Datapoint.entry_date).all()
 
 	return json_list(results)
+
+@app.route("/list/countries")
+def list_all_countries():
+	sess = db.session()
+	return json.dumps(sorted([
+		result[0]
+		for result in sess.query(Datapoint.country).distinct().all()
+		if result[0]
+	]))
+
+@app.route("/list/provinces")
+def list_country_provinces():
+	sess = db.session()
+	country = request.args.get("country") or ""
+	return json.dumps(sorted([
+		result[0]
+		for result in sess.query(Datapoint.province).filter_by(country=country).distinct().all()
+		if result[0]
+	]))
+
+@app.route("/list/admin2")
+def list_province_admin2():
+	sess = db.session()
+	province = request.args.get("province") or ""
+	country = request.args.get("country") or ""
+	return json.dumps(sorted([
+		result[0]
+		for result in sess.query(Datapoint.admin2)\
+		.filter_by(country=country, province=province)\
+		.distinct()\
+		.all()
+		if result[0]
+	]))
 
 @app.route("/visual")
 def visual_data_page():
@@ -147,6 +180,10 @@ def calculate_risk_page():
 		)
 	else:
 		return render_template("calculate_risk.html")
+
+@app.route("/history")
+def history_page():
+	return render_template("spread_history.html")
 
 @app.before_first_request
 def start_downloader():

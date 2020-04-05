@@ -86,6 +86,13 @@ def import_data(csv_text, entry_date):
 			if not pd.isnull(row[admin2_col]):
 				admin2 = row[admin2_col].strip()
 		
+		if not admin2:
+			if ", " in province and country.lower() in ['us', 'united states']:
+				comma_index = province.rfind(", ")
+				county, state_code = province[:comma_index], province[comma_index + 2:]
+				admin2 = county
+				province = locations.get_state_name("US", state_code) or state_code
+		
 		primary.add((country, province, admin2))
 		
 		confirmed = row[confirmed_col]
@@ -210,7 +217,7 @@ def download_data_for_date(entry_date):
 		session = db.session()
 		existing_data = session.query(Datapoint).filter_by(entry_date=entry_date).all()
 		if existing_data:
-			print("\tEntries already made")
+			print("\tEntries already made: ", date_formatted)
 			return 'exists'
 
 		print("[DATA IMPORT] Attempting to download " + str(entry_date))
@@ -236,7 +243,7 @@ def data_download():
 	while True:
 		status = download_data_for_date(date.today())
 		
-		if status == '404':
+		if status == '404' or status == 'exists':
 			time.sleep(60)
 
 def add_date_range(date_1, date_2):

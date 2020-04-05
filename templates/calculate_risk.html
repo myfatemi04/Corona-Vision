@@ -7,11 +7,10 @@
 		{% include "navbar.html" %}
 		<div class="container p-2">
 			<div class="text-center">
-				{% include "head.html" %}
 				<h1 class="display-1">Calculate your risk</h1>
 			</div>
 			{% if "submitted" in request.form %}
-				<div class="box d-flex flex-column">
+				<div class="container box d-flex flex-column">
 					<span style="font-size: 3rem;">Results</span>
 					<div style="margin-left: 2em;">
 						<span style="font-size: 2rem;">Age:</span>
@@ -65,7 +64,7 @@
 					</div>
 				</div>
 			{% endif %}
-			<div class="box d-flex flex-column">
+			<div class="container box d-flex flex-column">
 				<form action="/calculaterisk" method="post">
 					<input type="hidden" name="submitted">
 					<div class="grid">
@@ -75,7 +74,7 @@
 								<a class="small" href="https://www.worldometers.info/coronavirus/coronavirus-age-sex-demographics/">Source</a>
 							</div>
 							<div class="col text-left">
-								<input type="number" id="age" name="age" required>
+								<input class="custom-input-color" type="number" id="age" name="age" required>
 							</div>
 						</div>
 						<div class="row my-1">
@@ -91,7 +90,7 @@
 									<label for="cond_diabetes">Diabetes</label>							
 								<br/>
 								<input type="checkbox" id="cond_chronic_respiratory_disease" name="cond_chronic_respiratory_disease">
-									<label for="chronic_respiratory_disease">Chronic respiratory disease</label>
+									<label for="cond_chronic_respiratory_disease">Chronic respiratory disease</label>
 								<br/>
 								<input type="checkbox" id="cond_hypertension" name="cond_hypertension">
 									<label for="cond_hypertension">Hypertension</label>			
@@ -110,13 +109,13 @@
 								<a class="small" href="https://www.worldometers.info/coronavirus/#repro">More info</a>
 							</div>
 							<div class="col text-left">
-								<input type="number" id="contact" name="contact">
+								<input class="custom-input-color" type="number" id="contact" name="contact">
 							</div>
 						</div>
 						<div class="row pt-2">
 							<div class="col"></div>
 							<div class="col">
-								<button type="submit">Submit</button>
+								<button type="submit" class="btn custom-button-color">Submit</button>
 							</div>
 						</div>
 					</div>
