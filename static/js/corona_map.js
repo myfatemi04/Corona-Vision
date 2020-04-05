@@ -83,28 +83,57 @@ let dark_mode_style = [
 		stylers: [{color: '#17263c'}]
 	}
 ];
+
 let infowindow = null;
-let map_display = "active";
-let map_type = "total";
+let feature_display = "active"; // can be either: active, confirmed, dead, or recovered
+let map_type = "total"; // can be either: total, daily-change
+let circle_colors = {
+	active: "#de7c21",
+	confirmed: "#ebf765",
+	dead: "#f54842",
+	recovered: "#39e639"
+}
+
+let last_zoom = 2;
+let min_radius = 2500;
+
+let zoomins = {
+	active: 1,
+	confirmed: 1,
+	recovered: 1,
+	dead: 1,
+	dactive: 1,
+	dconfirmed: 1,
+	drecovered: 1,
+	ddead: 1
+}
 
 function init_coronamap() {
 	map = new google.maps.Map($("#map")[0],
 		{
-			zoom: 1.5,
+			zoom: 2,
 			minZoom: 1,
 			center: {
-				lat: 0,
+				lat: 20,
 				lng: 0
 			},
 			streetViewControl: false,
 			styles: dark_mode_style
 		});
 	map.addListener("zoom_changed", function() {
-		reload_cases();
+		let new_zoom = map.zoom;
+		let zoom_scale = Math.pow(last_zoom/new_zoom, 2);
+		for (let circle of active_markers) {
+			circle.setRadius((circle.getRadius() - min_radius) * zoom_scale + min_radius);
+		}
+
+		last_zoom = new_zoom;
 	});
 	infowindow = new google.maps.InfoWindow({
 		content: ""
-	})
+	});
+
+	setTimeout(reload_cases, 500);
 }
 
 function init() {
@@ -112,7 +141,7 @@ function init() {
 	for (let chart_level of ['world', 'country', 'province', 'admin2']) {
 		charts[chart_level] = new_chart(chart_level + "-total");
 	}
-	$("input[type=radio][name=scale-type]").change(
+	$("input[name=scale-type]").change(
 		function() {
 			if (this.value == 'logarithmic' || this.value == 'linear') {
 				set_scale_type(this.value);
@@ -120,21 +149,21 @@ function init() {
 			}
 		}
 	)
-	$("input[type=radio][name=chart-type]").change(
+	$("input[name=chart-type]").change(
 		function() {
 			chart_type = this.value;
 			update_charts();
 		}
 	)
-	$("#input[type=radio][name=map-type]").change(
+	$("select[name=map-type]").change(
 		function() {
 			map_type = this.value;
 			reload_cases();
 		}
 	)
-	$("#input[type=radio][name=map-display]").change(
+	$("select[name=map-display]").change(
 		function() {
-			map_display = this.value;
+			feature_display = this.value;
 			reload_cases();
 		}
 	)
@@ -170,7 +199,7 @@ function show_location(position) {
 		lng: longitude
 	};
 	map.setCenter(my_location);
-	setTimeout(reload_cases, 1000);
+	setTimeout(reload_cases, 500);
 }
 
 function remove_previous_markers() {
@@ -186,15 +215,21 @@ function find_cases() {
 		map.setCenter(loc);
 		map.setZoom(8);
 	}
-	setTimeout(reload_cases, 1000);
+	setTimeout(reload_cases, 500);
 }
 
 function format_data(label, data) {
-	let formatted = `<b>${label}</b><hr class="custom-hr"/>`
-	+ `<b>Confirmed:</b> ${data.confirmed} (+${data.dconfirmed})<br/>`
-	+ `<b>Recovered:</b> ${data.recovered} (+${data.drecovered})<br/>`
-	+ `<b>Dead:</b> ${data.dead} (+${data.ddead})<br/>`
-	+ `<b>Active:</b> ${data.active} (+${data.dactive})<br/><br/>`;
+	let formatted = `
+	<div class="font-weight-bold" style="font-size: 1.5rem;">
+		<span>${label}</span>
+		<hr class="custom-hr"/>
+		<span style="color: ${circle_colors.confirmed}">${data.confirmed} (+${data.dconfirmed}) Confirmed</span><br/>
+		<span style="color: ${circle_colors.active}">${data.active} (+${data.dactive}) Active</span><br/>
+		<span style="color: ${circle_colors.dead}">${data.dead} (+${data.ddead}) Dead</span><br/>
+		<span style="color: ${circle_colors.recovered}">${data.recovered} (+${data.drecovered}) Recovered</span><br/>
+		<br/>
+	</div>
+	`;
 
 	return formatted;
 }
@@ -204,10 +239,19 @@ function add_world_info(person, entry_date) {
 	xhr.onreadystatechange = function() {
 		if (this.readyState == 4 && this.status == 200) {
 			let data = JSON.parse(this.responseText)[0];
-			if (data)
+			if (data) {
 				$("#world-info")[0].innerHTML = format_data(`World: ${data.country}`, data);	
-			else
+				zoomins.confirmed = data.confirmed/data.confirmed;
+				zoomins.active = data.confirmed/data.active;
+				zoomins.dead = data.confirmed/data.dead;
+				zoomins.recovered = data.confirmed/data.recovered;
+				zoomins.dconfirmed = data.confirmed/data.dconfirmed;
+				zoomins.dactive = data.confirmed/data.dactive;
+				zoomins.ddead = data.confirmed/data.ddead;
+				zoomins.drecovered = data.confirmed/data.drecovered;
+			} else {
 				$("#world-info")[0].innerHTML = '';
+			}
 		}
 	}
 	xhr.open("GET", `/cases/totals?date=${entry_date}`)
@@ -335,19 +379,20 @@ function reload_cases() {
 			}
 
 			let county_found = false;
+			let feature = (map_type == "daily-change" ? "d" : "") + feature_display;
 			for (let person of JSON.parse(this.responseText)) {
-				if (person.confirmed > 0 && person.country) {
+				if (person[feature] > 0) {
 					let new_marker = new google.maps.Circle({
 						center: {
 							lat: person.latitude,
 							lng: person.longitude
 						},
-						strokeColor: "#FF0000",
+						strokeColor: circle_colors[feature_display],
 						strokeOpacity: 0.8,
-						fillColor: "#FF0000",
+						fillColor: circle_colors[feature_display],
 						fillOpacity: 0.35,
 						map: map,
-						radius: 25 + Math.sqrt(person.confirmed) * 5000 / (map.zoom * map.zoom)
+						radius: min_radius + Math.sqrt(person[feature] * zoomins[feature]) * 4000 / (map.zoom * map.zoom)
 					});
 					
 					new_marker.addListener('click', function(ev) {
@@ -366,12 +411,7 @@ function reload_cases() {
 		}
 	};
 	
-	let bounds = map.getBounds();
-	let ne = bounds.getNorthEast();
-	let sw = bounds.getSouthWest();
 	let entry_date = $("#date")[0].value;
-	//let request_content = `?ne_lat=${ne.lat()}&ne_lng=${ne.lng()}&sw_lat=${sw.lat()}&sw_lng=${sw.lng()}&date=${entry_date}`;
-	let request_content = `?ne_lat=90&ne_lng=180&sw_lat=-90&sw_lng=-180&date=${entry_date}`;
-	xhr.open("GET", "/cases/box" + request_content);
+	xhr.open("GET", `/cases/date?date=${entry_date}`);
 	xhr.send();
 }

@@ -120,6 +120,15 @@ def find_total_nation_cases_sequences():
 
 	return json_list(results)
 
+@app.route("/cases/date")
+def find_all_for_date():
+	entry_date = parse_date(request.args.get("date"))
+
+	session = db.session()
+	results = session.query(Datapoint).filter_by(entry_date=entry_date).all()
+
+	return json_list(results)
+
 @app.route("/list/countries")
 def list_all_countries():
 	sess = db.session()

@@ -40,10 +40,21 @@
 			</div>
 			
 			<!-- Map and charts -->
-			<div class="container-fluid box dashboard-container">
+			<div class="container-fluid box dashboard-container py-2">
 				<!-- Map -->
 				<div class="map-box scroll dash-4">
-					<h3>Map</h3>
+					<h3>Map of
+						<select name="map-type" class="custom-input-color form-control my-2">
+							<option value="total">Total</option>
+							<option value="daily-change">Daily change</option>
+						</select>
+						<select name="map-display" class="custom-input-color form-control my-2">
+							<option value="active">Active cases</option>
+							<option value="confirmed">Confirmed cases</option>
+							<option value="recovered">Recovered cases</option>
+							<option value="dead">Dead cases</option>
+						</select>
+					</h3>
 					<div class="mb-top">
 						<noscript>
 							This website requires JavaScript to run.
