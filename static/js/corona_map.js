@@ -259,9 +259,10 @@ function update_info() {
 			}
 		}
 	}
-	show_chart(country, province, admin2, generate_name(country, province, admin2), chart);
 	xhr.open("GET", `/cases/totals?country=${country}&province=${province}&admin2=${admin2}&date=${entry_date}`)
 	xhr.send()
+	
+	show_chart(country, province, admin2, generate_name(country, province, admin2), chart);
 }
 
 function add_province_info(person, entry_date) {

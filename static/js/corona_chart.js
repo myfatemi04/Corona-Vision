@@ -15,28 +15,32 @@ function new_chart(canvas_id) {
 				backgroundColor: 'yellow',
 				borderColor: 'yellow',
 				fill: false,
-				data: []
+				data: [],
+				lineTension: 0
 			},
 			{
 				label: 'Dead',
 				backgroundColor: 'red',
 				borderColor: 'red',
 				fill: false,
-				data: []
+				data: [],
+				lineTension: 0
 			},
 			{
 				label: 'Recovered',
 				backgroundColor: 'green',
 				borderColor: 'green',
 				fill: false,
-				data: []
+				data: [],
+				lineTension: 0
 			},
 			{
 				label: 'Active',
 				backgroundColor: 'orange',
 				borderColor: 'orange',
 				fill: false,
-				data: []
+				data: [],
+				lineTension: 0
 			}
 		]
 	};
