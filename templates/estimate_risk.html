@@ -51,50 +51,58 @@
 					</p><br/>
 					
 					<span style="font-size: 2rem;">Analysis of symptoms:</span>
-					<p>
-						{% if "symptoms" in request.form and request.form['symptoms'] %}
+					{% if "symptoms" in request.form and request.form['symptoms'] %}
+						<p>
 							You wrote these symptoms:<br/>
 							<code style="color: #f5f5f5;">
 								{{ request.form['symptoms'] }}
-							</code><br/>
-						{% endif %}
-						{% if mild_symptoms %}
+							</code>
+						</p>
+					{% endif %}
+					{% if mild_symptoms %}
+						<p>
 							These symptoms that you listed are correlated with <b>mild</b> cases of COVID-19:<br/>
-							<ul>
-								{% for symptom in mild_symptoms %}
-									<li>{{symptom}}</li>
-								{% endfor %}
-							</ul>
+						</p>
+						<ul>
+							{% for symptom in mild_symptoms %}
+								<li>{{symptom}}</li>
+							{% endfor %}
+						</ul>
+						<p>
 							For safety, you should self-isolate, to ensure that you aren't spreading the virus. If your symptoms worsen, seek medical attention.
-							<br/>
-							<a class="small" href="https://www.cdc.gov/coronavirus/2019-ncov/if-you-are-sick/steps-when-sick.html">
-								More info
-							</a>
-						{% endif %}
+						</p>
+						<a class="small" href="https://www.cdc.gov/coronavirus/2019-ncov/if-you-are-sick/steps-when-sick.html">
+							More info
+						</a>
+					{% endif %}
 
-						{% if severe_symptoms %}
+					{% if severe_symptoms %}
+						<p>
 							These symptoms that you listed are correlated with <b>severe</b> cases of COVID-19:<br/>
-							<ul>
-								{% for symptom in severe_symptoms %}
-									<li>{{symptom}}</li>
-								{% endfor %}
-							</ul>
+						</p>
+						<ul>
+							{% for symptom in severe_symptoms %}
+								<li>{{symptom}}</li>
+							{% endfor %}
+						</ul>
+						<p>
 							Contact your doctor <b>as soon as possible</b> if you exhibit any of these symptoms.
-							<br/>
-							<a class="small" href="https://www.cdc.gov/coronavirus/2019-ncov/if-you-are-sick/steps-when-sick.html#warning-signs">
-								More info
-							</a>
-						{% endif %}
-							
-						{% if not severe_symptoms and not mild_symptoms %}
+						</p>
+						<a class="small" href="https://www.cdc.gov/coronavirus/2019-ncov/if-you-are-sick/steps-when-sick.html#warning-signs">
+							More info
+						</a>
+					{% endif %}
+						
+					{% if not severe_symptoms and not mild_symptoms %}
+						<p>
 							You didn't exhibit any symptoms that were related to COVID-19. However, this does not ensure that you do not have the virus, as the virus may not show symptoms for 2-14 days after first coming in contact with it.
 							For safety, it's best to self-isolate even when you don't exhibit any symptoms, to ensure that you don't get the virus, or that you don't spread it in case you are a carrier.
 							<br/>
 							<a class="small"  href="https://www.cdc.gov/coronavirus/2019-ncov/symptoms-testing/symptoms.html">Source</a>
 							<br/>
 							<a class="small"  href="https://www.cdc.gov/coronavirus/2019-ncov/prevent-getting-sick/prevention.html">More info</a>
-						{% endif %}
-					</p>
+						</p>
+					{% endif %}
 					<a href="/estimaterisk" class="btn custom-button-color">Reset form</a>
 				</div>
 			{% else %}
