@@ -18,7 +18,7 @@
 			function show_data(data, prefix, id, label_prop, label_default) {
 				$("#" + id)[0].innerHTML = head;
 
-				data.sort((a, b) => (a.confirmed > b.confirmed) ? -1 : 1)
+				data.sort((a, b) => (a.[prefix + "confirmed"] > b.[prefix + "confirmed"]) ? -1 : 1)
 
 				for (let datapoint of data) {
 					let label = datapoint[label_prop];

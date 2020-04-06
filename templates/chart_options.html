@@ -1,0 +1,80 @@
+<script>
+    function init_chart_options(chart) {
+        $("select[name=scale-type]").change(
+            function() {
+                if (this.value == 'logarithmic' || this.value == 'linear') {
+                    chart.options.scales.yAxes[0].type = this.value;
+                    chart.update();
+                }
+            }
+        );
+
+        $("select[name=chart-type]").change(
+            function() {
+                chart_type = this.value;
+                update_chart_location();
+            }
+        );
+
+        $("input[name=display-confirmed]").change(
+            function() {
+                chart.data.datasets[CONFIRMED_IX].hidden = !this.checked;
+                chart.update();
+            }
+        );
+
+        $("input[name=display-deaths]").change(
+            function() {
+                chart.data.datasets[DEATHS_IX].hidden = !this.checked;
+                chart.update();
+            }
+        );
+
+        $("input[name=display-recovered]").change(
+            function() {
+                chart.data.datasets[RECOVERED_IX].hidden = !this.checked;
+                chart.update();
+            }
+        );
+
+        $("input[name=display-active]").change(
+            function() {
+                chart.data.datasets[ACTIVE_IX].hidden = !this.checked;
+                chart.update();
+            }
+        );
+    }
+</script>
+
+<select name="scale-type" class="custom-input-color form-control my-2">
+    <option value="linear">Scale: Linear</option>
+    <option value="logarithmic">Scale: Logarithmic</option>
+</select>
+<select name="chart-type" class="custom-input-color form-control my-2">
+    <option value="total">Displaying: Total</option>
+    <option value="daily-change">Displaying: Daily change</option>
+</select>
+<div class="form-check">
+    <input type="checkbox" class="form-check-input" id="display-confirmed" name="display-confirmed" checked="checked">
+    <label class="form-check-label" for="display-confirmed">
+        Display confirmed cases
+    </label>
+</div>
+<div class="form-check">
+    <input type="checkbox" class="form-check-input" id="display-confirmed" name="display-deaths" checked="checked">
+    <label class="form-check-label" for="display-deaths">
+        Display deaths
+    </label>
+</div>
+<div class="form-check">
+    <input type="checkbox" class="form-check-input" id="display-confirmed" name="display-recovered" checked="checked">
+    <label class="form-check-label" for="display-recovered">
+        Display recovered cases
+    </label>
+</div>
+<div class="form-check">
+    <input type="checkbox" class="form-check-input" id="display-confirmed" name="display-active">
+    <label class="form-check-label" for="display-active">
+        Display active cases
+    </label>
+</div>

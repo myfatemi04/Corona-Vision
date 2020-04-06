@@ -40,7 +40,8 @@ function new_chart(canvas_id) {
 				borderColor: 'orange',
 				fill: false,
 				data: [],
-				lineTension: 0
+				lineTension: 0,
+				hidden: true
 			}
 		]
 	};

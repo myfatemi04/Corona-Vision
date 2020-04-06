@@ -217,9 +217,11 @@ def estimate_risk_page():
 		age_percents = [0, 0.2, 0.2, 0.2, 0.4, 1.3, 3.6, 8.0, 14.8]
 
 		symptoms_text = (request.form.get("symptoms") or "").lower()
-		possible_symptoms = [
+		possible_mild_symptoms = [
 			"fever",
-			"cough",
+			"cough"
+		]
+		possible_severe_symptoms = [
 			"shortness of breath",
 			"trouble breathing",
 			"hard breathing",
@@ -234,13 +236,15 @@ def estimate_risk_page():
 			"pain in chest",
 		]
 
-		symptoms = [symptom for symptom in possible_symptoms if symptom in symptoms_text]
+		mild_symptoms = [symptom.capitalize() for symptom in possible_mild_symptoms if symptom in symptoms_text]
+		severe_symptoms = [symptom.capitalize() for symptom in possible_severe_symptoms if symptom in symptoms_text]
 
 		return render_template("estimate_risk.html",
 			age=age,
 			age_danger=age_dangers[age_bracket],
 			age_mortality=age_percents[age_bracket],
-			symptoms=symptoms
+			mild_symptoms=mild_symptoms,
+			severe_symptoms=severe_symptoms
 		)
 	else:
 		return render_template("estimate_risk.html")

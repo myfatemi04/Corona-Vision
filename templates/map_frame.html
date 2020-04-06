@@ -70,16 +70,7 @@
 					<div class="d-flex flex-column">
 						<h3>Charts</h3>
 						<a id="download-chart" style="display: none;"></a>
-						<div>
-							<select name="scale-type" class="custom-input-color form-control my-2">
-								<option value="linear">Scale: Linear</option>
-								<option value="logarithmic">Scale: Logarithmic</option>
-							</select>
-							<select name="chart-type" class="custom-input-color form-control my-2">
-								<option value="total">Displaying: Total</option>
-								<option value="daily-change">Displaying: Daily change</option>
-							</select>
-						</div>
+						{% include "chart_options.html" %}
 						<div>
 							<canvas id="chart"></canvas><br/>
 							<button class="btn custom-button-color" onclick="download_canvas('chart')">Download world chart</button>
