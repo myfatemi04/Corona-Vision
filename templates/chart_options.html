@@ -1,4 +1,13 @@
 <script>
+    function update_chart_location() {
+        let country = $("#country-selector")[0].value;
+        let province = $("#province-selector")[0].value;
+        let admin2 = $("#admin2-selector")[0].value;
+        
+        let label = generate_name(country, province, admin2);
+        
+        show_chart(country, province, admin2, label, main_chart);
+    }
     function init_chart_options(chart) {
         $("select[name=scale-type]").change(
             function() {
@@ -61,19 +70,19 @@
     </label>
 </div>
 <div class="form-check">
-    <input type="checkbox" class="form-check-input" id="display-confirmed" name="display-deaths" checked="checked">
+    <input type="checkbox" class="form-check-input" id="display-deaths" name="display-deaths" checked="checked">
     <label class="form-check-label" for="display-deaths">
         Display deaths
     </label>
 </div>
 <div class="form-check">
-    <input type="checkbox" class="form-check-input" id="display-confirmed" name="display-recovered" checked="checked">
+    <input type="checkbox" class="form-check-input" id="display-recovered" name="display-recovered" checked="checked">
     <label class="form-check-label" for="display-recovered">
         Display recovered cases
     </label>
 </div>
 <div class="form-check">
-    <input type="checkbox" class="form-check-input" id="display-confirmed" name="display-active">
+    <input type="checkbox" class="form-check-input" id="display-active" name="display-active">
     <label class="form-check-label" for="display-active">
         Display active cases
     </label>

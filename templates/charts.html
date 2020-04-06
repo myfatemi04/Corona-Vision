@@ -14,16 +14,6 @@
 				init_chart_options(main_chart);
 				update_chart_location();
 			}
-			
-			function update_chart_location() {
-				let country = $("#country-selector")[0].value;
-				let province = $("#province-selector")[0].value;
-				let admin2 = $("#admin2-selector")[0].value;
-				
-				let label = generate_name(country, province, admin2);
-				
-				show_chart(country, province, admin2, label, main_chart);
-			}
 
 			function download_canvas() {
 				let url = $("#main-canvas")[0].toDataURL("image/png;base64");

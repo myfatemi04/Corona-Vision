@@ -96,6 +96,7 @@ let circle_colors = {
 
 let last_zoom = 2;
 let min_radius = 2500;
+let is_api_ready = false;
 
 let zoomins = {
 	active: 1,
@@ -136,39 +137,26 @@ function init_coronamap() {
 	setTimeout(reload_cases, 500);
 }
 
-function init() {
+function init_map() {
 	init_selectors(update_info);
-
-	chart = new_chart("chart");
 	
-	$("select[name=scale-type]").change(
-		function() {
-			if (this.value == 'logarithmic' || this.value == 'linear') {
-				set_scale_type(this.value);
-				show_chart(country, province, admin2, generate_name(country, province, admin2), chart);
-			}
-		}
-	)
-	$("select[name=chart-type]").change(
-		function() {
-			chart_type = this.value;
-			show_chart(country, province, admin2, generate_name(country, province, admin2), chart);
-		}
-	)
+	chart = new_chart("chart");
 	$("select[name=map-type]").change(
 		function() {
 			map_type = this.value;
 			reload_cases();
 		}
-	)
+	);
 	$("select[name=map-display]").change(
 		function() {
 			feature_display = this.value;
 			reload_cases();
 		}
-	)
+	);
 	
+	init_chart_options(chart);
 	show_chart('', '', '', 'World', chart);
+	
 }
 
 let chart = null;
