@@ -25,23 +25,24 @@ if not os.path.isfile("datapoints.db"):
 	with app.app_context():
 		db.create_all()
 
-@app.route("/")
-def main_page():
+def get_sorted_dates():
 	dates = []
 	session = db.session()
 	for tup in session.query(Datapoint.entry_date).distinct():
 		dates.append(tup[0])
+	return sorted(dates, reverse=True)
 
-	return render_template("main_page.html", sorted_dates=sorted(dates, reverse=True))
+@app.route("/")
+def main_page():
+	sorted_dates=get_sorted_dates()
+
+	return render_template("main_page.html", sorted_dates=sorted_dates)
 
 @app.route("/map")
 def map_frontend():
-	dates = []
-	session = db.session()
-	for tup in session.query(Datapoint.entry_date).distinct():
-		dates.append(tup[0])
+	sorted_dates=get_sorted_dates()
 
-	return render_template("map.html", sorted_dates=sorted(dates, reverse=True))
+	return render_template("map.html", sorted_dates=sorted_dates)
 
 def get_bounding_box():
 	ne_lat = float(request.args.get("ne_lat") or 90)
@@ -99,12 +100,19 @@ def find_total_world_cases():
 @app.route("/cases/totals")
 def find_total_nation_cases():
 	entry_date = parse_date(request.args.get("date"))
+	sort = get_("sort", default="")
 	if entry_date:
 		nation = get_country_province_admin2()
 		cases = find_cases_by_nation(**nation)
 		cases = cases.filter_by(
 			entry_date=entry_date
 		)
+		
+		if sort:
+			if sort == 'confirmed':
+				cases = cases.order_by(Datapoint.confirmed.desc())
+			elif sort == 'dconfirmed':
+				cases = cases.order_by(Datapoint.dconfirmed.desc())
 
 		return json_list(cases.all())
 	else:
@@ -202,18 +210,37 @@ def estimate_risk_page():
 	if "submitted" in request.form:
 		if "age" not in request.form:
 			return render_template("estimate_risk.html", need_fields=True)
+
 		age = int(request.form.get("age"))
 		age_bracket = min(age // 10, 8)
-		age_dangers = [
-			"none", "low", "low", "low", "low", "slight", "moderate", "moderate-high", "high"
+		age_dangers = ["none", "low", "low", "low", "low", "slight", "moderate", "moderate-high", "high"]
+		age_percents = [0, 0.2, 0.2, 0.2, 0.4, 1.3, 3.6, 8.0, 14.8]
+
+		symptoms_text = (request.form.get("symptoms") or "").lower()
+		possible_symptoms = [
+			"fever",
+			"cough",
+			"shortness of breath",
+			"trouble breathing",
+			"hard breathing",
+			"difficulty breathing",
+			"difficult breathing",
+			"hard to breathe",
+			"body temperature",
+			"high temperature",
+			"chest pain",
+			"chest pressure",
+			"pressure in chest",
+			"pain in chest",
 		]
-		age_percents = [
-			0, 0.2, 0.2, 0.2, 0.4, 1.3, 3.6, 8.0, 14.8
-		]
+
+		symptoms = [symptom for symptom in possible_symptoms if symptom in symptoms_text]
+
 		return render_template("estimate_risk.html",
 			age=age,
 			age_danger=age_dangers[age_bracket],
-			age_mortality=age_percents[age_bracket]
+			age_mortality=age_percents[age_bracket],
+			symptoms=symptoms
 		)
 	else:
 		return render_template("estimate_risk.html")
@@ -224,16 +251,17 @@ def history_page():
 
 @app.route("/map_frame")
 def map_frame():
-	dates = []
-	session = db.session()
-	for tup in session.query(Datapoint.entry_date).distinct():
-		dates.append(tup[0])
+	sorted_dates=get_sorted_dates()
 
-	return render_template("map_frame.html", sorted_dates=sorted(dates, reverse=True))
+	return render_template("map_frame.html", sorted_dates=sorted_dates)
 
 @app.route("/contact")
 def contact_page():
 	return render_template("contact.html")
+
+@app.route("/data")
+def data_page():
+	return render_template("data.html", sorted_dates=get_sorted_dates())
 
 @app.before_first_request
 def start_downloader():

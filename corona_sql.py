@@ -52,12 +52,12 @@ class Datapoint(Base):
 	
 	confirmed = Column(Integer)
 	recovered = Column(Integer)
-	dead = Column(Integer)
+	deaths = Column(Integer)
 	active = Column(Integer)
 	
 	dconfirmed = Column(Integer)
 	drecovered = Column(Integer)
-	ddead = Column(Integer)
+	ddeaths = Column(Integer)
 	dactive = Column(Integer)
 	
 	def json_serializable(self):
@@ -77,12 +77,12 @@ class Datapoint(Base):
 
 			"confirmed": float(self.confirmed),
 			"recovered": float(self.recovered),
-			"dead": float(self.dead),
+			"deaths": float(self.deaths),
 			"active": float(self.active),
 
 			"dconfirmed": float(self.dconfirmed),
 			"drecovered": float(self.drecovered),
-			"ddead": float(self.ddead),
+			"ddeaths": float(self.ddeaths),
 			"dactive": float(self.dactive)
 		}
 
@@ -97,19 +97,19 @@ def total_cases(country, province, date_):
 	
 	total_confirmed = 0
 	total_recovered = 0
-	total_dead = 0
+	total_deaths = 0
 	total_active = 0
 	
 	for case in result:
 		total_confirmed += case.confirmed
 		total_recovered += case.recovered
-		total_dead += case.dead
+		total_deaths += case.deaths
 		total_active += case.active
 		
 	return {
 		"total_confirmed": total_confirmed,
 		"total_recovered": total_recovered,
-		"total_dead": total_dead,
+		"total_deaths": total_deaths,
 		"total_active": total_active
 	}
 

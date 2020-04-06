@@ -1,6 +1,6 @@
 
 let CONFIRMED_IX = 0;
-let DEAD_IX = 1;
+let DEATHS_IX = 1;
 let RECOVERED_IX = 2;
 let ACTIVE_IX = 3;
 
@@ -19,7 +19,7 @@ function new_chart(canvas_id) {
 				lineTension: 0
 			},
 			{
-				label: 'Dead',
+				label: 'Deaths',
 				backgroundColor: 'red',
 				borderColor: 'red',
 				fill: false,
@@ -112,12 +112,12 @@ function update_chart(chart, data) {
 		chart.data.labels.push(total.entry_date);
 		if (chart_type == 'total') {
 			chart.data.datasets[CONFIRMED_IX].data.push(total.confirmed);
-			chart.data.datasets[DEAD_IX].data.push(total.dead);
+			chart.data.datasets[DEATHS_IX].data.push(total.deaths);
 			chart.data.datasets[RECOVERED_IX].data.push(total.recovered);
 			chart.data.datasets[ACTIVE_IX].data.push(total.active);
 		} else if (chart_type == 'daily-change') {
 			chart.data.datasets[CONFIRMED_IX].data.push(total.dconfirmed);
-			chart.data.datasets[DEAD_IX].data.push(total.ddead);
+			chart.data.datasets[DEATHS_IX].data.push(total.ddeaths);
 			chart.data.datasets[RECOVERED_IX].data.push(total.drecovered);
 			chart.data.datasets[ACTIVE_IX].data.push(total.dactive);
 		}

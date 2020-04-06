@@ -85,12 +85,12 @@ let dark_mode_style = [
 ];
 
 let infowindow = null;
-let feature_display = "active"; // can be either: active, confirmed, dead, or recovered
+let feature_display = "active"; // can be either: active, confirmed, deaths, or recovered
 let map_type = "total"; // can be either: total, daily-change
 let circle_colors = {
 	active: "#de7c21",
 	confirmed: "#ebf765",
-	dead: "#f54842",
+	deaths: "#f54842",
 	recovered: "#39e639"
 }
 
@@ -101,11 +101,11 @@ let zoomins = {
 	active: 1,
 	confirmed: 1,
 	recovered: 1,
-	dead: 1,
+	deaths: 1,
 	dactive: 1,
 	dconfirmed: 1,
 	drecovered: 1,
-	ddead: 1
+	ddeaths: 1
 }
 
 function init_coronamap() {
@@ -216,7 +216,7 @@ function format_data(label, data) {
 		<span style="color: #f5f5f5;">${label}</span><br/>
 		<span style="color: ${circle_colors.confirmed}">${data.confirmed} (+${data.dconfirmed}) Confirmed</span><br/>
 		<span style="color: ${circle_colors.active}">${data.active} (+${data.dactive}) Active</span><br/>
-		<span style="color: ${circle_colors.dead}">${data.dead} (+${data.ddead}) Dead</span><br/>
+		<span style="color: ${circle_colors.deaths}">${data.deaths} (+${data.ddeaths}) Deaths</span><br/>
 		<span style="color: ${circle_colors.recovered}">${data.recovered} (+${data.drecovered}) Recovered</span><br/>
 	</div>
 	`;
@@ -232,11 +232,11 @@ function add_world_info(person, entry_date) {
 			if (data) {
 				zoomins.confirmed = data.confirmed/data.confirmed;
 				zoomins.active = data.confirmed/data.active;
-				zoomins.dead = data.confirmed/data.dead;
+				zoomins.deaths = data.confirmed/data.deaths;
 				zoomins.recovered = data.confirmed/data.recovered;
 				zoomins.dconfirmed = data.confirmed/data.dconfirmed;
 				zoomins.dactive = data.confirmed/data.dactive;
-				zoomins.ddead = data.confirmed/data.ddead;
+				zoomins.ddeaths = data.confirmed/data.ddeaths;
 				zoomins.drecovered = data.confirmed/data.drecovered;
 			} else {
 			}

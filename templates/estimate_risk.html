@@ -1,12 +1,12 @@
 <html>
 	<head>
 		{% include "styles.html" %}
-		<title>Calculate your risk</title>
+		<title>Estimate your risk</title>
 	</head>
 	<body>
 		{% include "navbar.html" %}
 		<div class="container p-2">
-			<h1 class="text-center">Calculate your risk</h1>
+			<h1 class="text-center">Estimate your risk</h1>
 			{% if "submitted" in request.form %}
 				<div class="container box d-flex flex-column">
 					<span style="font-size: 3rem;">Results</span>
@@ -45,20 +45,8 @@
 							</a>
 						</p><br/>
 						
-						<span style="font-size: 2rem;">Contagiousness:</span>
-						<p>
-							Each infected person will spread the virus to roughly 2.24-3.58 people (on average).
-							<a class="small" href="https://www.sciencedirect.com/science/article/pii/S1201971220300539">
-								Source
-							</a>
-							<a class="small" href="https://www.worldometers.info/coronavirus/#repro">
-								More info
-							</a><br/>
-							<b>It's vital that you stay inside, for the safety of others.</b><br/>
-							<a href="https://www.cdc.gov/coronavirus/2019-ncov/if-you-are-sick/steps-when-sick.html">
-								Read this if you think you are sick.
-							</a>
-						</p><br/>
+						<span style="font-size: 2rem;">Symptoms:</span>
+						
 					</div>
 				</div>
 			{% endif %}
@@ -96,7 +84,7 @@
 								<input type="checkbox" id="cond_cancer" name="cond_cancer">
 									<label for="cond_cancer">Cancer</label>
 								<br/>
-								<input type="checkbox" id="cond_none" name="cond_none" checked="checked">
+								<input type="checkbox" id="cond_none" name="cond_none">
 									<label for="cond_none">None</label>
 								<br/>
 							</div>
