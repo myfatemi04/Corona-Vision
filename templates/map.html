@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        {% include "styles.html" %}
+        <title>Corona Vision - COVID-19 Map</title>
+        <style>
+            /* html, body {
+                margin: 0px;
+                padding: 0px;
+                height: 100%;
+                width: 100%;
+            } */
+            #content
+            {
+                position: absolute;
+                left: 0; right: 0; bottom: 0; top: 0;
+                /* display: flex; */
+            }
+        </style>
+    </head>
+    <body>
+        <div id="top">
+            {% include "navbar.html" %}
+        </div>
+        {% include "map_frame.html" %}
+    </body>
+</html>

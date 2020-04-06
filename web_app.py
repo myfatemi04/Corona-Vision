@@ -27,16 +27,21 @@ if not os.path.isfile("datapoints.db"):
 
 @app.route("/")
 def main_page():
-	return render_template("main_page.html")
-
-@app.route("/findnearme")
-def find_cases_frontend():
 	dates = []
 	session = db.session()
 	for tup in session.query(Datapoint.entry_date).distinct():
 		dates.append(tup[0])
-	
-	return render_template("find_cases.html", sorted_dates=sorted(dates, reverse=True))
+
+	return render_template("main_page.html", sorted_dates=sorted(dates, reverse=True))
+
+@app.route("/map")
+def map_frontend():
+	dates = []
+	session = db.session()
+	for tup in session.query(Datapoint.entry_date).distinct():
+		dates.append(tup[0])
+
+	return render_template("map.html", sorted_dates=sorted(dates, reverse=True))
 
 def get_bounding_box():
 	ne_lat = float(request.args.get("ne_lat") or 90)
@@ -180,9 +185,9 @@ def list_province_admin2():
 		if result[0]
 	]))
 
-@app.route("/visual")
-def visual_data_page():
-	return render_template("visual.html")
+@app.route("/charts")
+def charts_data_page():
+	return render_template("charts.html")
 	
 @app.route("/whattodo")
 def what_to_do_page():
@@ -192,11 +197,11 @@ def what_to_do_page():
 def recent_page():
 	return render_template("recent.html")
 
-@app.route("/calculaterisk", methods=['GET', 'POST'])
-def calculate_risk_page():
+@app.route("/estimaterisk", methods=['GET', 'POST'])
+def estimate_risk_page():
 	if "submitted" in request.form:
 		if "age" not in request.form:
-			return render_template("calculate_risk.html", need_fields=True)
+			return render_template("estimate_risk.html", need_fields=True)
 		age = int(request.form.get("age"))
 		age_bracket = min(age // 10, 8)
 		age_dangers = [
@@ -205,17 +210,30 @@ def calculate_risk_page():
 		age_percents = [
 			0, 0.2, 0.2, 0.2, 0.4, 1.3, 3.6, 8.0, 14.8
 		]
-		return render_template("calculate_risk.html",
+		return render_template("estimate_risk.html",
 			age=age,
 			age_danger=age_dangers[age_bracket],
 			age_mortality=age_percents[age_bracket]
 		)
 	else:
-		return render_template("calculate_risk.html")
+		return render_template("estimate_risk.html")
 
 @app.route("/history")
 def history_page():
 	return render_template("spread_history.html")
+
+@app.route("/map_frame")
+def map_frame():
+	dates = []
+	session = db.session()
+	for tup in session.query(Datapoint.entry_date).distinct():
+		dates.append(tup[0])
+
+	return render_template("map_frame.html", sorted_dates=sorted(dates, reverse=True))
+
+@app.route("/contact")
+def contact_page():
+	return render_template("contact.html")
 
 @app.before_first_request
 def start_downloader():

@@ -1,0 +1,123 @@
+<html>
+	<head>
+		{% include "styles.html" %}
+		<title>Calculate your risk</title>
+	</head>
+	<body>
+		{% include "navbar.html" %}
+		<div class="container p-2">
+			<h1 class="text-center">Calculate your risk</h1>
+			{% if "submitted" in request.form %}
+				<div class="container box d-flex flex-column">
+					<span style="font-size: 3rem;">Results</span>
+					<div style="margin-left: 2em;">
+						<span style="font-size: 2rem;">Age:</span>
+						<p>
+							Your risk based on your age: <b>{{ age_danger }}</b>.<br/>
+							The mortality rate within your age group is <b>{{ age_mortality }}%</b>.<br/>
+							<a class="small" href="https://www.worldometers.info/coronavirus/coronavirus-age-sex-demographics/">
+								Source
+							</a>
+						</p><br/>
+						
+						<span style="font-size: 2rem;">Preexisting conditions:</span><br/>
+						<p>
+							{% if "cond_heart" in request.form %}
+								<b>Heart disease</b> has been correlated with Coronavirus (found in 10.5% of deaths).<br/>
+							{% endif %}
+							{% if "cond_diabetes" in request.form %}
+								<b>Diabetes</b> has been correlated with Coronavirus (found in 7.3% of deaths).<br/>
+							{% endif %}
+							{% if "cond_chronic_respiratory_disease" in request.form %}
+								<b>Chronic respiratory disease</b> has been correlated with Coronavirus (found in 6.3% of deaths).<br/>
+							{% endif %}
+							{% if "cond_hypertension" in request.form %}
+								<b>Hypertension</b> has been correlated with Coronavirus (found in 6.0% of deaths).<br/>
+							{% endif %}
+							{% if "cond_cancer" in request.form %}
+								<b>Cancer</b> has been correlated with Coronavirus (found in 5.6% of deaths).<br/>
+							{% endif %}
+							{% if "cond_none" in request.form %}
+								<b>None</b>: your chance of death from Coronavirus is lower (0.9% of deaths had no preexisting conditions).<br/>
+							{% endif %}
+							<a class="small" href="https://www.worldometers.info/coronavirus/coronavirus-age-sex-demographics/#pre-existing-conditions">
+								More info
+							</a>
+						</p><br/>
+						
+						<span style="font-size: 2rem;">Contagiousness:</span>
+						<p>
+							Each infected person will spread the virus to roughly 2.24-3.58 people (on average).
+							<a class="small" href="https://www.sciencedirect.com/science/article/pii/S1201971220300539">
+								Source
+							</a>
+							<a class="small" href="https://www.worldometers.info/coronavirus/#repro">
+								More info
+							</a><br/>
+							<b>It's vital that you stay inside, for the safety of others.</b><br/>
+							<a href="https://www.cdc.gov/coronavirus/2019-ncov/if-you-are-sick/steps-when-sick.html">
+								Read this if you think you are sick.
+							</a>
+						</p><br/>
+					</div>
+				</div>
+			{% endif %}
+			<div class="container box d-flex flex-column">
+				<form action="" method="post">
+					<input type="hidden" name="submitted">
+					<div class="grid">
+						<div class="row my-2">
+							<div class="col text-right">
+								<label for="age">What is your age?</label>
+								<a class="small" href="https://www.worldometers.info/coronavirus/coronavirus-age-sex-demographics/">Source</a>
+							</div>
+							<div class="col text-left">
+								<input class="custom-input-color form-control" type="number" id="age" name="age" required>
+							</div>
+						</div>
+						<div class="row my-2">
+							<div class="col text-right">
+								<label>Check off any pre-existing conditions:</label>
+								<a class="small" href="https://www.worldometers.info/coronavirus/coronavirus-age-sex-demographics/#pre-existing-conditions">Source</a>
+							</div>
+							<div class="col text-left">
+								<input type="checkbox" id="cond_heart" name="cond_heart">
+									<label for="cond_heart">Heart disease</label>
+								<br/>
+								<input type="checkbox" id="cond_diabetes" name="cond_heart">
+									<label for="cond_diabetes">Diabetes</label>							
+								<br/>
+								<input type="checkbox" id="cond_chronic_respiratory_disease" name="cond_chronic_respiratory_disease">
+									<label for="cond_chronic_respiratory_disease">Chronic respiratory disease</label>
+								<br/>
+								<input type="checkbox" id="cond_hypertension" name="cond_hypertension">
+									<label for="cond_hypertension">Hypertension</label>			
+								<br/>
+								<input type="checkbox" id="cond_cancer" name="cond_cancer">
+									<label for="cond_cancer">Cancer</label>
+								<br/>
+								<input type="checkbox" id="cond_none" name="cond_none" checked="checked">
+									<label for="cond_none">None</label>
+								<br/>
+							</div>
+						</div>
+						<div class="row my-2">
+							<div class="col text-right">
+								<label for="symptoms">List symptoms you are experiencing, if any:</label>
+							</div>
+							<div class="col text-left">
+								<textarea name="symptoms" id="symptoms" class="custom-input-color form-control"></textarea>
+							</div>
+						</div>
+						<div class="row pt-2">
+							<div class="col"></div>
+							<div class="col">
+								<button type="submit" class="btn custom-button-color">Submit</button>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</body>
+</html>

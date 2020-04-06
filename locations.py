@@ -36,6 +36,8 @@ def get_country_location(country_name):
     country_code = get_country_code(country_name)
     if not country_code:
         return NOT_FOUND
+    elif country_code not in country_locations:
+        return NOT_FOUND
 
     return country_locations[country_code]
 
