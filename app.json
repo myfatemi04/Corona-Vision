@@ -7,14 +7,14 @@
 	"python",
 	"flask"
   ],
-  "website": "https://coronavision.herokuapp.com"
+  "website": "https://coronavision.herokuapp.com",
   "addons": [],
   "env": {},
   "environments": {},
   "formation": {
-	"web": {
-		"quantity": 2,
-		"size": "Performance-M"
-	}
+    "web": {
+      "quantity": 2,
+      "size": "Performance-M"
+    }
   }
 }
