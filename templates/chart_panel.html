@@ -1,0 +1,10 @@
+<!-- All javascript init must go in the head of the parent document -->
+<div class="box d-flex flex-column">
+    <a id="download-chart" style="display: none;"></a>
+    <canvas id="chart"></canvas>
+    <button class="btn custom-button-color my-2" onclick="download_canvas()">
+        Save Image
+    </button>
+    {% include "selectors.html" %}
+    {% include "chart_options.html" %}
+</div>

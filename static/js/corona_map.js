@@ -138,9 +138,8 @@ function init_coronamap() {
 }
 
 function init_map() {
-	init_selectors(update_info);
+	init_selectors();
 	
-	chart = new_chart("chart");
 	$("select[name=map-type]").change(
 		function() {
 			map_type = this.value;
@@ -153,17 +152,6 @@ function init_map() {
 			reload_cases();
 		}
 	);
-	
-	init_chart_options(chart);
-	show_chart('', '', '', 'World', chart);
-	
-}
-
-let chart = null;
-
-function set_scale_type(scale_type) {
-	chart.options.scales.yAxes[0].type = scale_type;
-	chart.update();
 }
 
 function init_autocomplete() {
@@ -200,7 +188,7 @@ function find_cases() {
 
 function format_data(label, data) {
 	let formatted = `
-	<div class="font-weight-bold" style="font-size: 1.5rem; background-color: #212121;">
+	<div style="font-size: 1.5rem; background-color: #212121;">
 		<span style="color: #f5f5f5;">${label}</span><br/>
 		<span style="color: ${circle_colors.confirmed}">${data.confirmed} (+${data.dconfirmed}) Confirmed</span><br/>
 		<span style="color: ${circle_colors.active}">${data.active} (+${data.dactive}) Active</span><br/>
@@ -234,25 +222,6 @@ function add_world_info(person, entry_date) {
 	xhr.send()
 }
 
-function update_info() {
-	let entry_date = $("#date")[0].value;
-	let xhr = new XMLHttpRequest();
-	xhr.onreadystatechange = function() {
-		if (this.readyState == 4 && this.status == 200) {
-			let data = JSON.parse(this.responseText)[0];
-			if (data) {
-				$("#stats-info")[0].innerHTML = format_data(generate_name(country, province, admin2), data);
-			} else {
-				$("#stats-info")[0].innerHTML = '';
-			}
-		}
-	}
-	xhr.open("GET", `/cases/totals?country=${country}&province=${province}&admin2=${admin2}&date=${entry_date}`)
-	xhr.send()
-	
-	show_chart(country, province, admin2, generate_name(country, province, admin2), chart);
-}
-
 function add_province_info(person, entry_date) {
 	if (person && person.province) {
 		let xhr = new XMLHttpRequest();
@@ -274,7 +243,6 @@ function add_province_info(person, entry_date) {
 
 function update_most_recent(entry_date) {
 	add_world_info(most_recent_person, entry_date);
-	update_info();
 }
 
 function generate_name(country, province, admin2) {
@@ -302,6 +270,7 @@ function reload_cases() {
 
 			let entry_date = $("#date")[0].value;
 			update_most_recent(entry_date);
+			update_stats();
 
 			if (most_recent_person && most_recent_person.entry_date != entry_date) {
 				infowindow.close();

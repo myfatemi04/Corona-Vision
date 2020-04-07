@@ -2,53 +2,23 @@
 	<head>
 		<title>Corona Vision - COVID-19 Charts</title>
 		{% include "styles.html" %}
-		<script src="/static/js/corona_chart.js"></script>
-		<script src="/static/js/selector.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
-		<script type="text/javascript">
-			let main_chart = null;
-
-			function init() {
-				main_chart = new_chart("main-canvas");
-				init_selectors(update_chart_location);
-				init_chart_options(main_chart);
-				update_chart_location();
-			}
-
-			function download_canvas() {
-				let url = $("#main-canvas")[0].toDataURL("image/png;base64");
-				let filename = 'COVID19_Chart';
-				if (country) filename += `_${country}`;
-				if (province) filename += `_${province}`;
-				if (admin2) filename += `_${admin2}`;
-				filename += '.png';
-
-				$("#download-chart")[0].href = url;
-				$("#download-chart")[0].setAttribute("download", filename);
-				$("#download-chart")[0].click();
-			}
-		</script>
+		<script src="/static/js/selector.js"></script>
+		<script src="/static/js/corona_chart.js"></script>
+		<script src="/static/js/chart.min.js"></script>
 		<script>
-			function remove_loading() {
-				$("#loading")[0].remove();
+			function init() {
+    			CHART_OPTIONS.chart = new_chart("chart");
+				init_chart_options();
+				init_selectors();
+				reload_chart();
 			}
 		</script>
 	</head>
 	<body onload="init()">
 		{% include "navbar.html" %}
 		<div class="container p-2">
-			<h1 class="text-center">Charts</h1>
-			<div class="text-left box d-flex flex-column">
-				{% include "selectors.html" %}
-				{% include "chart_options.html" %}
-				<a id="download-chart" style="display: none;"></a>
-			</div>
-			<div class="box">
-				<canvas id="main-canvas"></canvas>
-				<button class="btn custom-button-color mt-2" onclick="download_canvas()">
-					Save Image
-				</button>
-			</div>
+			{% include "chart_panel.html" %}
 		</div>
 	</body>
 </html>

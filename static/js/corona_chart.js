@@ -1,10 +1,84 @@
-
 let CONFIRMED_IX = 0;
 let DEATHS_IX = 1;
 let RECOVERED_IX = 2;
 let ACTIVE_IX = 3;
 
-let chart_type = 'total';
+let CHART_OPTIONS = {
+    country: "",
+    province: "",
+    admin2: "",
+    scale_type: "linear",
+    chart_type: "total",
+    chart: null,
+    reload_function: reload_chart
+};
+
+function download_canvas() {
+	let url = $("#chart")[0].toDataURL("image/png;base64");
+	let filename = 'COVID19_Chart';
+	if (country) filename += `_${country}`;
+	if (province) filename += `_${province}`;
+	if (admin2) filename += `_${admin2}`;
+	filename += '.png';
+
+	$("#download-chart")[0].href = url;
+	$("#download-chart")[0].setAttribute("download", filename);
+	$("#download-chart")[0].click();
+}
+
+function init_chart() {
+	init_chart_options();
+	reload_chart();
+}
+
+function init_chart_options() {
+    let chart = CHART_OPTIONS.chart;
+
+    $("select[name=scale-type]").change(
+        function() {
+            if (this.value == 'logarithmic' || this.value == 'linear') {
+                CHART_OPTIONS.scale_type = this.value;
+                chart.options.scales.yAxes[0].type = this.value;
+                chart.update();
+            }
+        }
+    );
+
+    $("select[name=chart-type]").change(
+        function() {
+            CHART_OPTIONS.chart_type = this.value;
+            CHART_OPTIONS.reload_function();
+        }
+    );
+
+    $("input[name=display-confirmed]").change(
+        function() {
+            chart.data.datasets[CONFIRMED_IX].hidden = !this.checked;
+            chart.update();
+        }
+    );
+
+    $("input[name=display-deaths]").change(
+        function() {
+            chart.data.datasets[DEATHS_IX].hidden = !this.checked;
+            chart.update();
+        }
+    );
+
+    $("input[name=display-recovered]").change(
+        function() {
+            chart.data.datasets[RECOVERED_IX].hidden = !this.checked;
+            chart.update();
+        }
+    );
+
+    $("input[name=display-active]").change(
+        function() {
+            chart.data.datasets[ACTIVE_IX].hidden = !this.checked;
+            chart.update();
+        }
+    );
+}
 
 function new_chart(canvas_id) {
 	let data = {
@@ -98,7 +172,8 @@ function get_canvas(a) {
 	return document.getElementById(a).getContext('2d');
 }
 
-function reset_chart(chart) {
+function reset_chart() {
+	let chart = CHART_OPTIONS.chart;
 	chart.options.title.text = 'Cases';
 	chart.data.labels = [];
 	for (let i = 0; i < chart.data.datasets.length; i++) {
@@ -107,38 +182,50 @@ function reset_chart(chart) {
 	chart.update();
 }
 
-function update_chart(chart, data) {
-	reset_chart(chart);
+function add_chart_data(data) {
+	reset_chart();
+	let chart = CHART_OPTIONS.chart;
 	for (let total of data) {
 		chart.data.labels.push(total.entry_date);
-		if (chart_type == 'total') {
-			chart.data.datasets[CONFIRMED_IX].data.push(total.confirmed);
-			chart.data.datasets[DEATHS_IX].data.push(total.deaths);
-			chart.data.datasets[RECOVERED_IX].data.push(total.recovered);
-			chart.data.datasets[ACTIVE_IX].data.push(total.active);
-		} else if (chart_type == 'daily-change') {
-			chart.data.datasets[CONFIRMED_IX].data.push(total.dconfirmed);
-			chart.data.datasets[DEATHS_IX].data.push(total.ddeaths);
-			chart.data.datasets[RECOVERED_IX].data.push(total.drecovered);
-			chart.data.datasets[ACTIVE_IX].data.push(total.dactive);
+		let datasets = chart.data.datasets;
+		if (CHART_OPTIONS.chart_type == 'total') {
+			datasets[CONFIRMED_IX].data.push(total.confirmed);
+			datasets[DEATHS_IX].data.push(total.deaths);
+			datasets[RECOVERED_IX].data.push(total.recovered);
+			datasets[ACTIVE_IX].data.push(total.active);
+		} else if (CHART_OPTIONS.chart_type == 'daily-change') {
+			datasets[CONFIRMED_IX].data.push(total.dconfirmed);
+			datasets[DEATHS_IX].data.push(total.ddeaths);
+			datasets[RECOVERED_IX].data.push(total.drecovered);
+			datasets[ACTIVE_IX].data.push(total.dactive);
 		}
 	}
 	chart.update()
 }
 
-function show_chart(country, province, admin2, label, chart) {
-	reset_chart(chart);
+function reload_chart() {
+	reset_chart();
+	
+	let country = CHART_OPTIONS.country;
+	let province = CHART_OPTIONS.province;
+	let admin2 = CHART_OPTIONS.admin2;
+	
+	let label = generate_name(country, province, admin2);
+
+	let chart = CHART_OPTIONS.chart;
+
 	let params = {
 		country: country,
 		province: province,
 		admin2: admin2,
 		world: "World"
 	}
+	
 	$.getJSON(
 		"/cases/totals_sequence",
 		params,
 		function(data) {
-			update_chart(chart, data);
+			add_chart_data(data);
 			chart.options.title.text = 'Cases in: ' + label;
 			chart.update();
 		}

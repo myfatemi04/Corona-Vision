@@ -2,10 +2,6 @@ let country_list = [];
 let province_list = {};
 let admin2_list = {};
 
-let country = '';
-let province = '';
-let admin2 = '';
-
 let province_head = '<option value="">Whole country</option>';
 let country_head = '<option value="">Whole world</option>';
 let admin2_head = '<option value="">Whole state</option>';
@@ -27,30 +23,31 @@ function generate_name(country, province, admin2) {
     return l;
 }
 
-function add_list(elem, head, country_list) {
+function add_selector_items(elem, head, country_list) {
     elem.innerHTML = head;
     for (let country of country_list) {
         elem.innerHTML += `<option value="${country}">${country}</option>`;
     }
 }
 
-function init_selectors(update_func) {
+function init_selectors() {
+
     $.getJSON(
         "/list/countries",
         {},
         function(data) {
-            add_list($("#country-selector")[0], country_head, data);
+            add_selector_items($("#country-selector")[0], country_head, data);
             country_list = data;
         }
     )
 
     $("#country-selector").change(
         function() {
-            country = this.value;
-            province = "";
-            admin2 = "";
+            CHART_OPTIONS.country = this.value;
+            CHART_OPTIONS.province = "";
+            CHART_OPTIONS.admin2 = "";
             
-            update_func();
+            CHART_OPTIONS.reload_function();
 
             if (!this.value) {
                 $("#province-selector")[0].disabled = true;
@@ -62,6 +59,7 @@ function init_selectors(update_func) {
                 $("#admin2-selector")[0].disabled = true;
                 $("#admin2-selector")[0].innerHTML = admin2_head;
                 
+                let country = CHART_OPTIONS.country;
 
                 if (!province_list.hasOwnProperty(country)) {
                     $.getJSON(
@@ -69,11 +67,11 @@ function init_selectors(update_func) {
                         { country: country },
                         function(data) {
                             province_list[country] = data;
-                            add_list($("#province-selector")[0], province_head, province_list[country]);
+                            add_selector_items($("#province-selector")[0], province_head, province_list[country]);
                         }
                     )
                 } else {
-                    add_list($("#province-selector")[0], province_head, province_list[country]);
+                    add_selector_items($("#province-selector")[0], province_head, province_list[country]);
                 }
             }
         }
@@ -81,16 +79,20 @@ function init_selectors(update_func) {
 
     $("#province-selector").change(
         function() {
-            province = this.value;
-            admin2 = "";
-
-            update_func();
+            CHART_OPTIONS.province = this.value;
+            CHART_OPTIONS.admin2 = "";
+            
+            CHART_OPTIONS.reload_function();
 
             if (!this.value) {
                 $("#admin2-selector")[0].disabled = true;
                 $("#admin2-selector")[0].innerHTML = admin2_head;
             } else {
                 $("#admin2-selector")[0].disabled = false;
+                
+                let country = CHART_OPTIONS.country;
+                let province = CHART_OPTIONS.province;
+                let admin2 = CHART_OPTIONS.admin2;
 
                 if (!admin2_list.hasOwnProperty(country)) {
                     admin2_list[country] = {};
@@ -102,11 +104,11 @@ function init_selectors(update_func) {
                         { country: country, province: province },
                         function(data) {
                             admin2_list[country][province] = data;
-                            add_list($("#admin2-selector")[0], admin2_head, admin2_list[country][province]);
+                            add_selector_items($("#admin2-selector")[0], admin2_head, admin2_list[country][province]);
                         }
                     );
                 } else {
-                    add_list($("#admin2-selector")[0], admin2_head, admin2_list[country][province]);
+                    add_selector_items($("#admin2-selector")[0], admin2_head, admin2_list[country][province]);
                 }
             }
         }
@@ -114,8 +116,9 @@ function init_selectors(update_func) {
 
     $("#admin2-selector").change(
         function() {
-            admin2 = $("#admin2-selector")[0].value;
-            update_func();
+            CHART_OPTIONS.admin2 = $("#admin2-selector")[0].value;
+            
+            CHART_OPTIONS.reload_function();
         }
     );
 }
