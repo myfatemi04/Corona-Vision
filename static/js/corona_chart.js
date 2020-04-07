@@ -15,11 +15,7 @@ let CHART_OPTIONS = {
 
 function download_canvas() {
 	let url = $("#chart")[0].toDataURL("image/png;base64");
-	let filename = 'COVID19_Chart';
-	if (country) filename += `_${country}`;
-	if (province) filename += `_${province}`;
-	if (admin2) filename += `_${admin2}`;
-	filename += '.png';
+	let filename = 'COVID19_Chart.png';
 
 	$("#download-chart")[0].href = url;
 	$("#download-chart")[0].setAttribute("download", filename);
