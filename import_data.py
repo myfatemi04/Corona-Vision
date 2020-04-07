@@ -103,14 +103,14 @@ def import_data(csv_text, entry_date):
 		primary.add((country, province, admin2))
 		
 		confirmed = row[confirmed_col]
-		dead = row[death_col]
+		deaths = row[death_col]
 		recovered = row[recovered_col]
 
 		if np.isnan(confirmed): confirmed = 0
-		if np.isnan(dead): dead = 0
+		if np.isnan(deaths): deaths = 0
 		if np.isnan(recovered): recovered = 0
 
-		active = confirmed - dead - recovered
+		active = confirmed - deaths - recovered
 
 		admin2_region = country, province, admin2
 		province_region = country, province, ''
@@ -144,7 +144,7 @@ def import_data(csv_text, entry_date):
 			if admin2_region not in location_data:
 				location_data[admin2_region] = country_location
 		
-		data_points = add_to_dict(data_points, country, province, admin2, (confirmed, dead, recovered, active))
+		data_points = add_to_dict(data_points, country, province, admin2, (confirmed, deaths, recovered, active))
 
 	print("\tFinished downloading and processing")
 	print("\tUploading...")
@@ -153,10 +153,10 @@ def import_data(csv_text, entry_date):
 		session = db.session()
 		for region, stats in data_points.items():
 			country, province, admin2 = region
-			confirmed, dead, recovered, active = stats
+			confirmed, deaths, recovered, active = stats
 			is_primary = region in primary
 
-			active = confirmed - recovered - dead
+			active = confirmed - recovered - deaths
 
 			lat, lng = (0, 0)
 			location_labelled = region in location_data
@@ -173,7 +173,7 @@ def import_data(csv_text, entry_date):
 				country=country
 			).all()
 
-			yesterday_confirmed = yesterday_recovered = yesterday_dead = yesterday_active = 0
+			yesterday_confirmed = yesterday_recovered = yesterday_deaths = yesterday_active = 0
 			is_first_day = True
 
 			if yesterday_data:
@@ -182,7 +182,7 @@ def import_data(csv_text, entry_date):
 
 				yesterday_confirmed = datapoint.confirmed
 				yesterday_recovered = datapoint.recovered
-				yesterday_dead = datapoint.dead
+				yesterday_deaths = datapoint.deaths
 				yesterday_active = datapoint.active
 
 			new_data = Datapoint(
@@ -201,12 +201,12 @@ def import_data(csv_text, entry_date):
 				is_primary=is_primary,
 				
 				confirmed=confirmed,
-				dead=dead,
+				deaths=deaths,
 				recovered=recovered,
 				active=active,
 
 				dconfirmed=confirmed-yesterday_confirmed,
-				ddead=dead-yesterday_dead,
+				ddeaths=deaths-yesterday_deaths,
 				drecovered=recovered-yesterday_recovered,
 				dactive=active-yesterday_active
 			)
