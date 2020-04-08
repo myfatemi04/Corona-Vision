@@ -4,3 +4,4 @@ mysqlclient
 flask
 pandas
 requests
+beautifulsoup4
