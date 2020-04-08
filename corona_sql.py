@@ -78,15 +78,15 @@ class Datapoint(Base):
 			"latitude": float(self.latitude),
 			"longitude": float(self.longitude),
 
-			"confirmed": float(self.confirmed),
-			"recovered": float(self.recovered),
-			"deaths": float(self.deaths),
-			"active": float(self.active),
+			"confirmed": int(self.confirmed),
+			"recovered": int(self.recovered),
+			"deaths": int(self.deaths),
+			"active": int(self.active),
 
-			"dconfirmed": float(self.dconfirmed),
-			"drecovered": float(self.drecovered),
-			"ddeaths": float(self.ddeaths),
-			"dactive": float(self.dactive)
+			"dconfirmed": int(self.dconfirmed),
+			"drecovered": int(self.drecovered),
+			"ddeaths": int(self.ddeaths),
+			"dactive": int(self.dactive)
 		}
 
 class LiveEntry(Base):
@@ -122,17 +122,20 @@ class LiveEntry(Base):
 			"province": self.province,
 			"country": self.country,
 			
-			"confirmed": float(self.confirmed),
-			"recovered": float(self.recovered),
-			"deaths": float(self.deaths),
-			"active": float(self.active),
-			"serious": float(self.serious),
+			"confirmed": int(self.confirmed),
+			"recovered": int(self.recovered),
+			"deaths": int(self.deaths),
+			"active": int(self.active),
+			"serious": int(self.serious),
 
-			"dconfirmed": float(self.dconfirmed),
-			"drecovered": float(self.drecovered),
-			"ddeaths": float(self.ddeaths),
-			"dactive": float(self.dactive),
-			"dserious": float(self.dserious)
+			"dconfirmed": int(self.dconfirmed),
+			"drecovered": int(self.drecovered),
+			"ddeaths": int(self.ddeaths),
+			"dactive": int(self.dactive),
+			"dserious": int(self.dserious),
+
+			"num_tests": int(self.num_tests),
+			"source_link": self.source_link
 		}
 
 def total_cases(country, province, date_):

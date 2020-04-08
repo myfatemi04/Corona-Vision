@@ -64,6 +64,9 @@ function show_data(data, label_prop, label_default) {
             dd = `<td class="mx-1" style="flex: 1;">${datapoint.num_tests}</td>`;
         }
 
+        console.log(datapoint);
+        let source = `<td class="mx-1" style="flex: 1;"><a href="${datapoint.source_link}">Source</a></td>`;
+
         $("#tablebody")[0].innerHTML += `
         <tr class="datatable-row" data-label="${label}">
             <td class="mx-1" style="flex: 2;">${label}</td>
@@ -74,6 +77,7 @@ function show_data(data, label_prop, label_default) {
             ${d}
             ${dd}
             ${num_tests}
+            ${source}
         </tr>
         `;
 

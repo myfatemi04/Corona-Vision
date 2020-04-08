@@ -29,6 +29,18 @@
 					<div id="stats-info">
 						<code style="font-size: 1.5rem;">Loading...</code>
 					</div><br/>
+					<div>
+						Source: 
+						<a href="https://www.worldometers.info/coronavirus/">
+							Worldometers (live world data)
+						</a>,
+						<a href="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports">
+							JHU (historic county-level data)
+						</a>,
+						<a href="https://bnonews.com/index.php/2020/04/the-latest-coronavirus-cases/">
+							BNO (live state-level data)
+						</a>
+					</div>
 					Date:
 					<select class="custom-input-color form-control my-2" id="date" onchange="update_date()" style="border-radius: 0.25rem;">
 						<option value="live">Live</option>
@@ -54,6 +66,7 @@
 							<th style="flex: 1;">Deaths</th>
 							<th style="flex: 1;">24H</th>
 							<th style="flex: 1;">Tests</th>
+							<th style="flex: 1;">Source</th>
 						</tr>
 					</thead>
 					<tbody id="tablebody"></tbody>

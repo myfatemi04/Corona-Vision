@@ -1,7 +1,7 @@
 import pandas as pd
 from corona_sql import *
 import numpy as np
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 import time
 import os
 import requests
@@ -201,21 +201,24 @@ def import_data(csv_text, entry_date):
 
 			session.add(new_data)
 
-			add_or_update(session,
-				admin2=admin2,
-				province=province,
-				country=country,
+			if admin2 != '':
+				add_or_update(session,
+					admin2=admin2,
+					province=province,
+					country=country,
 
-				confirmed=confirmed,
-				deaths=deaths,
-				recovered=recovered,
-				active=active,
+					confirmed=confirmed,
+					deaths=deaths,
+					recovered=recovered,
+					active=active,
 
-				dconfirmed=confirmed-yesterday_confirmed,
-				ddeaths=deaths-yesterday_deaths,
-				drecovered=recovered-yesterday_recovered,
-				dactive=active-yesterday_active
-			)
+					dconfirmed=confirmed-yesterday_confirmed,
+					ddeaths=deaths-yesterday_deaths,
+					drecovered=recovered-yesterday_recovered,
+					dactive=active-yesterday_active,
+
+					source_link="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports"
+				)
 		
 		session.commit()
 		
@@ -354,6 +357,7 @@ BNO_CHINA_CASES = {
 		"province": "",
 		"admin2": ""
 	},
+	"labels": ["location", "confirmed", "deaths", "serious", "", "recovered"],
 	"location_level": "province",
 	"source_url": "https://bnonews.com/index.php/2019/12/tracking-coronavirus-china-data/"
 }
@@ -414,20 +418,47 @@ def add_or_update(session,
 	existing = session.query(LiveEntry).filter_by(country=country, province=province, admin2=admin2)
 	obj = existing.first()
 	if obj:
-		if confirmed > obj.confirmed: obj.confirmed=confirmed
-		if dconfirmed > obj.dconfirmed: obj.dconfirmed=dconfirmed
-		if deaths > obj.deaths: obj.deaths=deaths
-		if ddeaths > obj.ddeaths: obj.ddeaths=ddeaths
-		if serious > obj.serious: obj.serious=serious
-		if dserious > obj.dserious: obj.dserious=dserious
-		if recovered > obj.recovered: obj.recovered=recovered
-		if drecovered > obj.drecovered: obj.drecovered=drecovered
-		if active > obj.active: obj.active=active
-		if dactive > obj.dactive: obj.dactive=dactive
-		if source_link: obj.source_link=source_link
-		if num_tests > obj.num_tests: obj.num_tests=num_tests
-		if obj.country == '':
-			print(obj.json_serializable())
+		updated = False
+		if confirmed > obj.confirmed:
+			obj.confirmed=confirmed
+			updated = True
+		if dconfirmed > obj.dconfirmed:
+			obj.dconfirmed=dconfirmed
+			updated = True
+		if deaths > obj.deaths:
+			obj.deaths=deaths
+			updated = True
+		if ddeaths > obj.ddeaths:
+			obj.ddeaths=ddeaths
+			updated = True
+		if serious > obj.serious:
+			obj.serious=serious
+			updated = True
+		if dserious > obj.dserious:
+			obj.dserious=dserious
+			updated = True
+		if recovered > obj.recovered:
+			obj.recovered=recovered
+			updated = True
+		if drecovered > obj.drecovered:
+			obj.drecovered=drecovered
+			updated = True
+		if active > obj.active:
+			obj.active=active
+			updated = True
+		if dactive > obj.dactive:
+			obj.dactive=dactive
+			updated = True
+		if num_tests > obj.num_tests:
+			obj.num_tests=num_tests
+			updated = True
+		
+		if updated:
+			obj.update_time = datetime.utcnow()
+			if source_link:
+				obj.source_link=source_link
+
+		session.commit()
 	else:
 		new_obj = LiveEntry(
 			country=country,
@@ -451,15 +482,15 @@ def add_or_update(session,
 		session.commit()
 
 		if country == '':
-			print(session.query(LiveEntry).filter_by(country=country, province=province, admin2=admin2).first().json_serializable())
+			print("Added world")
 
 def number(string):
 	string = string.strip()
 	number = string.replace(",", "").replace("+", "")
-	if not string.isdigit():
-		return 0
-	else:
+	try:
 		return int(number)
+	except:
+		return 0
 
 def import_worldometers():
 	response = requests.get("http://www.worldometers.info/coronavirus")
@@ -489,11 +520,10 @@ def import_worldometers():
 			
 			add_or_update(session, country=row['location'], **row)
 
-def import_google_sheets(url, default_location, location_level, source_url):
+def import_google_sheets(url, default_location, location_level, source_url, labels=['location', 'confirmed', 'dconfirmed', 'deaths', 'ddeaths', '', 'serious', 'recovered', '']):
 	response = requests.get(url)
 	soup = BeautifulSoup(response.text, "html.parser")
 	rows = soup.findAll('tr')
-	labels = ['location', 'confirmed', 'dconfirmed', 'deaths', 'ddeaths', '', 'serious', 'recovered', '']
 	number_labels = {"confirmed", "dconfirmed", "deaths", "ddeaths", "serious", "recovered"}
 	data = []
 	for row in rows:
