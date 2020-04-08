@@ -2,7 +2,7 @@ create database if not exists corona;
 use corona;
 drop table if exists datapoints;
 create table datapoints (
-	data_id integer not null primary key,
+	data_id integer not null auto_increment primary key,
 	entry_date date,
 	
 	admin2 varchar(320),
@@ -30,7 +30,7 @@ create table datapoints (
 
 drop table if exists live;
 create table live (
-	data_id integer primary key,
+	data_id integer not null auto_increment primary key,
 	
 	update_time datetime not null default CURRENT_TIMESTAMP,
 

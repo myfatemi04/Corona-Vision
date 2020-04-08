@@ -267,12 +267,18 @@ def data_download():
 			print("There was an exception!")
 
 def update_live_data():
-	import_google_sheets(**BNO_US_CASES)
-	import_google_sheets(**BNO_CANADA_CASES)
-	import_google_sheets(**BNO_AUSTRALIA_CASES)
-	import_google_sheets(**BNO_CHINA_CASES)
-	import_google_sheets(**BNO_WORLD_CASES)
+	print("DATA IMPORT: Worldometers")
 	import_worldometers()
+	print("DATA IMPORT: BNO US")
+	import_google_sheets(**BNO_US_CASES)
+	print("DATA IMPORT: BNO CA")
+	import_google_sheets(**BNO_CANADA_CASES)
+	print("DATA IMPORT: BNO AU")
+	import_google_sheets(**BNO_AUSTRALIA_CASES)
+	print("DATA IMPORT: BNO ZH")
+	import_google_sheets(**BNO_CHINA_CASES)
+	print("DATA IMPORT: BNO ALL")
+	import_google_sheets(**BNO_WORLD_CASES)
 
 def add_date_range(date_1, date_2):
 	next_date = timedelta(days=1)
@@ -458,7 +464,6 @@ def add_or_update(session,
 			if source_link:
 				obj.source_link=source_link
 
-		session.commit()
 	else:
 		new_obj = LiveEntry(
 			country=country,
@@ -479,10 +484,7 @@ def add_or_update(session,
 		)
 
 		session.add(new_obj)
-		session.commit()
-
-		if country == '':
-			print("Added world")
+	session.commit()
 
 def number(string):
 	string = string.strip()

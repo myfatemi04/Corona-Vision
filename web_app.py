@@ -14,7 +14,7 @@ app = Flask(__name__)
 app.secret_key = os.environ['APP_SECRET_KEY']
 app.static_folder = "./static"
 
-sql_uri = "sqlite:///datapoints.db" #os.environ['DATABASE_URL']
+sql_uri = os.environ['DATABASE_URL'] # "sqlite:///datapoints.db"
 app.config['SQLALCHEMY_DATABASE_URI'] = sql_uri
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 

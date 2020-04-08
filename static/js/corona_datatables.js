@@ -26,7 +26,7 @@ function table_col(options) {
         color = options.color;
     }
 
-    if (number != 0) {
+    if (number != 0 && typeof number != 'undefined') {
         if (options.hasOwnProperty("digits")) numberString = nFormatter(number, options.digits);
         else numberString = number;
         if (options.hasOwnProperty("denom") && options.denom != 0) {
