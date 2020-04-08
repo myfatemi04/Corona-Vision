@@ -518,7 +518,7 @@ def import_worldometers():
 
 			row['location'] = fix_country_name(row['location'])
 			
-			add_or_update(session, country=row['location'], **row)
+			add_or_update(session, country=row['location'], **row, source_link='https://www.worldometers.info/coronavirus/')
 
 def import_google_sheets(url, default_location, location_level, source_url, labels=['location', 'confirmed', 'dconfirmed', 'deaths', 'ddeaths', '', 'serious', 'recovered', '']):
 	response = requests.get(url)

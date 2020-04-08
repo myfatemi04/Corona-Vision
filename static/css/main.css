@@ -156,3 +156,7 @@ code {
 	border-radius: 0.25rem;
 	padding-left: 0.5rem;
 }
+
+.custom-bg {
+	background-color: var(--color-bg-dark, #212121);
+}

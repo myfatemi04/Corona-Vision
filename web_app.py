@@ -59,6 +59,11 @@ def parse_date(entry_date_str):
 	except:
 		return entry_date_str
 
+def get_live_last_update():
+	session = db.session()
+	first = session.query(LiveEntry.update_time).distinct().order_by(LiveEntry.update_time.desc()).first()
+	return first.update_time.strftime("%m/%d/%Y, %I:%M:%S %p UTC")
+
 def get_country_province_admin2():
 	country = request.args.get("country") or ""
 	province = request.args.get("province") or ""
@@ -283,26 +288,7 @@ def contact_page():
 
 @app.route("/data")
 def data_page():
-	# country = request.args.get("country")
-	# province = request.args.get("province")
-	# label = "country"
-
-	# if country:
-	# 	province = "all"
-	# 	label = "province"
-	# else:
-	# 	province = ""
-	# 	country = "all"
-	
-	# session = db.session()
-	# results = session.query(Datapoint).filter_by(entry_date='2020-04-07')
-	# results = filter_by_nation(results, country, province, '')
-	# results = results.order_by(Datapoint.confirmed.desc())
-	# location_rows = results.all()
-
-	# return render_template("data.html", sorted_dates=get_sorted_dates(), label=label, location_rows=location_rows)
-
-	return render_template("data.html", sorted_dates=get_sorted_dates())
+	return render_template("data.html", sorted_dates=get_sorted_dates(), last_update=get_live_last_update())
 
 @app.before_first_request
 def start_downloader():

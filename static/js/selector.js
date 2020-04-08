@@ -1,6 +1,6 @@
-let country_list = [];
-let province_list = {};
-let admin2_list = {};
+CORONA_GLOBALS.country_list = [];
+CORONA_GLOBALS.province_list = {};
+CORONA_GLOBALS.admin2_list = {};
 
 let province_head = '<option value="">Whole country</option>';
 let country_head = '<option value="">Whole world</option>';
@@ -44,7 +44,7 @@ function init_selectors() {
         },
         function(data) {
             add_selector_items("country-selector", country_head, data);
-            country_list = data;
+            CORONA_GLOBALS.country_list = data;
         }
     )
 
@@ -53,8 +53,6 @@ function init_selectors() {
             CORONA_GLOBALS.country = this.value;
             CORONA_GLOBALS.province = "";
             CORONA_GLOBALS.admin2 = "";
-            
-            CORONA_GLOBALS.reload_function();
 
             $("#province-selector").hide();
             $("#province-selector")[0].innerHTML = province_head;
@@ -64,7 +62,7 @@ function init_selectors() {
             if (this.value) {
                 let country = CORONA_GLOBALS.country;
 
-                if (!province_list.hasOwnProperty(country)) {
+                if (!CORONA_GLOBALS.province_list.hasOwnProperty(country)) {
                     $.getJSON(
                         "/list/provinces",
                         {
@@ -73,13 +71,17 @@ function init_selectors() {
                             need_admin2: CORONA_GLOBALS.need_child
                         },
                         function(data) {
-                            province_list[country] = data;
-                            add_selector_items("province-selector", province_head, province_list[country]);
+                            CORONA_GLOBALS.province_list[country] = data;
+                            add_selector_items("province-selector", province_head, CORONA_GLOBALS.province_list[country]);
+                            CORONA_GLOBALS.reload_function();
                         }
                     )
                 } else {
-                    add_selector_items("province-selector", province_head, province_list[country]);
+                    add_selector_items("province-selector", province_head, CORONA_GLOBALS.province_list[country]);
+                    CORONA_GLOBALS.reload_function();
                 }
+            } else {
+                CORONA_GLOBALS.reload_function();
             }
         }
     );
@@ -89,32 +91,33 @@ function init_selectors() {
             CORONA_GLOBALS.province = this.value;
             CORONA_GLOBALS.admin2 = "";
             
-            CORONA_GLOBALS.reload_function();
-            
             $("#admin2-selector").hide();
             $("#admin2-selector")[0].innerHTML = admin2_head;
             
             if (this.value) {    
                 let country = CORONA_GLOBALS.country;
                 let province = CORONA_GLOBALS.province;
-                let admin2 = CORONA_GLOBALS.admin2;
 
-                if (!admin2_list.hasOwnProperty(country)) {
-                    admin2_list[country] = {};
+                if (!CORONA_GLOBALS.admin2_list.hasOwnProperty(country)) {
+                    CORONA_GLOBALS.admin2_list[country] = {};
                 }
 
-                if (!admin2_list[country].hasOwnProperty(province)) {
+                if (!CORONA_GLOBALS.admin2_list[country].hasOwnProperty(province)) {
                     $.getJSON(
                         "/list/admin2",
-                        { country: country, province: province },
+                        { country: country, province: province, date: $("#date")[0].value },
                         function(data) {
-                            admin2_list[country][province] = data;
-                            add_selector_items("admin2-selector", admin2_head, admin2_list[country][province]);
+                            CORONA_GLOBALS.admin2_list[country][province] = data;
+                            add_selector_items("admin2-selector", admin2_head, CORONA_GLOBALS.admin2_list[country][province]);
+                            CORONA_GLOBALS.reload_function();
                         }
                     );
                 } else {
-                    add_selector_items("admin2-selector", admin2_head, admin2_list[country][province]);
+                    add_selector_items("admin2-selector", admin2_head, CORONA_GLOBALS.admin2_list[country][province]);
+                    CORONA_GLOBALS.reload_function();
                 }
+            } else {
+                CORONA_GLOBALS.reload_function();
             }
         }
     );

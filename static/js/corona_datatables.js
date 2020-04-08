@@ -16,8 +16,51 @@ function filter_table() {
     }
 }
 
+function table_col(options) {
+    let number = options.number;
+    let numberString = '-';
+    let percentString = '';
+    let color = "#f5f5f5";
+
+    if (options.hasOwnProperty("color")) {
+        color = options.color;
+    }
+
+    if (number != 0) {
+        if (options.hasOwnProperty("digits")) numberString = nFormatter(number, options.digits);
+        else numberString = number;
+        if (options.hasOwnProperty("denom") && options.denom != 0) {
+            let numer = number;
+            if (options.hasOwnProperty("customNumer")) {
+                numer = options.customNumer;
+            }
+            let percent = (100 * numer / options.denom).toFixed(CORONA_GLOBALS.DATA_TABLE.percent_digits);
+            percentString = "(" + percent + "%)";
+        }
+    }
+
+    let flex = 1;
+    if (options.hasOwnProperty("flex")) {
+        flex = options.flex;
+    }
+
+    return `<td class="mx-1" style="flex: ${flex}; color: ${color};">${numberString} ${percentString}</td>`;
+}
+
+let deselect_country_link = `<a href="javascript:set_country('');"><i class="fas fa-angle-double-left"></i> Go back</a>`;
+let deselect_province_link = `<a href="javascript:set_province('');"><i class="fas fa-angle-double-left"></i> Go back</a>`;
+
 function show_data(data, label_prop, label_default) {
     $("#tablebody")[0].innerHTML = '';
+    if (CORONA_GLOBALS.country != '') {
+        $("#tablebody")[0].innerHTML = `
+        <tr>
+            <td class="mx-1" style="flex: 0.5;"></td>
+            <td class="mx-1" style="flex: 1;">
+                ${CORONA_GLOBALS.province == '' ? deselect_country_link : deselect_province_link}
+            </td>
+        </tr>`;
+    }
 
     data.sort((a, b) => (a.confirmed > b.confirmed) ? -1 : 1)
 
@@ -26,62 +69,41 @@ function show_data(data, label_prop, label_default) {
     for (let datapoint of data) {
         let label = datapoint[label_prop];
         if (!label) label = label_default;
-
-        let cp = (100 * datapoint.dconfirmed/datapoint.confirmed).toFixed(2);
-        let rp = (100 * datapoint.drecovered/datapoint.recovered).toFixed(2);
-        let dp = (100 * datapoint.ddeaths/datapoint.deaths).toFixed(2);
-        if (isNaN(cp)) cp = 0;
-        if (isNaN(rp)) rp = 0;
-        if (isNaN(dp)) dp = 0;
+        else i += 1;
         
-        let dc = `<td class="mx-1" style="flex: 1;">-</td>`;
-        if (datapoint.dconfirmed != 0) { 
-            dc = `<td class="mx-1" style="flex: 1;">${datapoint.dconfirmed} (${cp}%)</td>`;
+        let label_link = label;
+        if (CORONA_GLOBALS.country == '') {
+            if (CORONA_GLOBALS.country_list.includes(label)) {
+                label_link = set_country_link(label);
+            }
+        } else if (CORONA_GLOBALS.province == '') {
+            if (CORONA_GLOBALS.province_list[CORONA_GLOBALS.country].includes(label)) {
+                label_link = set_province_link(label);
+            }
         }
 
-        let r = `<td class="mx-1" style="flex: 1;">-</td>`;
-        if (datapoint.recovered != 0) { 
-            r = `<td class="mx-1" style="flex: 1;">${datapoint.recovered}</td>`;
+        let table_cols = [
+            {number: i, flex: 0.5},
+            {number: label_link, flex: 2},
+            {number: datapoint.confirmed, color: CORONA_GLOBALS.COLORS.confirmed},
+            {number: datapoint.dconfirmed, denom: datapoint.confirmed, color: CORONA_GLOBALS.COLORS.confirmed},
+            {number: datapoint.recovered, denom: datapoint.confirmed, color: CORONA_GLOBALS.COLORS.recovered},
+            {number: datapoint.deaths, color: CORONA_GLOBALS.COLORS.deaths},
+            {number: datapoint.ddeaths, denom: datapoint.deaths, color: CORONA_GLOBALS.COLORS.deaths},
+            {number: datapoint.num_tests, customNumer: datapoint.confirmed, denom: datapoint.num_tests, digits: 2, color: CORONA_GLOBALS.COLORS.tests},
+            {number: datapoint.serious, denom: datapoint.confirmed, color: CORONA_GLOBALS.COLORS.serious},
+            {number: "<a href=" + datapoint.source_link + ">Source</a>"}
+        ];
+
+        let tr = `<tr class="datatable-row" data-label="${label}">`;
+
+        for (let col of table_cols) {
+            tr += table_col(col);
         }
 
-        let dr = `<td class="mx-1" style="flex: 1;">-</td>`;
-        if (datapoint.drecovered != 0) { 
-            dr = `<td class="mx-1" style="flex: 1;">${datapoint.drecovered} (${rp}%)</td>`;
-        }
-
-        let d = `<td class="mx-1" style="flex: 1;">-</td>`;
-        if (datapoint.deaths != 0) { 
-            d = `<td class="mx-1" style="flex: 1;">${datapoint.deaths}</td>`;
-        }
-
-        let dd = `<td class="mx-1" style="flex: 1;">-</td>`;
-        if (datapoint.ddeaths != 0) { 
-            dd = `<td class="mx-1" style="flex: 1;">${datapoint.ddeaths} (${dp}%)</td>`;
-        }
-
-        let num_tests = `<td class="mx-1" style="flex: 1;">-</td>`;
-        if (datapoint.num_tests) {
-            dd = `<td class="mx-1" style="flex: 1;">${datapoint.num_tests}</td>`;
-        }
-
-        console.log(datapoint);
-        let source = `<td class="mx-1" style="flex: 1;"><a href="${datapoint.source_link}">Source</a></td>`;
-
-        $("#tablebody")[0].innerHTML += `
-        <tr class="datatable-row" data-label="${label}">
-            <td class="mx-1" style="flex: 2;">${label}</td>
-            <td class="mx-1" style="flex: 1;">${datapoint.confirmed}</td>
-            ${dc}
-            ${r}
-            ${dr}
-            ${d}
-            ${dd}
-            ${num_tests}
-            ${source}
-        </tr>
-        `;
-
-        i += 1;
+        tr += "</tr>";
+        
+        $("#tablebody")[0].innerHTML += tr;
     }
 
 }
@@ -89,6 +111,23 @@ function show_data(data, label_prop, label_default) {
 function set_country(country) {
     $("#country-selector").val(country);
     $("#country-selector").trigger("change");
+}
+
+function set_country_link(label) {
+    return `<a style="color: #3657ff;" href='javascript:set_country("${label}")';>${label} <i class="fas fa-angle-right"></i></a>`;
+}
+
+function set_province(province) {
+    $("#province-selector").val(province);
+    $("#province-selector").trigger("change");
+}
+
+function set_province_link(label) {
+    return `<a style="color: #3657ff;" href='javascript:set_province("${label}")';>${label} <i class="fas fa-angle-right"></i></a>`
+}
+
+function go_back_link() {
+    return `<a style="color: #3657ff;" href='javascript:set_country("");'>Back</a>`;
 }
 
 function reload_data() {
