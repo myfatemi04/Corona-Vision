@@ -31,6 +31,7 @@
 					</div><br/>
 					Date:
 					<select class="custom-input-color form-control my-2" id="date" onchange="update_date()" style="border-radius: 0.25rem;">
+						<option value="live">Live</option>
 						{% for date in sorted_dates %}
 							<option value="{{date}}">{{date}}</option>
 						{% endfor %}
@@ -40,25 +41,23 @@
 				</div>
 			</div>
 			<div class="container box d-flex flex-column" style="flex: 3;">
-				<div>
-					<h3 class="text-center">Data by country</h1>
-					<table id="datatable" class="data-container">
-						<thead class="border-bottom pos-sticky datatable-head">
-							<tr style="display: flex; background-color: var(--color-bg-dark, #212121);" class="py-2">
-								<th style="flex: 2;">
-									<input type="text" onkeyup="filter_table()" class="custom-input-color small-input" placeholder="Location" id="locationSearch">
-								</th>
-								<th style="flex: 1;">Confirmed</th>
-								<th style="flex: 1;">24H</th>
-								<th style="flex: 1;">Recovered</th>
-								<th style="flex: 1;">24H</th>
-								<th style="flex: 1;">Deaths</th>
-								<th style="flex: 1;">24H</th>
-							</tr>
-						</thead>
-						<tbody id="tablebody"></tbody>
-					</table>
-				</div>
+				<table id="datatable" class="data-container">
+					<thead class="border-bottom pos-sticky datatable-head">
+						<tr style="display: flex; background-color: var(--color-bg-dark, #212121);" class="py-2">
+							<th style="flex: 2;">
+								<input type="text" onkeyup="filter_table()" class="custom-input-color small-input" placeholder="Location" id="locationSearch">
+							</th>
+							<th style="flex: 1;">Confirmed</th>
+							<th style="flex: 1;">24H</th>
+							<th style="flex: 1;">Recovered</th>
+							<th style="flex: 1;">24H</th>
+							<th style="flex: 1;">Deaths</th>
+							<th style="flex: 1;">24H</th>
+							<th style="flex: 1;">Tests</th>
+						</tr>
+					</thead>
+					<tbody id="tablebody"></tbody>
+				</table>
 			</div>
 		</div>
 	</body>

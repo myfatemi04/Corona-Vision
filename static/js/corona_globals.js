@@ -6,5 +6,6 @@ let CORONA_GLOBALS = {
     chart_type: "total",
     chart: null,
     reload_function: null,
-    need_child: 1
+    need_child: 1,
+    live_data: true
 };

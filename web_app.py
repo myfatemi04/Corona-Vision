@@ -57,7 +57,7 @@ def parse_date(entry_date_str):
 		entry_date = datetime.date(int(year), int(month), int(day))
 		return entry_date
 	except:
-		return None
+		return entry_date_str
 
 def get_country_province_admin2():
 	country = request.args.get("country") or ""
@@ -83,40 +83,20 @@ def find_cases_backend():
 	else:
 		return "Please specify a date"
 
-@app.route("/cases/totals/world")
-def find_total_world_cases():
-	cases = find_cases_by_location(*get_bounding_box())
-	entry_date = parse_date(request.args.get("date"))
-	if entry_date:
-		cases = cases.filter_by(
-			entry_date=entry_date,
-			country=''
-		)
-
-		return json_list(cases.all())
-	else:
-		return "Please specify a date"
-
 @app.route("/cases/totals")
 def find_total_nation_cases():
 	entry_date = parse_date(request.args.get("date"))
-	sort = get_("sort", default="")
-	if entry_date:
-		nation = get_country_province_admin2()
-		cases = find_cases_by_nation(**nation)
-		cases = cases.filter_by(
-			entry_date=entry_date
-		)
-		
-		if sort:
-			if sort == 'confirmed':
-				cases = cases.order_by(Datapoint.confirmed.desc())
-			elif sort == 'dconfirmed':
-				cases = cases.order_by(Datapoint.dconfirmed.desc())
+	session = db.session()
+	nation = get_country_province_admin2()
 
-		return json_list(cases.all())
+	if entry_date == 'live' or not entry_date:
+		results = session.query(LiveEntry)
 	else:
-		return "Please specify a date"
+		results = session.query(Datapoint).filter_by(entry_date=entry_date)
+	
+	results = filter_by_nation(results, **nation)
+
+	return json_list(results.all())
 
 @app.route("/cases/first_days")
 def get_first_days():
@@ -165,11 +145,18 @@ def list_all_countries():
 	sess = db.session()
 	entry_date = parse_date(request.args.get("date"))
 	need_province = get_("need_province", "1")
+
+	table = Datapoint
+	if entry_date == "live":
+		table = LiveEntry
 	
-	results = sess.query(Datapoint.country).filter(Datapoint.entry_date==entry_date)
+	results = sess.query(table.country)
+	
+	if entry_date != "live":
+		results = results.filter_by(entry_date=entry_date)
 
 	if need_province == "1":
-		results = results.filter(Datapoint.province != '')
+		results = results.filter(table.province != '')
 
 	return json.dumps(sorted([
 		result[0]
@@ -183,12 +170,18 @@ def list_country_provinces():
 	country = request.args.get("country") or ""
 	entry_date = parse_date(request.args.get("date"))
 	need_admin2 = get_("need_admin2", True)
-	results = sess.query(Datapoint.province).filter(
-		Datapoint.entry_date==entry_date, Datapoint.country==country
-	)
+
+	table = Datapoint
+	if entry_date == "live":
+		table = LiveEntry
+
+	results = sess.query(table.province).filter_by(country=country)
+
+	if entry_date != "live":
+		results = results.filter_by(entry_date=entry_date)
 
 	if need_admin2 == "1":
-		results = results.filter(Datapoint.admin2 != '')
+		results = results.filter(table.admin2 != '')
 	
 	return json.dumps(sorted([
 		result[0]
@@ -201,12 +194,20 @@ def list_province_admin2():
 	sess = db.session()
 	province = request.args.get("province") or ""
 	country = request.args.get("country") or ""
+	entry_date = parse_date(request.args.get("date"))
+
+	table = Datapoint
+	if entry_date == "live":
+		table = LiveEntry
+
+	results = sess.query(table.admin2).filter_by(country=country, province=province)
+	
+	if entry_date != "live":
+		results = results.filter_by(entry_date=entry_date)
+
 	return json.dumps(sorted([
 		result[0]
-		for result in sess.query(Datapoint.admin2)\
-		.filter_by(country=country, province=province)\
-		.distinct()\
-		.all()
+		for result in results.distinct().all()
 		if result[0]
 	]))
 

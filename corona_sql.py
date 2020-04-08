@@ -22,6 +22,8 @@ from flask_sqlalchemy import SQLAlchemy
 import json
 import os
 
+import datetime
+
 sql_uri = os.environ['DATABASE_URL']
 db = SQLAlchemy()
 
@@ -32,6 +34,7 @@ Boolean = db.Boolean
 Date = db.Date
 Column = db.Column
 String = db.String
+DateTime = db.DateTime
 
 class Datapoint(Base):
 	__tablename__ = "datapoints"
@@ -84,6 +87,52 @@ class Datapoint(Base):
 			"drecovered": float(self.drecovered),
 			"ddeaths": float(self.ddeaths),
 			"dactive": float(self.dactive)
+		}
+
+class LiveEntry(Base):
+	__tablename__ = "live"
+	data_id = Column(Integer, primary_key=True)
+
+	update_time = Column(DateTime, default=datetime.datetime.utcnow)
+
+	admin2 = Column(String(320))
+	province = Column(String(320))
+	country = Column(String(320))
+
+	confirmed = Column(Integer)
+	recovered = Column(Integer)
+	deaths = Column(Integer)
+	active = Column(Integer)
+	serious = Column(Integer)
+
+	dconfirmed = Column(Integer)
+	drecovered = Column(Integer)
+	ddeaths = Column(Integer)
+	dactive = Column(Integer)
+	dserious = Column(Integer)
+
+	num_tests = Column(Integer)
+
+	source_link = Column(String(320))
+	
+	def json_serializable(self):
+		return {
+			'data_id': self.data_id,
+			"admin2": self.admin2,
+			"province": self.province,
+			"country": self.country,
+			
+			"confirmed": float(self.confirmed),
+			"recovered": float(self.recovered),
+			"deaths": float(self.deaths),
+			"active": float(self.active),
+			"serious": float(self.serious),
+
+			"dconfirmed": float(self.dconfirmed),
+			"drecovered": float(self.drecovered),
+			"ddeaths": float(self.ddeaths),
+			"dactive": float(self.dactive),
+			"dserious": float(self.dserious)
 		}
 
 def total_cases(country, province, date_):

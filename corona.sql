@@ -2,7 +2,7 @@ create database if not exists corona;
 use corona;
 drop table if exists datapoints;
 create table datapoints (
-	data_id int not null auto_increment primary key,
+	data_id integer not null primary key,
 	entry_date date,
 	
 	admin2 varchar(320),
@@ -19,11 +19,38 @@ create table datapoints (
 	
 	confirmed int,
 	recovered int,
-	dead int,
+	deaths int,
 	active int,
 
 	dconfirmed int,
 	drecovered int,
-	ddead int,
+	ddeaths int,
 	dactive int
+);
+
+drop table if exists live;
+create table live (
+	data_id integer primary key,
+	
+	update_time datetime not null default CURRENT_TIMESTAMP,
+
+	admin2 varchar(320) default '',
+	province varchar(320) default '',
+	country varchar(320) default '',
+
+	confirmed integer default 0,
+	recovered integer default 0,
+	deaths integer default 0,
+	active integer default 0,
+	serious integer default 0,
+
+	dconfirmed integer default 0,
+	drecovered integer default 0,
+	ddeaths integer default 0,
+	dactive integer default 0,
+	dserious integer default 0,
+
+	num_tests integer default 0,
+
+	source_link varchar(320) not null default ''
 );

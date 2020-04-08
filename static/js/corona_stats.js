@@ -1,23 +1,26 @@
 function update_stats() {
     let entry_date = $("#date")[0].value;
-    let xhr = new XMLHttpRequest();
     
     let country = CORONA_GLOBALS.country;
     let province = CORONA_GLOBALS.province;
     let admin2 = CORONA_GLOBALS.admin2;
 
-    xhr.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            let data = JSON.parse(this.responseText)[0];
+    $.getJSON(
+        "/cases/totals",
+        {
+            country: country,
+            province: province,
+            admin2: admin2,
+            date: entry_date
+        },
+        function(data) {
             if (data) {
-                $("#stats-info")[0].innerHTML = format_data(generate_name(country, province, admin2), data);
+                $("#stats-info")[0].innerHTML = format_data(generate_name(country, province, admin2), data[0]);
             } else {
                 $("#stats-info")[0].innerHTML = '';
             }
         }
-    }
-    xhr.open("GET", `/cases/totals?country=${country}&province=${province}&admin2=${admin2}&date=${entry_date}`)
-    xhr.send()
+    );
 }
 
 function init_stats_panel() {

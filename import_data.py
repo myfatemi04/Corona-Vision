@@ -8,6 +8,7 @@ import requests
 import web_app
 import io
 import locations
+from bs4 import BeautifulSoup
 
 def add_tuple_values(a, b):
 	return tuple(sum(x) for x in zip(a, b))
@@ -66,37 +67,7 @@ def import_data(csv_text, entry_date):
 		
 	for _, row in df.iterrows():
 		country = row[country_col].strip()
-		if "china" in country.lower():
-			country = "China"  # normalizes "Mainland China"
-		if "korea" in country.lower():
-			if "south" in country.lower():
-				country = "South Korea"
-			elif "republic" in country.lower():
-				country = "South Korea"
-			elif "north" in country.lower():
-				country = "North Korea"
-		
-		if country.lower() == "uk":
-			country = "United Kingdom"
-		elif country.lower() == "us":
-			country = "United States"
-		
-		if country.lower().endswith(", the"):
-			country = country[:-len(", the")]
-
-		if country.lower().startswith("republic of "):
-			country = country[len("republic of "):]
-
-		if "russia" in country.lower():
-			country = "Russia"
-
-		if country.lower().startswith("the "):
-			country = country[len("the "):]
-
-		if country.lower() == "viet nam":
-			country = "Vietnam"
-
-		country = country.replace(" (Islamic Republic Of)" , "")
+		country = fix_country_name(country)
 		
 		province = ''
 		admin2 = ''
@@ -229,6 +200,22 @@ def import_data(csv_text, entry_date):
 			)
 
 			session.add(new_data)
+
+			add_or_update(session,
+				admin2=admin2,
+				province=province,
+				country=country,
+
+				confirmed=confirmed,
+				deaths=deaths,
+				recovered=recovered,
+				active=active,
+
+				dconfirmed=confirmed-yesterday_confirmed,
+				ddeaths=deaths-yesterday_deaths,
+				drecovered=recovered-yesterday_recovered,
+				dactive=active-yesterday_active
+			)
 		
 		session.commit()
 		
@@ -262,13 +249,27 @@ def download_data_for_date(entry_date):
 def data_download():
 	time.sleep(2)
 	
+	update_live_data()
 	add_date_range(date_1=date(2020, 1, 22), date_2=date.today())
 	
 	while True:
-		status = download_data_for_date(date.today())
-		
-		if status == '404' or status == 'exists':
-			time.sleep(60)
+		try:
+			update_live_data()
+			
+			status = download_data_for_date(date.today())
+			
+			if status == '404' or status == 'exists':
+				time.sleep(60)
+		except:
+			print("There was an exception!")
+
+def update_live_data():
+	import_google_sheets(**BNO_US_CASES)
+	import_google_sheets(**BNO_CANADA_CASES)
+	import_google_sheets(**BNO_AUSTRALIA_CASES)
+	import_google_sheets(**BNO_CHINA_CASES)
+	import_google_sheets(**BNO_WORLD_CASES)
+	import_worldometers()
 
 def add_date_range(date_1, date_2):
 	next_date = timedelta(days=1)
@@ -302,5 +303,228 @@ def fix_locations():
 				print("Updated ", country, province, " to ", latitude, longitude)
 		session.commit()
 
+BNO_US_CASES = {
+	"url": "https://docs.google.com/spreadsheets/u/0/d/e/2PACX-1vR30F8lYP3jG7YOq8es0PBpJIE5yvRVZffOyaqC0GgMBN6yt0Q-NI8pxS7hd1F9dYXnowSC6zpZmW9D/pubhtml/sheet?gid=1902046093&range=A1:I68",
+	"default_location": {
+		"country": "United States",
+		"province": "",
+		"admin2": ""
+	},
+	"location_level": "province",
+	"source_url": "https://bnonews.com/index.php/2019/01/tracking-coronavirus-u-s-data/"
+}
+
+BNO_WORLD_CASES = {
+	"url": "https://docs.google.com/spreadsheets/u/0/d/e/2PACX-1vR30F8lYP3jG7YOq8es0PBpJIE5yvRVZffOyaqC0GgMBN6yt0Q-NI8pxS7hd1F9dYXnowSC6zpZmW9D/pubhtml/sheet?headers=false&gid=0&range=A1:I210",
+	"default_location": {
+		"country": "",
+		"province": "",
+		"admin2": ""
+	},
+	"location_level": "country",
+	"source_url": "https://bnonews.com/index.php/2020/04/the-latest-coronavirus-cases/"
+}
+
+BNO_CANADA_CASES = {
+	"url": "https://docs.google.com/spreadsheets/u/0/d/e/2PACX-1vR30F8lYP3jG7YOq8es0PBpJIE5yvRVZffOyaqC0GgMBN6yt0Q-NI8pxS7hd1F9dYXnowSC6zpZmW9D/pubhtml/sheet?headers=false&gid=338130207&range=A1:I20",
+	"default_location": {
+		"country": "Canada",
+		"province": "",
+		"admin2": ""
+	},
+	"location_level": "province",
+	"source_url": "https://bnonews.com/index.php/2020/01/tracking-coronavirus-canada-data/"
+}
+
+BNO_AUSTRALIA_CASES = {
+	"url": "https://docs.google.com/spreadsheets/u/0/d/e/2PACX-1vR30F8lYP3jG7YOq8es0PBpJIE5yvRVZffOyaqC0GgMBN6yt0Q-NI8pxS7hd1F9dYXnowSC6zpZmW9D/pubhtml/sheet?headers=false&gid=572527899&range=A1:I17",
+	"default_location": {
+		"country": "Australia",
+		"province": "",
+		"admin2": ""
+	},
+	"location_level": "province",
+	"source_url": "https://bnonews.com/index.php/2020/01/tracking-coronavirus-australia-data/"
+}
+
+BNO_CHINA_CASES = {
+	"url": "https://docs.google.com/spreadsheets/u/0/d/e/2PACX-1vR30F8lYP3jG7YOq8es0PBpJIE5yvRVZffOyaqC0GgMBN6yt0Q-NI8pxS7hd1F9dYXnowSC6zpZmW9D/pubhtml/sheet?headers=false&gid=108415730",
+	"default_location": {
+		"country": "China",
+		"province": "",
+		"admin2": ""
+	},
+	"location_level": "province",
+	"source_url": "https://bnonews.com/index.php/2019/12/tracking-coronavirus-china-data/"
+}
+
+def fix_country_name(country):
+	if "china" in country.lower():
+		country = "China"  # normalizes "Mainland China"
+	if "korea" in country.lower():
+		if "south" in country.lower():
+			country = "South Korea"
+		elif "republic" in country.lower():
+			country = "South Korea"
+		elif "north" in country.lower():
+			country = "North Korea"
+	
+	if country.lower() == "uk":
+		country = "United Kingdom"
+	elif country.lower() == "us" or country.lower() == "usa":
+		country = "United States"
+	
+	if country.lower().endswith(", the"):
+		country = country[:-len(", the")]
+
+	if country.lower().startswith("republic of "):
+		country = country[len("republic of "):]
+
+	if "russia" in country.lower():
+		country = "Russia"
+
+	if country.lower().startswith("the "):
+		country = country[len("the "):]
+
+	if country.lower() == "viet nam":
+		country = "Vietnam"
+
+	country = country.replace(" (Islamic Republic Of)" , "")
+	return country
+
+
+# assume we already have the app context
+def add_or_update(session,
+				country='',
+				province='',
+				admin2='',
+				confirmed=0,
+				dconfirmed=0,
+				deaths=0,
+				ddeaths=0,
+				serious=0,
+				dserious=0,
+				recovered=0,
+				drecovered=0,
+				active=0,
+				dactive=0,
+				num_tests=0,
+				source_link='',
+				location=''):
+	existing = session.query(LiveEntry).filter_by(country=country, province=province, admin2=admin2)
+	obj = existing.first()
+	if obj:
+		if confirmed > obj.confirmed: obj.confirmed=confirmed
+		if dconfirmed > obj.dconfirmed: obj.dconfirmed=dconfirmed
+		if deaths > obj.deaths: obj.deaths=deaths
+		if ddeaths > obj.ddeaths: obj.ddeaths=ddeaths
+		if serious > obj.serious: obj.serious=serious
+		if dserious > obj.dserious: obj.dserious=dserious
+		if recovered > obj.recovered: obj.recovered=recovered
+		if drecovered > obj.drecovered: obj.drecovered=drecovered
+		if active > obj.active: obj.active=active
+		if dactive > obj.dactive: obj.dactive=dactive
+		if source_link: obj.source_link=source_link
+		if num_tests > obj.num_tests: obj.num_tests=num_tests
+		if obj.country == '':
+			print(obj.json_serializable())
+	else:
+		new_obj = LiveEntry(
+			country=country,
+			province=province,
+			admin2=admin2,
+			confirmed=confirmed,
+			dconfirmed=dconfirmed,
+			deaths=deaths,
+			ddeaths=ddeaths,
+			serious=serious,
+			dserious=dserious,
+			recovered=recovered,
+			drecovered=drecovered,
+			active=active,
+			dactive=dactive,
+			source_link=source_link,
+			num_tests=num_tests
+		)
+
+		session.add(new_obj)
+		session.commit()
+
+		if country == '':
+			print(session.query(LiveEntry).filter_by(country=country, province=province, admin2=admin2).first().json_serializable())
+
+def number(string):
+	string = string.strip()
+	number = string.replace(",", "").replace("+", "")
+	if not string.isdigit():
+		return 0
+	else:
+		return int(number)
+
+def import_worldometers():
+	response = requests.get("http://www.worldometers.info/coronavirus")
+	soup = BeautifulSoup(response.text, "html.parser")
+	main_countries = soup.find(id="main_table_countries_today")
+	labels = ['location', 'confirmed', 'dconfirmed', 'deaths', 'ddeaths', 'recovered', 'active', 'serious', '', '', 'num_tests', '']
+	number_labels = {'confirmed', 'dconfirmed', 'deaths', 'ddeaths', 'recovered', 'active', 'serious', 'num_tests'}
+	
+	data = []
+	for row in main_countries.find("tbody").findAll("tr"):
+		new_data = {}
+		for label, td in zip(labels, row.findAll("td")):
+			if label:
+				if label in number_labels:
+					new_data[label] = number(td.text)
+				else:
+					new_data[label] = td.text
+		data.append(new_data)
+
+	with web_app.app.app_context():
+		session = db.session()
+		for row in data:
+			if row['location'].lower() in ['overall', 'total', 'world']:
+				row['location'] = ''
+
+			row['location'] = fix_country_name(row['location'])
+			
+			add_or_update(session, country=row['location'], **row)
+
+def import_google_sheets(url, default_location, location_level, source_url):
+	response = requests.get(url)
+	soup = BeautifulSoup(response.text, "html.parser")
+	rows = soup.findAll('tr')
+	labels = ['location', 'confirmed', 'dconfirmed', 'deaths', 'ddeaths', '', 'serious', 'recovered', '']
+	number_labels = {"confirmed", "dconfirmed", "deaths", "ddeaths", "serious", "recovered"}
+	data = []
+	for row in rows:
+		if "Source" not in row.text:
+			continue
+		tds = row.findAll('td')
+		new_data = {}
+		for label, td in zip(labels, tds):
+			if label in number_labels:
+				new_data[label] = number(td.text.replace(",", ""))
+			else:
+				if label:
+					if label == "location" and location_level == "province":
+						new_data[label] = td.text.split("province")[0]
+					elif label == "location" and location_level == "country":
+						new_data[label] = fix_country_name(td.text)
+					else:
+						new_data[label] = td.text
+
+		data.append(new_data)
+
+	with web_app.app.app_context():
+		session = db.session()
+		for row in data:
+			location = {**default_location, "source_link": source_url}
+			location[location_level] = row['location']
+
+			add_or_update(session, **location, **row)
+		session.commit()
+
+
 if __name__ == "__main__":
+	update_live_data()
 	pass # fix_locations()

@@ -33,16 +33,47 @@ function show_data(data, label_prop, label_default) {
         if (isNaN(cp)) cp = 0;
         if (isNaN(rp)) rp = 0;
         if (isNaN(dp)) dp = 0;
+        
+        let dc = `<td class="mx-1" style="flex: 1;">-</td>`;
+        if (datapoint.dconfirmed != 0) { 
+            dc = `<td class="mx-1" style="flex: 1;">${datapoint.dconfirmed} (${cp}%)</td>`;
+        }
+
+        let r = `<td class="mx-1" style="flex: 1;">-</td>`;
+        if (datapoint.recovered != 0) { 
+            r = `<td class="mx-1" style="flex: 1;">${datapoint.recovered}</td>`;
+        }
+
+        let dr = `<td class="mx-1" style="flex: 1;">-</td>`;
+        if (datapoint.drecovered != 0) { 
+            dr = `<td class="mx-1" style="flex: 1;">${datapoint.drecovered} (${rp}%)</td>`;
+        }
+
+        let d = `<td class="mx-1" style="flex: 1;">-</td>`;
+        if (datapoint.deaths != 0) { 
+            d = `<td class="mx-1" style="flex: 1;">${datapoint.deaths}</td>`;
+        }
+
+        let dd = `<td class="mx-1" style="flex: 1;">-</td>`;
+        if (datapoint.ddeaths != 0) { 
+            dd = `<td class="mx-1" style="flex: 1;">${datapoint.ddeaths} (${dp}%)</td>`;
+        }
+
+        let num_tests = `<td class="mx-1" style="flex: 1;">-</td>`;
+        if (datapoint.num_tests) {
+            dd = `<td class="mx-1" style="flex: 1;">${datapoint.num_tests}</td>`;
+        }
 
         $("#tablebody")[0].innerHTML += `
         <tr class="datatable-row" data-label="${label}">
             <td class="mx-1" style="flex: 2;">${label}</td>
             <td class="mx-1" style="flex: 1;">${datapoint.confirmed}</td>
-            <td class="mx-1" style="flex: 1;">${datapoint.dconfirmed} (${cp}%)</td>
-            <td class="mx-1" style="flex: 1;">${datapoint.recovered}</td>
-            <td class="mx-1" style="flex: 1;">${datapoint.drecovered} (${rp}%)</td>
-            <td class="mx-1" style="flex: 1;">${datapoint.deaths}</td>
-            <td class="mx-1" style="flex: 1;">${datapoint.ddeaths} (${dp}%)</td>
+            ${dc}
+            ${r}
+            ${dr}
+            ${d}
+            ${dd}
+            ${num_tests}
         </tr>
         `;
 
@@ -50,13 +81,19 @@ function show_data(data, label_prop, label_default) {
     }
 
 }
+
+function set_country(country) {
+    $("#country-selector").val(country);
+    $("#country-selector").trigger("change");
+}
+
 function reload_data() {
     let entry_date = $("#date")[0].value;
     let params = {
         country: CORONA_GLOBALS.country,
         province: CORONA_GLOBALS.province,
         date: entry_date
-    }
+    };
 
     let level = "country";
     let def = "World";
