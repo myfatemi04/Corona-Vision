@@ -6,9 +6,8 @@
 		<script src="/static/js/corona_map.js" type="text/javascript"></script>
 		<script src="/static/js/corona_stats.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
-		<script src="/static/js/selector.js"></script>
-		<script src="/static/js/corona_chart.js"></script>
-		<script src="/static/js/chart.min.js"></script>
+		<script src="/static/js/corona_globals.js"></script>
+		<!-- <script src="/static/js/chart.min.js"></script> -->
 
 		<script async defer
 		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAMm-5SUX6ELt2KfUfEF49RpvgRIj8J6w4&callback=init_coronamap">
@@ -17,45 +16,16 @@
 		<script>
 			function init() {
 				init_map();
-				
-				CHART_OPTIONS.chart = new_chart("chart");
-				init_chart_options();
-				init_selectors();
-				reload_chart();
-
-				init_stats_panel();
 			}
 		</script>
 	</head>
 	<body onload="init()">
 		{% include 'navbar.html' %}
-		<div class="container-fluid">
-			<!-- Map and charts -->
-			<div class="container-fluid dashboard-container py-2">
-				<!-- Map -->
-				<div class="mx-2 map-box scroll dash-4">
-					<div class="box">
-						{% include "map_panel.html" %}
-					</div>
-				</div>
-				<!-- stats -->
-				<div class="mx-2 dash-2 scroll d-flex flex-column">
-					<div class="box">
-						<h3>Stats</h3>
-						{% include "selectors.html" %}
-						<div id="stats-info">
-							<span style="font-size: 1.5rem;">Loading...</span>
-						</div>
-					</div>					
-					<div class="box d-flex flex-column">
-						<a id="download-chart" style="display: none;"></a>
-						<canvas id="chart"></canvas>
-						<button class="btn custom-button-color my-2" onclick="download_canvas()">
-							Save Image
-						</button>
-						{% include "chart_options.html" %}
-					</div>			
-				</div>
+		<!-- Map and charts -->
+		<div class="container-fluid dashboard-container p-2">
+			<!-- Map -->
+			<div class="mx-2 scroll box" style="flex: 3;">
+				{% include "map_panel.html" %}
 			</div>
 		</div>
 	</body>

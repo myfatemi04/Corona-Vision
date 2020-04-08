@@ -3,16 +3,6 @@ let DEATHS_IX = 1;
 let RECOVERED_IX = 2;
 let ACTIVE_IX = 3;
 
-let CHART_OPTIONS = {
-    country: "",
-    province: "",
-    admin2: "",
-    scale_type: "linear",
-    chart_type: "total",
-    chart: null,
-    reload_function: reload_chart
-};
-
 function download_canvas() {
 	let url = $("#chart")[0].toDataURL("image/png;base64");
 	let filename = 'COVID19_Chart.png';
@@ -23,17 +13,18 @@ function download_canvas() {
 }
 
 function init_chart() {
-	init_chart_options();
+	init_CORONA_GLOBALS();
 	reload_chart();
+	CORONA_GLOBALS.reload_function = reload_chart;
 }
 
-function init_chart_options() {
-    let chart = CHART_OPTIONS.chart;
+function init_CORONA_GLOBALS() {
+    let chart = CORONA_GLOBALS.chart;
 
     $("select[name=scale-type]").change(
         function() {
             if (this.value == 'logarithmic' || this.value == 'linear') {
-                CHART_OPTIONS.scale_type = this.value;
+                CORONA_GLOBALS.scale_type = this.value;
                 chart.options.scales.yAxes[0].type = this.value;
                 chart.update();
             }
@@ -42,8 +33,8 @@ function init_chart_options() {
 
     $("select[name=chart-type]").change(
         function() {
-            CHART_OPTIONS.chart_type = this.value;
-            CHART_OPTIONS.reload_function();
+            CORONA_GLOBALS.chart_type = this.value;
+            CORONA_GLOBALS.reload_function();
         }
     );
 
@@ -169,7 +160,7 @@ function get_canvas(a) {
 }
 
 function reset_chart() {
-	let chart = CHART_OPTIONS.chart;
+	let chart = CORONA_GLOBALS.chart;
 	chart.options.title.text = 'Cases';
 	chart.data.labels = [];
 	for (let i = 0; i < chart.data.datasets.length; i++) {
@@ -180,16 +171,16 @@ function reset_chart() {
 
 function add_chart_data(data) {
 	reset_chart();
-	let chart = CHART_OPTIONS.chart;
+	let chart = CORONA_GLOBALS.chart;
 	for (let total of data) {
 		chart.data.labels.push(total.entry_date);
 		let datasets = chart.data.datasets;
-		if (CHART_OPTIONS.chart_type == 'total') {
+		if (CORONA_GLOBALS.chart_type == 'total') {
 			datasets[CONFIRMED_IX].data.push(total.confirmed);
 			datasets[DEATHS_IX].data.push(total.deaths);
 			datasets[RECOVERED_IX].data.push(total.recovered);
 			datasets[ACTIVE_IX].data.push(total.active);
-		} else if (CHART_OPTIONS.chart_type == 'daily-change') {
+		} else if (CORONA_GLOBALS.chart_type == 'daily-change') {
 			datasets[CONFIRMED_IX].data.push(total.dconfirmed);
 			datasets[DEATHS_IX].data.push(total.ddeaths);
 			datasets[RECOVERED_IX].data.push(total.drecovered);
@@ -202,13 +193,13 @@ function add_chart_data(data) {
 function reload_chart() {
 	reset_chart();
 	
-	let country = CHART_OPTIONS.country;
-	let province = CHART_OPTIONS.province;
-	let admin2 = CHART_OPTIONS.admin2;
+	let country = CORONA_GLOBALS.country;
+	let province = CORONA_GLOBALS.province;
+	let admin2 = CORONA_GLOBALS.admin2;
 	
 	let label = generate_name(country, province, admin2);
 
-	let chart = CHART_OPTIONS.chart;
+	let chart = CORONA_GLOBALS.chart;
 
 	let params = {
 		country: country,

@@ -2,9 +2,9 @@ function update_stats() {
     let entry_date = $("#date")[0].value;
     let xhr = new XMLHttpRequest();
     
-    let country = CHART_OPTIONS.country;
-    let province = CHART_OPTIONS.province;
-    let admin2 = CHART_OPTIONS.admin2;
+    let country = CORONA_GLOBALS.country;
+    let province = CORONA_GLOBALS.province;
+    let admin2 = CORONA_GLOBALS.admin2;
 
     xhr.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
@@ -21,10 +21,22 @@ function update_stats() {
 }
 
 function init_stats_panel() {
-    CHART_OPTIONS.reload_function = function() {
+    CORONA_GLOBALS.reload_function = function() {
         update_stats();
-        reload_chart();
     };
 
     update_stats();
+}
+
+function format_data(label, data) {
+	let formatted = `
+	<div class="lato" style="font-size: 1.5rem; background-color: #212121;">
+		<code><b>${label}</b></code><br/>
+		<code><b>Confirmed:</b> ${data.confirmed} (+${data.dconfirmed})</code><br/>
+		<code><b>Active:</b> ${data.active} (+${data.dactive})</code><br/>
+		<code><b>Deaths:</b> ${data.deaths} (+${data.ddeaths})</code><br/>
+		<code><b>Recoveries:</b> ${data.recovered} (+${data.drecovered})</code><br/>
+	</div>
+	`;
+	return formatted;
 }

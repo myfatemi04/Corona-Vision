@@ -81,6 +81,23 @@ def import_data(csv_text, entry_date):
 		elif country.lower() == "us":
 			country = "United States"
 		
+		if country.lower().endswith(", the"):
+			country = country[:-len(", the")]
+
+		if country.lower().startswith("republic of "):
+			country = country[len("republic of "):]
+
+		if "russia" in country.lower():
+			country = "Russia"
+
+		if country.lower().startswith("the "):
+			country = country[len("the "):]
+
+		if country.lower() == "viet nam":
+			country = "Vietnam"
+
+		country = country.replace(" (Islamic Republic Of)" , "")
+		
 		province = ''
 		admin2 = ''
 		

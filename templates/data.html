@@ -3,119 +3,61 @@
 	<head>
 		<title>Corona Vision - Data by Country</title>
 		{% include 'styles.html' %}
-        <script>
-			let by_country = {};
-			let by_us_state = {};
-			let head = `
-				<div class="d-flex" style="color: #999999;">
-					<div class="mx-1" style="flex: 2">Location</div>
-					<div class="mx-1" style="flex: 1">Confirmed</div>
-					<div class="mx-1" style="flex: 1">Recovered</div>
-					<div class="mx-1" style="flex: 1">Deaths</div>
-				</div>
-			`;
-
-			function show_data(data, prefix, id, label_prop, label_default) {
-				$("#" + id)[0].innerHTML = head;
-
-				data.sort((a, b) => (a.[prefix + "confirmed"] > b.[prefix + "confirmed"]) ? -1 : 1)
-
-				for (let datapoint of data) {
-					let label = datapoint[label_prop];
-					if (!label) label = label_default;
-					$("#" + id)[0].innerHTML += `
-					<div class="d-flex">
-						<div class="mx-1" style="flex: 2">${label}</div>
-						<div class="mx-1" style="flex: 1">${datapoint[prefix + 'confirmed']}</div>
-						<div class="mx-1" style="flex: 1">${datapoint[prefix + 'recovered']}</div>
-						<div class="mx-1" style="flex: 1">${datapoint[prefix + 'deaths']}</div>
-					</div>
-					<br/>
-					`;
-				}
-
+		<script src="/static/js/corona_datatables.js"></script>
+		<script src="/static/js/corona_globals.js"></script>
+		<script src="/static/js/corona_stats.js"></script>
+		<script src="/static/js/selector.js"></script>
+		<script>
+			function init() {
+				reload_data();
+				init_selectors();
+				init_stats_panel();
+				CORONA_GLOBALS.reload_function = update_date;
 			}
-            function reload_data() {
-				let entry_date = $("#date")[0].value;
-				if (by_country.hasOwnProperty(entry_date)) {
-					show_data(by_country[entry_date], "", "country-rows", "country", "World");
-					show_data(by_country[entry_date], "d", "country-change-rows", "country", "World");
-				} else {
-					$.getJSON(
-						"/cases/totals",
-						{
-							country: "all",
-							province: "",
-							date: entry_date
-						},
-						function(result) {
-							by_country[entry_date] = result;
-							show_data(result, "", "country-rows", "country", "World");
-							show_data(result, "d", "country-change-rows", "country", "World");
-						}
-					);
-				}
 
-				if (by_us_state.hasOwnProperty(entry_date)) {
-					show_data(by_us_state[entry_date], "", "state-rows", "province", "United States");
-					show_data(by_us_state[entry_date], "d", "state-change-rows", "province", "United States");
-				} else {
-					$.getJSON(
-						"/cases/totals",
-						{
-							country: "United States",
-							province: "all",
-							date: entry_date
-						},
-						function(result) {
-							by_us_state[entry_date] = result;
-							show_data(result, "", "state-rows", "province", "United States");
-							show_data(result, "d", "state-change-rows", "province", "United States");
-						}
-					);
-				}
+			function update_date() {
+				reload_data();
+				update_stats();
 			}
-        </script>
+		</script>
 	</head>
-	<body onload="reload_data()">
-        {% include 'navbar.html' %}
-		<div class="container">
-			<h1 class="text-center">Data</h1>
-			<select class="custom-input-color form-control m-2" id="date" onchange="reload_data();" style="width: 20rem;">
-				{% for date in sorted_dates %}
-					<option value="{{date}}">Date: {{date}}</option>
-				{% endfor %}
-			</select>
-			<div class="column-container">
-				<div class="column">
-					<h3 class="text-center">Data by country</h1>
-					<hr class="custom-hr">
-					<div id="country-rows" class="d-flex flex-column">
-						
-					</div>
-				</div>
-				<div class="column">
-					<h3 class="text-center">Change by country</h1>
-					<hr class="custom-hr">
-					<div id="country-change-rows" class="d-flex flex-column">
-
-					</div>
+	<body onload="init()">
+		{% include 'navbar.html' %}
+		<div class="column-container">
+			<div class="container box" style="flex: 1;">
+				<div class="scroll box d-flex flex-column" style="flex: 1;">
+					<div id="stats-info">
+						<code style="font-size: 1.5rem;">Loading...</code>
+					</div><br/>
+					Date:
+					<select class="custom-input-color form-control my-2" id="date" onchange="update_date()" style="border-radius: 0.25rem;">
+						{% for date in sorted_dates %}
+							<option value="{{date}}">{{date}}</option>
+						{% endfor %}
+					</select>
+					Region: 
+					{% include "selectors.html" %}
 				</div>
 			</div>
-			<div class="column-container">
-				<div class="column">
-					<h3 class="text-center">Data by US State</h1>
-					<hr class="custom-hr">
-					<div id="state-rows" class="d-flex flex-column">
-						
-					</div>
-				</div>
-				<div class="column">
-					<h3 class="text-center">Change by US State</h1>
-					<hr class="custom-hr">
-					<div id="state-change-rows" class="d-flex flex-column">
-
-					</div>
+			<div class="container box d-flex flex-column" style="flex: 3;">
+				<div>
+					<h3 class="text-center">Data by country</h1>
+					<table id="datatable" class="data-container">
+						<thead class="border-bottom pos-sticky datatable-head">
+							<tr style="display: flex; background-color: var(--color-bg-dark, #212121);" class="py-2">
+								<th style="flex: 2;">
+									<input type="text" onkeyup="filter_table()" class="custom-input-color small-input" placeholder="Location" id="locationSearch">
+								</th>
+								<th style="flex: 1;">Confirmed</th>
+								<th style="flex: 1;">24H</th>
+								<th style="flex: 1;">Recovered</th>
+								<th style="flex: 1;">24H</th>
+								<th style="flex: 1;">Deaths</th>
+								<th style="flex: 1;">24H</th>
+							</tr>
+						</thead>
+						<tbody id="tablebody"></tbody>
+					</table>
 				</div>
 			</div>
 		</div>

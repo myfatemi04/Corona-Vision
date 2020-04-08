@@ -3,23 +3,9 @@
 	height: 30em;
 }
 
-.map-box {
-	display: flex;
-	flex-direction: column;
-}
-
 @media(min-width: 576px) {
 	.dashboard-container {
 		display: flex;
-	}
-	.dash-6 {
-		flex: 6;
-	}
-	.dash-4 {
-		flex: 4;
-	}
-	.dash-2 {
-		flex: 2;
 	}
 	.scroll {
 		overflow-y: auto;

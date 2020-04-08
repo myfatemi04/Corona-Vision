@@ -95,7 +95,7 @@ let circle_colors = {
 }
 
 let last_zoom = 2;
-let min_radius = 2500;
+let min_radius = 1000;
 let is_api_ready = false;
 
 let zoomins = {
@@ -131,7 +131,8 @@ function init_coronamap() {
 		last_zoom = new_zoom;
 	});
 	infowindow = new google.maps.InfoWindow({
-		content: ""
+		content: "",
+		backgroundColor: "#212121"
 	});
 
 	setTimeout(reload_cases, 500);
@@ -184,20 +185,6 @@ function find_cases() {
 		map.setZoom(8);
 	}
 	setTimeout(reload_cases, 500);
-}
-
-function format_data(label, data) {
-	let formatted = `
-	<div style="font-size: 1.5rem; background-color: #212121;">
-		<span style="color: #f5f5f5;">${label}</span><br/>
-		<span style="color: ${circle_colors.confirmed}">${data.confirmed} (+${data.dconfirmed}) Confirmed</span><br/>
-		<span style="color: ${circle_colors.active}">${data.active} (+${data.dactive}) Active</span><br/>
-		<span style="color: ${circle_colors.deaths}">${data.deaths} (+${data.ddeaths}) Deaths</span><br/>
-		<span style="color: ${circle_colors.recovered}">${data.recovered} (+${data.drecovered}) Recovered</span><br/>
-	</div>
-	`;
-
-	return formatted;
 }
 
 function add_world_info(person, entry_date) {
@@ -288,7 +275,7 @@ function reload_cases() {
 						strokeColor: circle_colors[feature_display],
 						strokeOpacity: 0.8,
 						fillColor: circle_colors[feature_display],
-						fillOpacity: 0.35,
+						fillOpacity: 0.8,
 						map: map,
 						radius: min_radius + Math.sqrt(person[feature] * zoomins[feature]) * 4000 / (map.zoom * map.zoom)
 					});

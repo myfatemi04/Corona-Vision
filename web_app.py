@@ -163,9 +163,17 @@ def find_all_for_date():
 @app.route("/list/countries")
 def list_all_countries():
 	sess = db.session()
+	entry_date = parse_date(request.args.get("date"))
+	need_province = get_("need_province", "1")
+	
+	results = sess.query(Datapoint.country).filter(Datapoint.entry_date==entry_date)
+
+	if need_province == "1":
+		results = results.filter(Datapoint.province != '')
+
 	return json.dumps(sorted([
 		result[0]
-		for result in sess.query(Datapoint.country).distinct().all()
+		for result in results.distinct().all()
 		if result[0]
 	]))
 
@@ -173,9 +181,18 @@ def list_all_countries():
 def list_country_provinces():
 	sess = db.session()
 	country = request.args.get("country") or ""
+	entry_date = parse_date(request.args.get("date"))
+	need_admin2 = get_("need_admin2", True)
+	results = sess.query(Datapoint.province).filter(
+		Datapoint.entry_date==entry_date, Datapoint.country==country
+	)
+
+	if need_admin2 == "1":
+		results = results.filter(Datapoint.admin2 != '')
+	
 	return json.dumps(sorted([
 		result[0]
-		for result in sess.query(Datapoint.province).filter_by(country=country).distinct().all()
+		for result in results.distinct().all()
 		if result[0]
 	]))
 
@@ -195,7 +212,7 @@ def list_province_admin2():
 
 @app.route("/charts")
 def charts_data_page():
-	return render_template("charts.html")
+	return render_template("charts.html", sorted_dates=get_sorted_dates())
 	
 @app.route("/whattodo")
 def what_to_do_page():
@@ -265,6 +282,25 @@ def contact_page():
 
 @app.route("/data")
 def data_page():
+	# country = request.args.get("country")
+	# province = request.args.get("province")
+	# label = "country"
+
+	# if country:
+	# 	province = "all"
+	# 	label = "province"
+	# else:
+	# 	province = ""
+	# 	country = "all"
+	
+	# session = db.session()
+	# results = session.query(Datapoint).filter_by(entry_date='2020-04-07')
+	# results = filter_by_nation(results, country, province, '')
+	# results = results.order_by(Datapoint.confirmed.desc())
+	# location_rows = results.all()
+
+	# return render_template("data.html", sorted_dates=get_sorted_dates(), label=label, location_rows=location_rows)
+
 	return render_template("data.html", sorted_dates=get_sorted_dates())
 
 @app.before_first_request
