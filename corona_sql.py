@@ -1,28 +1,13 @@
-# from sqlalchemy import create_engine, Column, Integer, Boolean, String, Float, Date
-# from sqlalchemy.sql import func
-# from sqlalchemy import and_, between, not_
-# from sqlalchemy.ext.declarative import declarative_base
-# from sqlalchemy.orm import sessionmaker, scoped_session
-
-# import json
-
-# import os
-
-# sql_uri = os.environ['DATABASE_URL']
-# db = create_engine(sql_uri)
-# Session = scoped_session(sessionmaker(bind=db))
-
-# Base = declarative_base()
-
 from sqlalchemy import create_engine, Column, Integer, Boolean, String, Float, Date
 from sqlalchemy.sql import func
 from sqlalchemy import and_, between, not_
 from flask_sqlalchemy import SQLAlchemy
 
+import datetime
 import json
 import os
 
-import datetime
+import standards
 
 sql_uri = os.environ['DATABASE_URL']
 db = SQLAlchemy()
@@ -209,3 +194,67 @@ def filter_by_nation(results, country, province, admin2):
 
 def json_list(cases):
 	return json.dumps([case.json_serializable() for case in cases])
+
+# assume we already have the app context
+def add_or_update(session, data, commit=True):
+	default_data = {
+		'country':'',
+		'province':'',
+		'admin2':'',
+		'confirmed':0,
+		'dconfirmed':0,
+		'deaths':0,
+		'ddeaths':0,
+		'serious':0,
+		'dserious':0,
+		'recovered':0,
+		'drecovered':0,
+		'active':0,
+		'dactive':0,
+		'num_tests':0,
+		'source_link':'',
+		'group':''
+	}
+	for label in default_data:
+		if label not in data:
+			data[label] = default_data[label]
+	for label in data:
+		if label not in default_data:
+			del data[label]
+	
+	data['country'] = standards.fix_country_name(data['country'])
+
+	location = {
+		'country': data['country'],
+		'province': data['province'],
+		'admin2': data['admin2']
+	}
+
+	existing = session.query(LiveEntry).filter_by(**location)
+	obj = existing.first()
+	if obj:
+		updated = False
+		json_dict = obj.json_serializable()
+
+		for label in data:
+			if type(label) == str:
+				if data[label]:
+					setattr(obj, label, data[label])
+					if label != 'source_link':
+						updated = True
+			elif type(label) in [int, float]:
+				if data[label] > json_dict[label]:
+					setattr(obj, label, data[label])
+					updated = True
+		
+		if updated:
+			obj.update_time = datetime.datetime.utcnow()
+			if data['source_link']:
+				obj.source_link = data['source_link']
+
+	else:
+		new_obj = LiveEntry(**data)
+
+		session.add(new_obj)
+	if commit:
+		session.commit()

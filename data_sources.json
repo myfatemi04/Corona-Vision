@@ -7,8 +7,7 @@
 				"country": "United States",
 				"province": "",
 				"admin2": ""
-			},
-			"source_url": "https://bnonews.com/index.php/2019/01/tracking-coronavirus-u-s-data/"
+			}
 		},
 		"method": "google_sheets"
 	},
@@ -21,8 +20,7 @@
 				"province": "",
 				"admin2": ""
 			},
-			"labels": ["country", "confirmed", "dconfirmed", "deaths", "ddeaths", "", "serious", "recovered", ""],
-			"source_url": "https://bnonews.com/index.php/2020/04/the-latest-coronavirus-cases/"	
+			"labels": ["country", "confirmed", "dconfirmed", "deaths", "ddeaths", "", "serious", "recovered", ""]
 		},
 		"method": "google_sheets"
 	},
@@ -34,8 +32,7 @@
 				"country": "Canada",
 				"province": "",
 				"admin2": ""
-			},
-			"source_url": "https://bnonews.com/index.php/2020/01/tracking-coronavirus-canada-data/"
+			}
 		},
 		"method": "google_sheets"
 	},
@@ -47,8 +44,7 @@
 				"country": "Australia",
 				"province": "",
 				"admin2": ""
-			},
-			"source_url": "https://bnonews.com/index.php/2020/01/tracking-coronavirus-australia-data/"
+			}
 		},
 		"method": "google_sheets"
 	},
@@ -61,8 +57,7 @@
 				"province": "",
 				"admin2": ""
 			},
-			"labels": ["province", "confirmed", "deaths", "serious", "", "recovered"],
-			"source_url": "https://bnonews.com/index.php/2019/12/tracking-coronavirus-china-data/"		
+			"labels": ["province", "confirmed", "deaths", "serious", "", "recovered"]
 		},
 		"method": "google_sheets"
 	},
