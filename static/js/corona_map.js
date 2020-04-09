@@ -139,8 +139,6 @@ function init_coronamap() {
 }
 
 function init_map() {
-	init_selectors();
-	
 	$("select[name=map-type]").change(
 		function() {
 			map_type = this.value;
@@ -257,7 +255,7 @@ function reload_cases() {
 
 			let entry_date = $("#date")[0].value;
 			update_most_recent(entry_date);
-			update_stats();
+			// update_stats();
 
 			if (most_recent_person && most_recent_person.entry_date != entry_date) {
 				infowindow.close();

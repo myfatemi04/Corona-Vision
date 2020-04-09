@@ -33,7 +33,7 @@ def add_to_dict(dct, country, province, admin2, value_list):
 
 	return dct
 
-def import_data(csv_text, entry_date):
+def import_data(csv_text, entry_date, is_live):
 	string_io = io.StringIO(csv_text)
 	df = pd.read_csv(string_io)
 	yesterday = entry_date + timedelta(days=-1)
@@ -139,6 +139,7 @@ def import_data(csv_text, entry_date):
 
 	with web_app.app.app_context():
 		session = db.session()
+		i = 0
 		for region, stats in data_points.items():
 			country, province, admin2 = region
 			confirmed, deaths, recovered, active = stats
@@ -199,9 +200,12 @@ def import_data(csv_text, entry_date):
 				dactive=active-yesterday_active
 			)
 
+			if i % 500 == 0:
+				print("\t" + str(i) + "/" + str(len(data_points)))
+
 			session.add(new_data)
 
-			if admin2 != '':
+			if admin2 != '' and is_live:
 				add_or_update(session,
 					admin2=admin2,
 					province=province,
@@ -217,8 +221,12 @@ def import_data(csv_text, entry_date):
 					drecovered=recovered-yesterday_recovered,
 					dactive=active-yesterday_active,
 
-					source_link="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports"
+					source_link="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports",
+
+					commit=False
 				)
+
+			i += 1
 		
 		session.commit()
 		
@@ -240,7 +248,10 @@ def download_data_for_date(entry_date):
 		
 		if response.status_code == 200:
 			csv_text = response.text
-			import_data(csv_text, entry_date)
+			today = date.today()
+			yesterday = today + timedelta(days=-1)
+			is_live = entry_date >= yesterday
+			import_data(csv_text, entry_date, is_live)
 			
 			print("\tComplete")
 			return 'done'
@@ -252,14 +263,14 @@ def download_data_for_date(entry_date):
 def data_download():
 	time.sleep(2)
 	
-	update_live_data()
 	add_date_range(date_1=date(2020, 1, 22), date_2=date.today())
+	update_live_data()
 	
 	while True:
 		try:
-			update_live_data()
-			
 			status = download_data_for_date(date.today())
+			
+			update_live_data()
 			
 			if status == '404' or status == 'exists':
 				time.sleep(60)
@@ -420,7 +431,8 @@ def add_or_update(session,
 				dactive=0,
 				num_tests=0,
 				source_link='',
-				location=''):
+				location='',
+				commit=True):
 	existing = session.query(LiveEntry).filter_by(country=country, province=province, admin2=admin2)
 	obj = existing.first()
 	if obj:
@@ -484,7 +496,8 @@ def add_or_update(session,
 		)
 
 		session.add(new_obj)
-	session.commit()
+	if commit:
+		session.commit()
 
 def number(string):
 	string = string.strip()
@@ -558,5 +571,4 @@ def import_google_sheets(url, default_location, location_level, source_url, labe
 
 
 if __name__ == "__main__":
-	update_live_data()
-	pass # fix_locations()
+	data_download()

@@ -1,1 +1,2 @@
 web: py web_app.py $PORT
+data: py import_data.py

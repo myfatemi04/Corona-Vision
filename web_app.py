@@ -7,7 +7,6 @@ from threading import Thread
 import datetime
 import json
 
-import import_data
 from corona_sql import *
 
 app = Flask(__name__)
@@ -31,12 +30,6 @@ def get_sorted_dates():
 	for tup in session.query(Datapoint.entry_date).distinct():
 		dates.append(tup[0])
 	return sorted(dates, reverse=True)
-
-@app.route("/")
-def main_page():
-	sorted_dates=get_sorted_dates()
-
-	return render_template("main_page.html", sorted_dates=sorted_dates)
 
 @app.route("/map")
 def map_frontend():
@@ -286,14 +279,14 @@ def map_frame():
 def contact_page():
 	return render_template("contact.html")
 
-@app.route("/data")
+@app.route("/")
 def data_page():
-	return render_template("data.html", sorted_dates=get_sorted_dates(), last_update=get_live_last_update())
+	return render_template("main_page.html", sorted_dates=get_sorted_dates(), last_update=get_live_last_update())
 
-@app.before_first_request
-def start_downloader():
-	data_download_thread = Thread(target=import_data.data_download, daemon=True)
-	data_download_thread.start()
+# @app.before_first_request
+# def start_downloader():
+# 	data_download_thread = Thread(target=import_data.data_download, daemon=True)
+# 	data_download_thread.start()
 
 if __name__ == "__main__":
 	if 'PORT' in os.environ:
