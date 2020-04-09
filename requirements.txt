@@ -5,3 +5,4 @@ flask
 pandas
 requests
 beautifulsoup4
+selectorlib

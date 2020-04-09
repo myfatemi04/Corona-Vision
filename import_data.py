@@ -8,7 +8,10 @@ import requests
 import web_app
 import io
 import locations
+import json
 from bs4 import BeautifulSoup
+
+live_data_sources = json.load(open("data_sources.json"))
 
 def add_tuple_values(a, b):
 	return tuple(sum(x) for x in zip(a, b))
@@ -278,18 +281,12 @@ def data_download():
 			print("There was an exception!")
 
 def update_live_data():
-	print("DATA IMPORT: Worldometers")
-	import_worldometers()
-	print("DATA IMPORT: BNO US")
-	import_google_sheets(**BNO_US_CASES)
-	print("DATA IMPORT: BNO CA")
-	import_google_sheets(**BNO_CANADA_CASES)
-	print("DATA IMPORT: BNO AU")
-	import_google_sheets(**BNO_AUSTRALIA_CASES)
-	print("DATA IMPORT: BNO ZH")
-	import_google_sheets(**BNO_CHINA_CASES)
-	print("DATA IMPORT: BNO ALL")
-	import_google_sheets(**BNO_WORLD_CASES)
+	for datasource in live_data_sources:
+		print("Loading new data...")
+		args = datasource['args']
+		method = methods[datasource['method']]
+		# if method in allowed_methods:
+		method(**args)
 
 def add_date_range(date_1, date_2):
 	next_date = timedelta(days=1)
@@ -383,11 +380,11 @@ def fix_country_name(country):
 	if "china" in country.lower():
 		country = "China"  # normalizes "Mainland China"
 	if "korea" in country.lower():
-		if "south" in country.lower():
+		if "south" in country.lower() or "s." in country.lower():
 			country = "South Korea"
 		elif "republic" in country.lower():
 			country = "South Korea"
-		elif "north" in country.lower():
+		elif "north" in country.lower() or "n." in country.lower():
 			country = "North Korea"
 	
 	if country.lower() == "uk":
@@ -413,7 +410,6 @@ def fix_country_name(country):
 	country = country.replace(" (Islamic Republic Of)" , "")
 	return country
 
-
 # assume we already have the app context
 def add_or_update(session,
 				country='',
@@ -433,6 +429,7 @@ def add_or_update(session,
 				source_link='',
 				location='',
 				commit=True):
+	country = fix_country_name(country)
 	existing = session.query(LiveEntry).filter_by(country=country, province=province, admin2=admin2)
 	obj = existing.first()
 	if obj:
@@ -500,8 +497,8 @@ def add_or_update(session,
 		session.commit()
 
 def number(string):
-	string = string.strip()
-	number = string.replace(",", "").replace("+", "")
+	string = string.strip().split()[0]
+	number = string.replace(",", "").replace("+", "").replace(".", "").replace("*", "")
 	try:
 		return int(number)
 	except:
@@ -569,6 +566,112 @@ def import_google_sheets(url, default_location, location_level, source_url, labe
 			add_or_update(session, **location, **row)
 		session.commit()
 
+def import_selector(url, source_link, labels, location):
+	try:
+		response = requests.get(url)
+		soup = BeautifulSoup(response.text, "html.parser")
+	except Exception as e:
+		print("Error during selector:", e, url)
+		return
+	
+	try:
+		data = {**location, "source_link": source_link}
+		for label, info in labels.items():
+			selectors = info['selectors']
+			is_plain = 'type' in info and info['type'] == 'plain'
+			text = get_field(soup, selectors)
+			
+			if not is_plain:
+				data[label] = number(text)
+			else:
+				data[label] = text
+	except Exception as e:
+		print("Error during selector!", e, location, url)
+	
+	with web_app.app.app_context():
+		session = db.session()
+		add_or_update(session, **data)
+		session.commit()
+
+def get_elem(soup, selector_chain):
+	elem = soup
+	for selector in selector_chain:
+		elem = elem.select(selector['selector'])
+		if 'index' not in selector:
+			return elem
+		elem = elem[selector['index']]
+	
+	return elem
+
+def get_field(soup, selector_chain):
+	return get_elem(soup, selector_chain).text
+
+def import_csv(url, source_link, location, labels, row='all'):
+	try:
+		response = requests.get(url)
+		df = pd.read_csv(io.StringIO(response.text))
+	except Exception as e:
+		print("Error during import csv:", e, url)
+		return
+	
+	all_data = []
+	if row == 'all':
+		for index, row in df.iterrows():
+			data = {**location, "source_link": source_link}
+			for label in labels:
+				data[label] = row[labels[label]]
+				
+			all_data.append(data)
+	else:
+		data = {**location, "source_link": source_link}
+		row = df.iloc[row]
+		for label in labels:
+			data[label] = row[labels[label]]
+		all_data.append(data)
+		
+	with web_app.app.app_context():
+		session = db.session()
+		for data in all_data:
+			add_or_update(session, **data)
+		session.commit()
+	
+def import_table(url, source_link, location, table_selector, row_selector, labels):
+	try:
+		response = requests.get(url)
+		soup = BeautifulSoup(response.text, "html.parser")
+	except Exception as e:
+		print("Error during table:", e, url)
+		return
+	
+	table = get_elem(soup, table_selector)
+	rows = get_elem(soup, row_selector)
+	all_data = []
+	for row in rows:
+		try:
+			data = {**location, "source_link": source_link}
+			for label, info in labels.items():
+				selectors = info['selectors']
+				is_plain = 'type' in info and info['type'] == 'plain'
+				text = get_field(row, selectors)
+				
+				if not is_plain:
+					data[label] = number(text)
+				else:
+					data[label] = text
+			all_data.append(data)
+		except Exception as e:
+			print("Error during table import!", e, url)
+
+methods = {
+	"google_sheets": import_google_sheets,
+	"worldometers": import_worldometers,
+	"selector": import_selector,
+	"csv": import_csv,
+	"table": import_table
+}
+
+allowed_methods = [import_csv, import_selector]
 
 if __name__ == "__main__":
 	data_download()
+	# update_live_data()

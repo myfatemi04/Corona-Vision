@@ -1,8 +1,8 @@
 {
-  "name": "CoronaVision",
+  "name": "Corona Vision",
   "description": "An App that can help you find nearby Coronavirus cases.",
   "image": "heroku/python",
-  "repository": "https://github.com/o-wth/CoronAwareness",
+  "repository": "https://github.com/o-wth/Corona-Vision",
   "keywords": [
 	"python",
 	"flask"
