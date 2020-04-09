@@ -112,6 +112,8 @@ def import_google_sheets(url, default_location, labels=['province', 'confirmed',
 				else:
 					if label:
 						new_data[label] = td.text
+						if label == 'province' and td.text:
+							new_data[label] = td.text.split("province")[0].strip()
 
 			data.append(new_data)
 
