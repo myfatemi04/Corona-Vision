@@ -98,6 +98,7 @@ class LiveEntry(Base):
 	admin2 = Column(String(320))
 	province = Column(String(320))
 	country = Column(String(320))
+	group = Column(String(320))
 
 	confirmed = Column(Integer)
 	recovered = Column(Integer)
@@ -121,6 +122,7 @@ class LiveEntry(Base):
 			"admin2": self.admin2,
 			"province": self.province,
 			"country": self.country,
+			"group": self.group,
 			
 			"confirmed": int(self.confirmed),
 			"recovered": int(self.recovered),

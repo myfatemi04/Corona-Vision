@@ -392,6 +392,15 @@ def fix_country_name(country):
 	elif country.lower() == "us" or country.lower() == "usa":
 		country = "United States"
 	
+	if country.lower() == 'uae':
+		country = "United Arab Emirates"
+
+	if country.lower() == 'drc':
+		country = "Congo, Democratic Republic of the"
+
+	if country.lower() == 'car':
+		country = "Central African Republic"
+	
 	if country.lower().endswith(", the"):
 		country = country[:-len(", the")]
 
@@ -428,6 +437,7 @@ def add_or_update(session,
 				num_tests=0,
 				source_link='',
 				location='',
+				group='',
 				commit=True):
 	country = fix_country_name(country)
 	existing = session.query(LiveEntry).filter_by(country=country, province=province, admin2=admin2)
@@ -466,6 +476,9 @@ def add_or_update(session,
 			updated = True
 		if num_tests > obj.num_tests:
 			obj.num_tests=num_tests
+			updated = True
+		if group:
+			obj.group=group
 			updated = True
 		
 		if updated:
@@ -517,15 +530,21 @@ def import_worldometers():
 	
 	data = []
 	for row in main_countries.find("tbody").findAll("tr"):
-		if 'class' in row.attrs and 'row_continent' in row['class']:
+		if row.get("class") and "row_continent" in row.get("class"):
 			continue
+		tds = row.findAll("td")
 		new_data = {"source_link": 'https://www.worldometers.info/coronavirus/'}
-		for label, td in zip(labels, row.findAll("td")):
+		new_data['group'] = "" or tds[-1].get("data-continent")
+		for label, td in zip(labels, tds):
 			if label:
 				if label in number_labels:
-					new_data[label] = number(td.text)
+					new_data[label] = number(td.text.strip())
 				else:
-					new_data[label] = td.text
+					if label == 'country':
+						new_data[label] = fix_country_name(td.text.strip())
+						print(new_data[label])
+					else:
+						new_data[label] = td.text.strip()
 		data.append(new_data)
 
 	with web_app.app.app_context():

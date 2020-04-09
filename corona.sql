@@ -37,6 +37,7 @@ create table live (
 	admin2 varchar(320) default '',
 	province varchar(320) default '',
 	country varchar(320) default '',
+	`group` varchar(320) default '',
 
 	confirmed integer default 0,
 	recovered integer default 0,
