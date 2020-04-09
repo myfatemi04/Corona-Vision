@@ -113,7 +113,7 @@ class LiveEntry(Base):
 
 	num_tests = Column(Integer)
 
-	source_link = Column(String(320))
+	source_link = Column(String())
 	
 	def json_serializable(self):
 		return {

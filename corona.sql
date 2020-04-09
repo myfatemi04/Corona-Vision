@@ -52,5 +52,5 @@ create table live (
 
 	num_tests integer default 0,
 
-	source_link varchar(320) not null default ''
+	source_link TEXT
 );

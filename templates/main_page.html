@@ -10,10 +10,10 @@
 		<script src="/static/js/corona_util.js"></script>
 		<script>
 			function init() {
-				reload_data();
 				init_selectors();
 				init_stats_panel();
 				CORONA_GLOBALS.reload_function = update_date;
+				update_date();
 			}
 
 			function update_date() {

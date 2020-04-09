@@ -512,12 +512,14 @@ def import_worldometers():
 	response = requests.get("http://www.worldometers.info/coronavirus")
 	soup = BeautifulSoup(response.text, "html.parser")
 	main_countries = soup.find(id="main_table_countries_today")
-	labels = ['location', 'confirmed', 'dconfirmed', 'deaths', 'ddeaths', 'recovered', 'active', 'serious', '', '', 'num_tests', '']
+	labels = ['country', 'confirmed', 'dconfirmed', 'deaths', 'ddeaths', 'recovered', 'active', 'serious', '', '', 'num_tests', '']
 	number_labels = {'confirmed', 'dconfirmed', 'deaths', 'ddeaths', 'recovered', 'active', 'serious', 'num_tests'}
 	
 	data = []
 	for row in main_countries.find("tbody").findAll("tr"):
-		new_data = {}
+		if 'class' in row.attrs and 'row_continent' in row['class']:
+			continue
+		new_data = {"source_link": 'https://www.worldometers.info/coronavirus/'}
 		for label, td in zip(labels, row.findAll("td")):
 			if label:
 				if label in number_labels:
@@ -529,45 +531,49 @@ def import_worldometers():
 	with web_app.app.app_context():
 		session = db.session()
 		for row in data:
-			if row['location'].lower() in ['overall', 'total', 'world']:
-				row['location'] = ''
+			if row['country'].lower() in ['overall', 'total', 'world']:
+				row['country'] = ''
 
-			row['location'] = fix_country_name(row['location'])
+			row['country'] = fix_country_name(row['country'])
 			
-			add_or_update(session, country=row['location'], **row, source_link='https://www.worldometers.info/coronavirus/')
+			add_or_update(session, **row)
 
-def import_google_sheets(url, default_location, location_level, source_url, labels=['location', 'confirmed', 'dconfirmed', 'deaths', 'ddeaths', '', 'serious', 'recovered', '']):
+def import_google_sheets(url, default_location, source_url, labels=['province', 'confirmed', 'dconfirmed', 'deaths', 'ddeaths', '', 'serious', 'recovered', '']):
 	response = requests.get(url)
 	soup = BeautifulSoup(response.text, "html.parser")
 	rows = soup.findAll('tr')
 	number_labels = {"confirmed", "dconfirmed", "deaths", "ddeaths", "serious", "recovered"}
 	data = []
+
+	mode = ""
+
 	for row in rows:
-		if "Source" not in row.text:
-			continue
-		tds = row.findAll('td')
-		new_data = {}
-		for label, td in zip(labels, tds):
-			if label in number_labels:
-				new_data[label] = number(td.text.replace(",", ""))
+		if "location" in row.text.lower():
+			mode = "rows"
+		elif mode == "rows":
+			tds = row.findAll('td')
+			new_data = {**default_location}
+			link = row.find('a', href=True)
+			if link:
+				new_data["source_link"] = link['href']
 			else:
-				if label:
-					if label == "location" and location_level == "province":
-						new_data[label] = td.text.split("province")[0]
-					elif label == "location" and location_level == "country":
-						new_data[label] = fix_country_name(td.text)
-					else:
+				new_data["source_link"] = url
+
+			for label, td in zip(labels, tds):
+				if label in number_labels:
+					new_data[label] = number(td.text.replace(",", ""))
+				else:
+					if label:
 						new_data[label] = td.text
 
-		data.append(new_data)
+			data.append(new_data)
 
 	with web_app.app.app_context():
 		session = db.session()
 		for row in data:
-			location = {**default_location, "source_link": source_url}
-			location[location_level] = row['location']
-
-			add_or_update(session, **location, **row)
+			if row['province'] == 'TOTAL': row['province'] = ''
+			if row['country'] == 'TOTAL': row['country'] = ''
+			add_or_update(session, **row)
 		session.commit()
 
 def import_selector(url, source_link, labels, location):
@@ -677,5 +683,5 @@ methods = {
 allowed_methods = [import_csv, import_selector]
 
 if __name__ == "__main__":
-	data_download()
-	# update_live_data()
+	# data_download()
+	import_worldometers()
