@@ -21,5 +21,6 @@ let CORONA_GLOBALS = {
     },
     country_list: [],
     province_list: {},
-    admin2_list: {}
+    admin2_list: {},
+    is_moving_average: false
 };

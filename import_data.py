@@ -29,7 +29,6 @@ def data_download():
 	while True:
 		try:
 			status = import_jhu.download_data_for_date(date.today())
-			
 			update_live_data()
 			
 			if status == '404' or status == 'exists':
@@ -42,7 +41,10 @@ def update_live_data():
 		print("Loading new data...")
 		args = datasource['args']
 		method = methods[datasource['method']]
-		method(**args)
+		try:
+			method(**args)
+		except Exception as e:
+			print("Error during data load!", e, args)
 
 def number(string):
 	string = string.strip()
@@ -93,7 +95,7 @@ def import_google_sheets(url, default_location, labels=['province', 'confirmed',
 	mode = ""
 
 	for row in rows:
-		if "location" in row.text.lower():
+		if "links" in row.text.lower() or "mainland china" in row.text.lower():
 			mode = "rows"
 		elif mode == "rows":
 			tds = row.findAll('td')
@@ -187,5 +189,13 @@ methods = {
 allowed_methods = methods.values() # [import_csv, import_selector]
 
 if __name__ == "__main__":
-	# import_worldometers()
+	# update_live_data()
+	# print("Importing from USA")
+	# datasource = live_data_sources[0]
+	# args = datasource['args']
+	# method = methods[datasource['method']]
+	# try:
+	# 	method(**args)
+	# except Exception as e:
+	# 	print("Error during data load!", e, args)
 	data_download()
