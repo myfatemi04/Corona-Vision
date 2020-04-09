@@ -88,7 +88,7 @@ function show_data(data, label_prop, label_default) {
             {number: datapoint.confirmed, color: CORONA_GLOBALS.COLORS.confirmed},
             {number: datapoint.dconfirmed, denom: datapoint.confirmed, color: CORONA_GLOBALS.COLORS.confirmed},
             {number: datapoint.recovered, denom: datapoint.confirmed, color: CORONA_GLOBALS.COLORS.recovered},
-            {number: datapoint.deaths, color: CORONA_GLOBALS.COLORS.deaths},
+            {number: datapoint.deaths, denom: datapoint.confirmed, color: CORONA_GLOBALS.COLORS.deaths},
             {number: datapoint.ddeaths, denom: datapoint.deaths, color: CORONA_GLOBALS.COLORS.deaths},
             {number: datapoint.num_tests, customNumer: datapoint.confirmed, denom: datapoint.num_tests, digits: 2, color: CORONA_GLOBALS.COLORS.tests},
             {number: datapoint.serious, denom: datapoint.confirmed, color: CORONA_GLOBALS.COLORS.serious},

@@ -497,7 +497,11 @@ def add_or_update(session,
 		session.commit()
 
 def number(string):
-	string = string.strip().split()[0]
+	
+	string = string.strip()
+	if not string:
+		return 0
+	string = string.split()[0]
 	number = string.replace(",", "").replace("+", "").replace(".", "").replace("*", "")
 	try:
 		return int(number)
