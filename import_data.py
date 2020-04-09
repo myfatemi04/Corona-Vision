@@ -118,8 +118,8 @@ def import_google_sheets(url, default_location, labels=['province', 'confirmed',
 	with web_app.app.app_context():
 		session = db.session()
 		for row in data:
-			if row['province'] == 'TOTAL': row['province'] = ''
-			if row['country'] == 'TOTAL': row['country'] = ''
+			if 'total' in row['province'].lower(): row['province'] = ''
+			if 'total' in row['country'].lower(): row['country'] = ''
 			add_or_update(session, row)
 		session.commit()
 
