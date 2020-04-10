@@ -1,0 +1,29 @@
+<!-- All javascript init must go in the head of the parent document -->
+
+<h3>Map</h3>
+<a style="text-decoration: underline;" href="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports">
+    Source: Johns Hopkins University
+</a>
+<div class="d-flex flex-column">
+    <noscript>
+        This website requires JavaScript to run.
+    </noscript>
+    <select name="map-type" class="custom-input-color form-control my-2">
+        <option value="total">Total</option>
+        <option value="daily-change">Change since yesterday</option>
+    </select>
+    <select name="map-display" class="custom-input-color form-control my-2">
+        <option value="active">Active cases</option>
+        <option value="confirmed">Confirmed cases</option>
+        <option value="recovered">Recovered cases</option>
+        <option value="dead">Deaths</option>
+    </select>
+    <select class="custom-input-color form-control my-2" id="date" onchange="reload_cases();">
+        {% for date in sorted_dates %}
+            <option value="{{date}}">Date: {{date}}</option>
+        {% endfor %}
+    </select>
+</div>
+<div class="mb-bot">
+    <div id="map" class="map my-2"></div>
+</div>

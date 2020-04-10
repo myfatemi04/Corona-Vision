@@ -3,29 +3,37 @@ use corona;
 drop table if exists datapoints;
 create table datapoints (
 	data_id integer not null auto_increment primary key,
-	entry_date date,
+	entry_date varchar(16),
+	update_time datetime not null default CURRENT_TIMESTAMP,
 	
-	admin2 varchar(320),
-	province varchar(320),
-	country varchar(320),
+	admin2 varchar(320) default '',
+	province varchar(320) default '',
+	country varchar(320) default '',
+	`group` varchar(320) default '',
 	
-	latitude float(10, 6) not null default 0,
-	longitude float(10, 6) not null default 0,
+	latitude float(10, 6) default 0,
+	longitude float(10, 6) default 0,
 
-	location_labelled boolean,
-	location_accurate boolean,
-	is_first_day boolean,
-	is_primary boolean,
+	location_labelled boolean default false,
+	location_accurate boolean default false,
+	is_first_day boolean default false,
+	is_primary boolean default false,
 	
-	confirmed int,
-	recovered int,
-	deaths int,
-	active int,
+	confirmed integer default 0,
+	recovered integer default 0,
+	deaths integer default 0,
+	active integer default 0,
+	serious integer default 0,
 
-	dconfirmed int,
-	drecovered int,
-	ddeaths int,
-	dactive int
+	dconfirmed integer default 0,
+	drecovered integer default 0,
+	ddeaths integer default 0,
+	dactive integer default 0,
+	dserious integer default 0,
+
+	num_tests integer default 0,
+
+	source_link TEXT
 );
 
 drop table if exists live;

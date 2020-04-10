@@ -1,0 +1,34 @@
+{
+  "name": "corona-vision",
+  "version": "1.0.0",
+  "description": "Coronavirus Tracker",
+  "main": "corona_web.js",
+  "scripts": {
+    "test": "node corona_web.js",
+    "start": "node corona_web.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/o-wth/Corona-Vision.git"
+  },
+  "keywords": [
+    "webserver",
+    "http",
+    "coronavirus"
+  ],
+  "author": "Michael Fatemi, Autin Mitra, Suhas Nandiraju",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/o-wth/Corona-Vision/issues"
+  },
+  "homepage": "https://github.com/o-wth/Corona-Vision#readme",
+  "dependencies": {
+    "fs": "0.0.1-security",
+    "http": "0.0.1-security",
+    "knex": "^0.20.13",
+    "mustache": "^4.0.1",
+    "mysql": "^2.18.1",
+    "sqlstring": "^2.3.1",
+    "url": "^0.11.0"
+  }
+}

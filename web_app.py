@@ -54,7 +54,7 @@ def parse_date(entry_date_str):
 
 def get_live_last_update():
 	session = db.session()
-	first = session.query(LiveEntry.update_time).distinct().order_by(LiveEntry.update_time.desc()).first()
+	first = session.query(Datapoint.update_time).filter_by(entry_date='live').distinct().order_by(Datapoint.update_time.desc()).first()
 	return first.update_time.strftime("%m/%d/%Y, %I:%M:%S %p UTC")
 
 def get_country_province_admin2():
@@ -87,10 +87,7 @@ def find_total_nation_cases():
 	session = db.session()
 	nation = get_country_province_admin2()
 
-	if entry_date == 'live' or not entry_date:
-		results = session.query(LiveEntry)
-	else:
-		results = session.query(Datapoint).filter_by(entry_date=entry_date)
+	results = session.query(Datapoint).filter_by(entry_date=entry_date)
 	
 	results = filter_by_nation(results, **nation)
 
@@ -159,17 +156,11 @@ def list_all_countries():
 	entry_date = parse_date(request.args.get("date"))
 	need_province = get_("need_province", "1")
 
-	table = Datapoint
-	if entry_date == "live":
-		table = LiveEntry
-	
-	results = sess.query(table.country)
-	
-	if entry_date != "live":
-		results = results.filter_by(entry_date=entry_date)
+	results = sess.query(Datapoint.country)
+	results = results.filter_by(entry_date=entry_date)
 
 	if need_province == "1":
-		results = results.filter(table.province != '')
+		results = results.filter(Datapoint.province != '')
 
 	return json.dumps(sorted([
 		result[0]
@@ -184,17 +175,11 @@ def list_country_provinces():
 	entry_date = parse_date(request.args.get("date"))
 	need_admin2 = get_("need_admin2", True)
 
-	table = Datapoint
-	if entry_date == "live":
-		table = LiveEntry
-
-	results = sess.query(table.province).filter_by(country=country)
-
-	if entry_date != "live":
-		results = results.filter_by(entry_date=entry_date)
+	results = sess.query(Datapoint.province).filter_by(country=country)
+	results = results.filter_by(entry_date=entry_date)
 
 	if need_admin2 == "1":
-		results = results.filter(table.admin2 != '')
+		results = results.filter(Datapoint.admin2 != '')
 	
 	return json.dumps(sorted([
 		result[0]
@@ -209,11 +194,7 @@ def list_province_admin2():
 	country = request.args.get("country") or ""
 	entry_date = parse_date(request.args.get("date"))
 
-	table = Datapoint
-	if entry_date == "live":
-		table = LiveEntry
-
-	results = sess.query(table.admin2).filter_by(country=country, province=province)
+	results = sess.query(Datapoint.admin2).filter_by(country=country, province=province)
 	
 	if entry_date != "live":
 		results = results.filter_by(entry_date=entry_date)

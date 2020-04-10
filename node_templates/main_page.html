@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Corona Vision - Data by Country</title>
+		{{{styles}}}
+		<script src="/static/js/corona_datatables.js"></script>
+		<script src="/static/js/corona_globals.js"></script>
+		<script src="/static/js/corona_stats.js"></script>
+		<script src="/static/js/selector.js"></script>
+		<script src="/static/js/corona_util.js"></script>
+		<script>
+			function init() {
+				init_selectors();
+				init_stats_panel();
+				CORONA_GLOBALS.reload_function = update_date;
+				update_date();
+			}
+
+			function update_date() {
+				reload_data();
+				update_stats();
+			}
+		</script>
+	</head>
+	<body onload="init()">
+		{{{navbar}}}
+		<div class="column-container">
+			<div style="flex: 1;">
+				<div class="scroll box d-flex flex-column" style="flex: 1;">
+					Date:
+					<select class="custom-input-color form-control my-2" id="date" onchange="update_date()" style="border-radius: 0.25rem;">
+						<option value="live">Live ({{last_update}})</option>
+						{% for date in sorted_dates %}
+							<option value="{{date}}">{{date}}</option>
+						{% endfor %}
+					</select>
+					Region: 
+					{{{selectors}}}
+					<div id="stats-info">
+						<code style="font-size: 1.5rem;">Loading...</code>
+					</div><br/>
+					<div>
+						Sources:
+						<ul>
+							<li>
+								<a href="https://www.worldometers.info/coronavirus/">
+									Worldometers (live country-level data, testing data)
+								</a>
+							</li>
+							<li>
+								<a href="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports">
+									JHU (historic county-level data)
+								</a>
+							</li>
+							<li>
+								<a href="https://bnonews.com/index.php/2020/04/the-latest-coronavirus-cases/">
+									BNO (live state-level data)
+								</a>
+							</li>
+							<li>
+								Local government websites
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+			<div class="d-flex flex-column" style="flex: 3;">
+				<table id="datatable" class="data-container">
+					<thead class="border-bottom pos-sticky datatable-head custom-bg">
+						<tr class="d-flex py-2">
+							<th style="flex: 1;">
+								<input type="text" onkeyup="filter_table()" class="custom-input-color small-input" placeholder="Search for location" id="locationSearch">
+							</th>
+						</tr>
+						<tr class="d-flex py-2">
+							<th style="flex: 0.5;"></th>
+							<th style="flex: 2;">Location</th>
+							<th style="flex: 1;">Confirmed</th>
+							<th style="flex: 1;">New</th>
+							<th style="flex: 1;">Recovered</th>
+							<th style="flex: 1;">Deaths</th>
+							<th style="flex: 1;">New</th>
+							<th style="flex: 1;">Tests</th>
+							<th style="flex: 1;">Serious cases</th>
+							<th style="flex: 1;">Source</th>
+						</tr>
+					</thead>
+					<tbody id="tablebody"></tbody>
+				</table>
+			</div>
+		</div>
+	</body>
+</html>

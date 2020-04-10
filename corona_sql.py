@@ -24,29 +24,37 @@ DateTime = db.DateTime
 class Datapoint(Base):
 	__tablename__ = "datapoints"
 	data_id = Column(Integer, primary_key=True)
-	entry_date = Column(Date)
+	entry_date = Column(String(16))
+	update_time = Column(DateTime, default=datetime.datetime.utcnow())
 	
-	admin2 = Column(String(320))
-	province = Column(String(320))
-	country = Column(String(320))
+	admin2 = Column(String(320), default='')
+	province = Column(String(320), default='')
+	country = Column(String(320), default='')
+	group = Column(String(320), default='')
 	
-	latitude = Column(Float(10, 6))
-	longitude = Column(Float(10, 6))
+	latitude = Column(Float(10, 6), default=0)
+	longitude = Column(Float(10, 6), default=0)
 
-	location_labelled = Column(Boolean)
-	location_accurate = Column(Boolean)
-	is_first_day = Column(Boolean)
-	is_primary = Column(Boolean)
+	location_labelled = Column(Boolean, default=False)
+	location_accurate = Column(Boolean, default=False)
+	is_first_day = Column(Boolean, default=False)
+	is_primary = Column(Boolean, default=False)
 	
-	confirmed = Column(Integer)
-	recovered = Column(Integer)
-	deaths = Column(Integer)
-	active = Column(Integer)
+	confirmed = Column(Integer, default=0)
+	recovered = Column(Integer, default=0)
+	deaths = Column(Integer, default=0)
+	active = Column(Integer, default=0)
+	serious = Column(Integer, default=0)
 	
-	dconfirmed = Column(Integer)
-	drecovered = Column(Integer)
-	ddeaths = Column(Integer)
-	dactive = Column(Integer)
+	dconfirmed = Column(Integer, default=0)
+	drecovered = Column(Integer, default=0)
+	ddeaths = Column(Integer, default=0)
+	dactive = Column(Integer, default=0)
+	dserious = Column(Integer, default=0)
+
+	num_tests = Column(Integer, default=0)
+
+	source_link = Column(String())
 	
 	def json_serializable(self):
 		return {
@@ -56,6 +64,7 @@ class Datapoint(Base):
 			"admin2": self.admin2,
 			"province": self.province,
 			"country": self.country,
+			"group": self.group,
 
 			"location_labelled": self.location_labelled,
 			"is_first_day": self.is_first_day,
@@ -63,52 +72,6 @@ class Datapoint(Base):
 			"latitude": float(self.latitude),
 			"longitude": float(self.longitude),
 
-			"confirmed": int(self.confirmed),
-			"recovered": int(self.recovered),
-			"deaths": int(self.deaths),
-			"active": int(self.active),
-
-			"dconfirmed": int(self.dconfirmed),
-			"drecovered": int(self.drecovered),
-			"ddeaths": int(self.ddeaths),
-			"dactive": int(self.dactive)
-		}
-
-class LiveEntry(Base):
-	__tablename__ = "live"
-	data_id = Column(Integer, primary_key=True)
-
-	update_time = Column(DateTime, default=datetime.datetime.utcnow)
-
-	admin2 = Column(String(320))
-	province = Column(String(320))
-	country = Column(String(320))
-	group = Column(String(320))
-
-	confirmed = Column(Integer)
-	recovered = Column(Integer)
-	deaths = Column(Integer)
-	active = Column(Integer)
-	serious = Column(Integer)
-
-	dconfirmed = Column(Integer)
-	drecovered = Column(Integer)
-	ddeaths = Column(Integer)
-	dactive = Column(Integer)
-	dserious = Column(Integer)
-
-	num_tests = Column(Integer)
-
-	source_link = Column(String())
-	
-	def json_serializable(self):
-		return {
-			'data_id': self.data_id,
-			"admin2": self.admin2,
-			"province": self.province,
-			"country": self.country,
-			"group": self.group,
-			
 			"confirmed": int(self.confirmed),
 			"recovered": int(self.recovered),
 			"deaths": int(self.deaths),
@@ -124,6 +87,57 @@ class LiveEntry(Base):
 			"num_tests": int(self.num_tests),
 			"source_link": self.source_link
 		}
+
+# class LiveEntry(Base):
+# 	__tablename__ = "live"
+# 	data_id = Column(Integer, primary_key=True)
+
+# 	update_time = Column(DateTime, default=datetime.datetime.utcnow)
+
+# 	admin2 = Column(String(320))
+# 	province = Column(String(320))
+# 	country = Column(String(320))
+# 	group = Column(String(320))
+
+# 	confirmed = Column(Integer)
+# 	recovered = Column(Integer)
+# 	deaths = Column(Integer)
+# 	active = Column(Integer)
+# 	serious = Column(Integer)
+
+# 	dconfirmed = Column(Integer)
+# 	drecovered = Column(Integer)
+# 	ddeaths = Column(Integer)
+# 	dactive = Column(Integer)
+# 	dserious = Column(Integer)
+
+# 	num_tests = Column(Integer)
+
+# 	source_link = Column(String())
+	
+# 	def json_serializable(self):
+# 		return {
+# 			'data_id': self.data_id,
+# 			"admin2": self.admin2,
+# 			"province": self.province,
+# 			"country": self.country,
+# 			"group": self.group,
+			
+# 			"confirmed": int(self.confirmed),
+# 			"recovered": int(self.recovered),
+# 			"deaths": int(self.deaths),
+# 			"active": int(self.active),
+# 			"serious": int(self.serious),
+
+# 			"dconfirmed": int(self.dconfirmed),
+# 			"drecovered": int(self.drecovered),
+# 			"ddeaths": int(self.ddeaths),
+# 			"dactive": int(self.dactive),
+# 			"dserious": int(self.dserious),
+
+# 			"num_tests": int(self.num_tests),
+# 			"source_link": self.source_link
+# 		}
 
 def total_cases(country, province, date_):
 	session = db.session()
@@ -213,7 +227,8 @@ def add_or_update(session, data, commit=True):
 		'dactive':0,
 		'num_tests':0,
 		'source_link':'',
-		'group':''
+		'group':'',
+		'entry_date':'live'
 	}
 	for label in default_data:
 		if label not in data:
@@ -230,7 +245,7 @@ def add_or_update(session, data, commit=True):
 		'admin2': data['admin2']
 	}
 
-	existing = session.query(LiveEntry).filter_by(**location)
+	existing = session.query(Datapoint).filter_by(**location, entry_date='live')
 	obj = existing.first()
 	if obj:
 		updated = False
@@ -253,7 +268,7 @@ def add_or_update(session, data, commit=True):
 				obj.source_link = data['source_link']
 
 	else:
-		new_obj = LiveEntry(**data)
+		new_obj = Datapoint(**data)
 
 		session.add(new_obj)
 	if commit:

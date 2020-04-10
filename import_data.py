@@ -12,7 +12,7 @@ import io
 
 import requests
 import web_app
-import locations
+import standards
 import corona_parser
 
 import import_jhu
