@@ -14,7 +14,20 @@
 
 		<script>
 			function init() {
-				init_map();
+				init_dates();
+			}
+
+			function init_dates() {
+				$.getJSON(
+					"/list/dates",
+					{},
+					(data) => {
+						for (let result of data) {
+							$("#date")[0].innerHTML += `<option value="${result.entry_date}">${result.entry_date}</option>`;
+						}
+						init_map();
+					}
+				)
 			}
 		</script>
 	</head>

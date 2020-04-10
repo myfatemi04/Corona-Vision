@@ -55,6 +55,8 @@ def parse_date(entry_date_str):
 def get_live_last_update():
 	session = db.session()
 	first = session.query(Datapoint.update_time).filter_by(entry_date='live').distinct().order_by(Datapoint.update_time.desc()).first()
+	if not first:
+		return "None"
 	return first.update_time.strftime("%m/%d/%Y, %I:%M:%S %p UTC")
 
 def get_country_province_admin2():
@@ -162,11 +164,11 @@ def list_all_countries():
 	if need_province == "1":
 		results = results.filter(Datapoint.province != '')
 
-	return json.dumps(sorted([
-		result[0]
-		for result in results.distinct().all()
+	return json.dumps([
+		{"country": result[0]}
+		for result in results.distinct().order_by(Datapoint.country).all()
 		if result[0]
-	]))
+	])
 
 @app.route("/list/provinces")
 def list_country_provinces():
@@ -181,11 +183,11 @@ def list_country_provinces():
 	if need_admin2 == "1":
 		results = results.filter(Datapoint.admin2 != '')
 	
-	return json.dumps(sorted([
-		result[0]
-		for result in results.distinct().all()
+	return json.dumps([
+		{"province": result[0]}
+		for result in results.distinct().order_by(Datapoint.province).all()
 		if result[0]
-	]))
+	])
 
 @app.route("/list/admin2")
 def list_province_admin2():
@@ -199,11 +201,11 @@ def list_province_admin2():
 	if entry_date != "live":
 		results = results.filter_by(entry_date=entry_date)
 
-	return json.dumps(sorted([
-		result[0]
-		for result in results.distinct().all()
+	return json.dumps([
+		{"admin2": result[0]}
+		for result in results.distinct().order_by(Datapoint.admin2).all()
 		if result[0]
-	]))
+	])
 
 @app.route("/charts")
 def charts_data_page():

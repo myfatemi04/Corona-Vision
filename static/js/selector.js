@@ -43,8 +43,8 @@ function init_selectors() {
             need_province: CORONA_GLOBALS.need_child
         },
         function(data) {
-            add_selector_items("country-selector", country_head, data);
-            CORONA_GLOBALS.country_list = data;
+            CORONA_GLOBALS.country_list = data.map(({country}) => country);
+            add_selector_items("country-selector", country_head, CORONA_GLOBALS.country_list);
         }
     )
 
@@ -53,7 +53,7 @@ function init_selectors() {
             CORONA_GLOBALS.country = this.value;
             CORONA_GLOBALS.province = "";
             CORONA_GLOBALS.admin2 = "";
-
+            
             $("#province-selector").hide();
             $("#province-selector")[0].innerHTML = province_head;
             $("#admin2-selector").hide();
@@ -71,7 +71,7 @@ function init_selectors() {
                             need_admin2: CORONA_GLOBALS.need_child
                         },
                         function(data) {
-                            CORONA_GLOBALS.province_list[country] = data;
+                            CORONA_GLOBALS.province_list[country] = data.map(({province}) => province);
                             add_selector_items("province-selector", province_head, CORONA_GLOBALS.province_list[country]);
                             CORONA_GLOBALS.reload_function();
                         }
@@ -107,7 +107,7 @@ function init_selectors() {
                         "/list/admin2",
                         { country: country, province: province, date: $("#date")[0].value },
                         function(data) {
-                            CORONA_GLOBALS.admin2_list[country][province] = data;
+                            CORONA_GLOBALS.admin2_list[country][province] = data.map(({admin2}) => admin2);
                             add_selector_items("admin2-selector", admin2_head, CORONA_GLOBALS.admin2_list[country][province]);
                             CORONA_GLOBALS.reload_function();
                         }

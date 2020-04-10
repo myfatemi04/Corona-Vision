@@ -170,13 +170,13 @@ function reset_chart() {
 }
 
 function add_chart_data(data) {
-	console.log(data);
 	reset_chart();
 	let chart = CORONA_GLOBALS.chart;
 	let raw = [[], [], [], []];
 
 	chart.data.labels = data.entry_date;
 	let datasets = chart.data.datasets;
+
 	if (CORONA_GLOBALS.chart_type == 'total') {
 		raw[CONFIRMED_IX] = data.confirmed;
 		raw[DEATHS_IX] = data.deaths;

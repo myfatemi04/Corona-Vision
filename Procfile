@@ -1,2 +1,2 @@
-web: python3 web_app.py $PORT
+web: node corona_web.js $PORT
 data: python3 import_data.py

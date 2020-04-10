@@ -10,15 +10,31 @@
 		<script src="/static/js/corona_util.js"></script>
 		<script>
 			function init() {
-				init_selectors();
-				init_stats_panel();
 				CORONA_GLOBALS.reload_function = update_date;
-				update_date();
+				init_dates();
 			}
 
 			function update_date() {
 				reload_data();
 				update_stats();
+			}
+
+			function init_dates() {
+				$.getJSON(
+					"/list/dates",
+					{},
+					(data) => {
+						for (let result of data) {
+							$("#date")[0].innerHTML += `<option value="${result.entry_date}">${result.entry_date}</option>`;
+						}
+						
+						init_selectors();
+						init_stats_panel();
+
+						CORONA_GLOBALS.reload_function = update_date;
+						update_date();
+					}
+				)
 			}
 		</script>
 	</head>
@@ -29,10 +45,7 @@
 				<div class="scroll box d-flex flex-column" style="flex: 1;">
 					Date:
 					<select class="custom-input-color form-control my-2" id="date" onchange="update_date()" style="border-radius: 0.25rem;">
-						<option value="live">Live ({{last_update}})</option>
-						{% for date in sorted_dates %}
-							<option value="{{date}}">{{date}}</option>
-						{% endfor %}
+
 					</select>
 					Region: 
 					{{{selectors}}}

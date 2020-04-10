@@ -7,22 +7,45 @@
 		<script src="/static/js/corona_chart.js"></script>
 		<script src="/static/js/chart.min.js"></script>
 		<script src="/static/js/selector.js"></script>
-		<script src="/static/js/node_modules/logistic-regression/index.js"></script>
 		<script>
 			function init() {
-				CORONA_GLOBALS.chart = new_chart("chart");
-				CORONA_GLOBALS.reload_function = reload_chart;
-				CORONA_GLOBALS.need_child = 0;
-				init_CORONA_GLOBALS();
-				init_selectors();
-				reload_chart();
+				init_dates();
+			}
+
+			function init_dates() {
+				$.getJSON(
+					"/list/dates",
+					{},
+					(data) => {
+						for (let result of data) {
+							$("#date")[0].innerHTML += `<option value="${result.entry_date}">${result.entry_date}</option>`;
+						}
+						
+						CORONA_GLOBALS.chart = new_chart("chart");
+						CORONA_GLOBALS.reload_function = reload_chart;
+						CORONA_GLOBALS.need_child = 0;
+						init_CORONA_GLOBALS();
+						init_selectors();
+						reload_chart();
+					}
+				)
 			}
 		</script>
 	</head>
 	<body onload="init()">
 		{{{navbar}}}
 		<div class="container p-2">
-			{{{chart_panel}}}
+			<!-- All javascript init must go in the head of the parent document -->
+			<div class="box d-flex flex-column">
+				<a id="download-chart" style="display: none;"></a>
+				<canvas id="chart"></canvas>
+				<button class="btn custom-button-color my-2" onclick="download_canvas()">
+					Save Image
+				</button>
+				<select id="date" style="display: none;"></select>
+				{{{selectors}}}
+				{{{chart_options}}}
+			</div>
 		</div>
 	</body>
 </html>
