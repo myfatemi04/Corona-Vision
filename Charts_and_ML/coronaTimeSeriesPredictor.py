@@ -4,6 +4,7 @@ from sklearn.preprocessing import MinMaxScaler, LabelEncoder
 from keras.models import Sequential
 from keras.layers import Dense, LSTM
 import matplotlib.pyplot as plt
+import sys
 
 def create_dataset(dataset, look_back=1):
     look_back=1
@@ -24,7 +25,7 @@ def create_dataX(data_X, look_back=1):
     return np.array(dataX)
 
 
-def do_code(data, adv):
+def do_code(data, adv, mx):
     look_back=1
     """init scalers for data normalization"""
     xscl = MinMaxScaler(feature_range=(0, 1))
@@ -36,7 +37,7 @@ def do_code(data, adv):
 
     predX = np.copy(data[:,0])
     lenx = len(predX)
-    for i in range(1, adv):
+    for i in range(1, adv+3):
         predX = np.append(predX, np.array(lenx+i))
 
     predX = create_dataX(predX)
@@ -45,6 +46,8 @@ def do_code(data, adv):
 
     """separate X and Y data"""
     trainX, trainY = create_dataset(data, 1)
+
+    print(trainY)
 
     """normalize data"""
     trainY = np.reshape(trainY, (-1, 1))
@@ -58,45 +61,37 @@ def do_code(data, adv):
 
     data = scaler.fit_transform(data)
 
-    """Init a LSTM Recurrent Neural Network Model for future data interpolative predictions"""
+    """LSTM Recurrent Neural Network Model for future data interpolative predictions"""
     model = Sequential()
     model.add(LSTM(4, input_shape=(1, 1)))
     model.add(Dense(1))
     model.compile(loss='mean_squared_error', optimizer='adam')
-
-    """Train model"""
-    model.fit(trainX, trainY, epochs=5, batch_size=1, verbose=2)
+    model.fit(trainX, trainY, epochs=100, batch_size=1, verbose=2)
 
     """Predict and de-normalize data"""
     trainPredict = model.predict(trainX)
+
     trainPredict = yscl.inverse_transform(trainPredict)
     trainY = yscl.inverse_transform(trainY)
 
     testpred = model.predict(predX)
-    testpred = yscl.inverse_transform(testpred)
 
-    output = pd.DataFrame({"Y" : testpred})
+    output = pd.DataFrame({"Y" : [list(i)[0]*mx for i in list(testpred)]})
+
     output.insert(0, "X", range(0, len(testpred)))
 
     output.to_csv("output.csv", index=False, float_format="%.0f")
 
 
-    """Plot de-normalized ground truth followed by predicted data
-    trainPredictPlot = np.empty_like(data)
-    trainPredictPlot[:, :] = np.nan
-    trainPredictPlot[look_back:len(trainPredict)+look_back, :] = trainPredict
-
-    plt.plot(scaler.inverse_transform(data))
-    plt.plot(trainPredictPlot)
-    plt.show()
-    """
 
 df = pd.read_csv(sys.argv[1])
 
-df.drop("Date")
+df = df.drop("Date", axis=1)
 
-df.insert(0, "Case ID", range(0, len(data2)))
+df.insert(0, "Case ID", range(0, len(df)))
+
+mx = df["Cases"].max()
 
 data = df.values
 
-do_code(data, int(sys.argv[2]))
+do_code(data, int(sys.argv[2]), mx)
