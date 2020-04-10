@@ -170,23 +170,30 @@ function reset_chart() {
 }
 
 function add_chart_data(data) {
+	console.log(data);
 	reset_chart();
 	let chart = CORONA_GLOBALS.chart;
-	for (let total of data) {
-		chart.data.labels.push(total.entry_date);
-		let datasets = chart.data.datasets;
-		if (CORONA_GLOBALS.chart_type == 'total') {
-			datasets[CONFIRMED_IX].data.push(total.confirmed);
-			datasets[DEATHS_IX].data.push(total.deaths);
-			datasets[RECOVERED_IX].data.push(total.recovered);
-			datasets[ACTIVE_IX].data.push(total.active);
-		} else if (CORONA_GLOBALS.chart_type == 'daily-change') {
-			datasets[CONFIRMED_IX].data.push(total.dconfirmed);
-			datasets[DEATHS_IX].data.push(total.ddeaths);
-			datasets[RECOVERED_IX].data.push(total.drecovered);
-			datasets[ACTIVE_IX].data.push(total.dactive);
-		}
+	let raw = [[], [], [], []];
+
+	chart.data.labels = data.entry_date;
+	let datasets = chart.data.datasets;
+	if (CORONA_GLOBALS.chart_type == 'total') {
+		raw[CONFIRMED_IX] = data.confirmed;
+		raw[DEATHS_IX] = data.deaths;
+		raw[RECOVERED_IX] = data.recovered;
+		raw[ACTIVE_IX] = data.active;
+	} else if (CORONA_GLOBALS.chart_type == 'daily-change') {
+		raw[CONFIRMED_IX] = data.dconfirmed;
+		raw[DEATHS_IX] = data.ddeaths;
+		raw[RECOVERED_IX] = data.drecovered;
+		raw[ACTIVE_IX] = data.dactive;
 	}
+
+	datasets[CONFIRMED_IX].data = raw[CONFIRMED_IX];
+	datasets[DEATHS_IX].data = raw[DEATHS_IX];
+	datasets[RECOVERED_IX].data = raw[RECOVERED_IX];
+	datasets[ACTIVE_IX].data = raw[ACTIVE_IX];
+
 	chart.update()
 }
 

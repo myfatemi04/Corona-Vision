@@ -94,7 +94,7 @@ def find_total_nation_cases():
 	
 	results = filter_by_nation(results, **nation)
 
-	return json_list(results.all())
+	return json_list(results)
 
 @app.route("/cases/first_days")
 def get_first_days():
@@ -109,7 +109,22 @@ def find_total_nation_cases_sequences():
 	session = db.session()
 	results = session.query(Datapoint).filter_by(**nation).order_by(Datapoint.entry_date).all()
 
-	return json_list(results)
+	labels = [
+		'entry_date',
+		'confirmed', 'dconfirmed',
+		'recovered', 'drecovered',
+		'active', 'dactive',
+		'deaths', 'ddeaths'
+	]
+
+	json_data = {**nation}
+	json_data.update({key: list() for key in labels})
+	for result in results:
+		result_json = result.json_serializable()
+		for label in labels:
+			json_data[label].append(result_json[label])
+
+	return json.dumps(json_data)
 
 def get_(key, default=True):
 	return default if key not in request.args else request.args.get(key)
