@@ -64,7 +64,14 @@ function init_CORONA_GLOBALS() {
             chart.data.datasets[ACTIVE_IX].hidden = !this.checked;
             chart.update();
         }
-    );
+	);
+	
+	$("input#smoothing").change(
+		function() {
+			CORONA_GLOBALS.smoothing = this.value;
+			reload_chart();
+		}
+	);
 }
 
 function new_chart(canvas_id) {
@@ -189,12 +196,42 @@ function add_chart_data(data) {
 		raw[ACTIVE_IX] = data.dactive;
 	}
 
-	datasets[CONFIRMED_IX].data = raw[CONFIRMED_IX];
-	datasets[DEATHS_IX].data = raw[DEATHS_IX];
-	datasets[RECOVERED_IX].data = raw[RECOVERED_IX];
-	datasets[ACTIVE_IX].data = raw[ACTIVE_IX];
+	// NUMBER OF SLOTS FOR DATA
+	for (let i = 0; i < 4; i++) {
+		datasets[i].data = smooth_data(raw[i], CORONA_GLOBALS.smoothing);
+	}
 
 	chart.update()
+}
+
+function smooth_data(array, smoothing) {
+	// smoothing is too high
+	if (smoothing > array.length - 1) {
+		smoothing = array.length - 1;
+	}
+
+	// now, we use a map function
+	let smooth_array = array.map((value, index) => {
+		// at a certain index, take the values N days before and N days after
+		let taken_left = Math.min(smoothing, index);
+		let taken_right = Math.min(smoothing, (array.length - 1 - index));
+		let taken_center = 1;
+		let total = taken_left + taken_right + taken_center;
+		let values = array.slice(index - taken_left, index + taken_right + 1);
+		let sum = values.reduce((a, b) => (a + b));
+
+		let missing_right = (smoothing - taken_right);
+		let missing_left = (smoothing - taken_left);
+
+		sum += missing_right * array[array.length - 1];
+		sum += missing_left * array[0];
+
+		return sum / (2 * smoothing + 1);
+	});
+
+	console.log("Smooth array: ", smooth_array);
+
+	return smooth_array;
 }
 
 function reload_chart() {

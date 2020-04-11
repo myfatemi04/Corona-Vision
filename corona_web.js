@@ -90,8 +90,11 @@ app.get("/cases/totals_sequence", (req, res) => {
         }
 
         for (let row of content) {
-            for (let label of labels) {
-                resp[label].push(row[label]);
+            // live data for this is janky
+            if (row.entry_date != 'live') {
+                for (let label of labels) {
+                    resp[label].push(row[label]);
+                }
             }
         }
 
