@@ -105,20 +105,25 @@ if __name__ == "__main__":
     for d in sys.argv[1].split():
         year, month, day = d.split('-')
         dates.append(datetime.date(int(year), int(month), int(day)))
+
+    if not dates:
+        print("data=" + json.dumps({"a": 0, "b": 0, "c": 0}))
+        exit()
     min_date = min(dates)
 
     X = np.array([(d - min_date).days for d in dates]) + 1
-    Y = np.array([int(y) for y in sys.argv[2].split()])
+    Y = np.array([float(y) for y in sys.argv[2].split()])
 
     adv = int(sys.argv[3])
 
-    x, y = predict_data(X, Y, adv)
-    d = {"x": x, "y": y}
+    # x, y = predict_data(X, Y, adv)
+    # d = {"x": x, "y": y}
+    # print("data=" + json.dumps(d))
+
+    bounds = (0, [7.3e9, 5, 7.3e9])
+
+    (a, b, c), cov = scipy.optimize.curve_fit(logistic, X, Y, p0 = np.clip(abs(np.random.exponential(size=3)), 0, 7.3e9), maxfev=10000, bounds=bounds)
+
+    d = {"a": a, "b": b, "c": c}
     print("data=" + json.dumps(d))
-
-    # bounds = (0, [7.3e9, 3, 7.3e9])
-
-    # (a, b, c), cov = scipy.optimize.curve_fit(logistic, X, Y, p0 = np.random.exponential(size=3), maxfev=10000, bounds=bounds)
-
-    # print(a, b, c)
     

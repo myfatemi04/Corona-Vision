@@ -2,6 +2,7 @@ let CONFIRMED_IX = 0;
 let DEATHS_IX = 1;
 let RECOVERED_IX = 2;
 let ACTIVE_IX = 3;
+let LOGFIT_IX = 4;
 
 function download_canvas() {
 	let url = $("#chart")[0].toDataURL("image/png;base64");
@@ -72,6 +73,13 @@ function init_CORONA_GLOBALS() {
 			reload_chart();
 		}
 	);
+
+	$("input[name=display-logfit]").change(
+		function() {
+			chart.data.datasets[LOGFIT_IX].hidden = !this.checked;
+			chart.update();
+		}
+	);
 }
 
 function new_chart(canvas_id) {
@@ -110,6 +118,15 @@ function new_chart(canvas_id) {
 				data: [],
 				lineTension: 0,
 				hidden: true
+			},
+			{
+				label: 'Predicted cases',
+				backgroundColor: 'grey',
+				borderColor: 'grey',
+				fill: false,
+				data: [],
+				lineTension: 0,
+				hidden: false
 			}
 		]
 	};
@@ -179,29 +196,70 @@ function reset_chart() {
 function add_chart_data(data) {
 	reset_chart();
 	let chart = CORONA_GLOBALS.chart;
-	let raw = [[], [], [], []];
+	let raw = [[], [], [], [], []];
 
 	chart.data.labels = data.entry_date;
 	let datasets = chart.data.datasets;
+	let extend_dates = data.entry_date.length;
+
 
 	if (CORONA_GLOBALS.chart_type == 'total') {
 		raw[CONFIRMED_IX] = data.confirmed;
 		raw[DEATHS_IX] = data.deaths;
 		raw[RECOVERED_IX] = data.recovered;
 		raw[ACTIVE_IX] = data.active;
+
+		raw[LOGFIT_IX] = generate_fit_data(data.fit, start=0, end=data.entry_date.length + extend_dates);
+		chart.data.labels = generate_dates(new Date(data.entry_date[0]), data.entry_date.length + extend_dates);
 	} else if (CORONA_GLOBALS.chart_type == 'daily-change') {
 		raw[CONFIRMED_IX] = data.dconfirmed;
 		raw[DEATHS_IX] = data.ddeaths;
 		raw[RECOVERED_IX] = data.drecovered;
 		raw[ACTIVE_IX] = data.dactive;
+
+		raw[LOGFIT_IX] = generate_derivative_data(data.fit, start=0, end=data.entry_date.length + extend_dates);
+		chart.data.labels =  generate_dates(new Date(data.entry_date[0]), data.entry_date.length + extend_dates);
 	}
 
 	// NUMBER OF SLOTS FOR DATA
-	for (let i = 0; i < 4; i++) {
+	for (let i = 0; i < 5; i++) {
 		datasets[i].data = smooth_data(raw[i], CORONA_GLOBALS.smoothing);
 	}
 
 	chart.update()
+}
+
+function generate_dates(start_date, length) {
+	let dates = [];
+	let next_date = start_date;
+	for (let i = 0; i < length; i++) {
+		dates.push(next_date.toISOString().substring(0, 10));
+		next_date.setDate(next_date.getDate() + 1);
+	}
+	return dates;
+}
+
+function generate_derivative_data(fit, start=0, end=10) {
+	let data = [];
+	let d = 0.001;
+	for (let i = start; i < end; i++) {
+		let diff = predict(fit, i + d) - predict(fit, i);
+		let deriv = diff/d;
+		data.push(deriv);
+	}
+	return data;
+}
+
+function generate_fit_data(fit, start=0, end=10) {
+	let data = [];
+	for (let i = start; i < end; i++) {
+		data.push(predict(fit, i));
+	}
+	return data;
+}
+
+function predict(fit, x) {
+	return fit.c/(1 + fit.a * Math.exp(-x * fit.b));
 }
 
 function smooth_data(array, smoothing) {
@@ -215,8 +273,6 @@ function smooth_data(array, smoothing) {
 		// at a certain index, take the values N days before and N days after
 		let taken_left = Math.min(smoothing, index);
 		let taken_right = Math.min(smoothing, (array.length - 1 - index));
-		let taken_center = 1;
-		let total = taken_left + taken_right + taken_center;
 		let values = array.slice(index - taken_left, index + taken_right + 1);
 		let sum = values.reduce((a, b) => (a + b));
 
@@ -228,8 +284,6 @@ function smooth_data(array, smoothing) {
 
 		return sum / (2 * smoothing + 1);
 	});
-
-	console.log("Smooth array: ", smooth_array);
 
 	return smooth_array;
 }

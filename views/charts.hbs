@@ -35,7 +35,6 @@
 	<body onload="init()">
 		{{>navbar}}
 		<div class="container p-2">
-			<!-- All javascript init must go in the head of the parent document -->
 			<div class="box d-flex flex-column">
 				<a id="download-chart" style="display: none;"></a>
 				<canvas id="chart"></canvas>
@@ -45,6 +44,27 @@
 				<select id="date" style="display: none;"></select>
 				{{>selectors}}
 				{{>chart_options}}
+				<h1>
+					Details about the chart
+				</h1>
+				<ul>
+					<li>
+						Smoothing factor: looks N days before a certain day, and N days after that certain day, and finds the average. If it's at the end of the chart, it fills in with the closest value.
+					</li>
+					<li>
+						Prediction: Uses a <i>logistic curve.</i><br/>
+						Logistic curves are similar to exponential growth, but take into account how much of the population is already infected.<br/>
+						Here's a good explanation: <a href="http://youtu.be/Kas0tIxDvrg">video</a><br/>
+						To fit to the curve, we used <code style="color: #f5f5f5">scipy</code>'s function <code style="color: #f5f5f5">scipy.optimize.curve_fit</code>. X = number of days since the first case, Y = number of cases. The function form is A/(1 + B * e^(-x * C)).
+					</li>
+					<li>
+						Please note that the predictions <b>will not always be accurate, and will continue to change as more data is collected.</b><br/>
+						This tool is just to provide a general idea of the potential cases in the future.
+					</li>
+					<li>
+						Active cases: # of total confirmed cases - # of deaths - # of recoveries.
+					</li>
+				</ul>
 			</div>
 		</div>
 	</body>

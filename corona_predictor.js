@@ -20,8 +20,10 @@ module.exports = {
 
 function get_logistic(key, dates, confirmed) {
     console.log("Running logfit...");
+    confirmed = smooth_data(confirmed.split(" ").map((a) => parseFloat(a)), 1).join(" ");
     return new Promise(function(resolve, reject) {
         if (key in cache && Date.now() - cache[key].time < (10 * 60 * 1000)) {
+            console.log("Returned cached version");
             resolve(cache[key].json);
         } else {
             cache[key] = {};
@@ -32,12 +34,43 @@ function get_logistic(key, dates, confirmed) {
             if (data.toString().startsWith("data=")) {
                 cache[key].json = JSON.parse(data.toString().substring(5));
                 cache[key].time = Date.now();
+                console.log("Complete")
                 resolve(cache[key].json);
+            } else {
+                console.log(data.toString());
             }
+        });
+
+        python.stderr.on("data", function(data) {
+            console.log("Err: ", data.toString());
         });
     });
 }
 
-// get_logistic("United States", dates, confirmed).then(
-//     data => console.log(data)
-// );
+function smooth_data(array, smoothing=0) {
+	// smoothing is too high
+	if (smoothing > array.length - 1) {
+		smoothing = array.length - 1;
+	}
+
+	// now, we use a map function
+	let smooth_array = array.map((value, index) => {
+		// at a certain index, take the values N days before and N days after
+		let taken_left = Math.min(smoothing, index);
+		let taken_right = Math.min(smoothing, (array.length - 1 - index));
+		let taken_center = 1;
+		let total = taken_left + taken_right + taken_center;
+		let values = array.slice(index - taken_left, index + taken_right + 1);
+		let sum = values.reduce((a, b) => (a + b));
+
+		let missing_right = (smoothing - taken_right);
+		let missing_left = (smoothing - taken_left);
+
+		sum += missing_right * array[array.length - 1];
+		sum += missing_left * array[0];
+
+		return sum / (2 * smoothing + 1);
+	});
+
+	return smooth_array;
+}

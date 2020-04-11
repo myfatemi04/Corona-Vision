@@ -145,6 +145,8 @@ app.get("/cases/totals_sequence", (req, res) => {
                     resp.fit = data;
                     res.json(resp);
                 }
+            ).catch(
+                data => res.json(resp)
             );
         }
     );
