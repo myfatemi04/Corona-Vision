@@ -24,10 +24,11 @@
   "homepage": "https://github.com/o-wth/Corona-Vision#readme",
   "dependencies": {
     "body-parser": "^1.19.0",
+    "cache-manager": "^3.2.1",
     "express": "^4.17.1",
+    "express-cache-middleware": "^1.0.1",
     "fs": "0.0.1-security",
     "hbs": "^4.1.1",
-    "http": "0.0.1-security",
     "mysql": "^2.18.1",
     "sqlstring": "^2.3.1",
     "url": "^0.11.0"

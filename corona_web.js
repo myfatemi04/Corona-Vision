@@ -6,6 +6,13 @@ const Handlebars = require('hbs');
 const corona_sql = require('./corona_sql');
 const sqlstring = require('sqlstring');
 
+const ExpressCache = require('express-cache-middleware')
+const cacheManager = require('cache-manager')
+
+const datatables = require('./corona_datatable_back');
+
+datatables.load_country_list();
+
 Handlebars.registerPartial("navbar", fs.readFileSync("views/navbar.hbs", "utf-8"));
 Handlebars.registerPartial("styles", fs.readFileSync("views/styles.hbs", "utf-8"));
 Handlebars.registerPartial("selectors", fs.readFileSync("views/selectors.hbs", "utf-8"));
@@ -31,6 +38,34 @@ app.get("/charts", (req, res) => {
 
 app.get("/map", (req, res) => {
     res.render("map");
+});
+
+app.get("/cases/totals_table", (req, res) => {
+    let params = req.query;
+
+    // get location and date
+    let country = get(params, "country") || "";
+    let province = get(params, "province") || "";
+    let admin2 = get(params, "admin2") || "";
+    let entry_date = get(params, "date") || "live";
+
+    let query = "select * from datapoints";
+    
+    // dont filter if the field = 'all'
+    let where_conds = [];
+    if (country != 'all') where_conds.push("country = " + sqlstring.escape(country));
+    if (province != 'all') where_conds.push("province = " + sqlstring.escape(province));
+    if (admin2 != 'all') where_conds.push("admin2 = " + sqlstring.escape(admin2));
+
+    if (where_conds.length > 0) {
+        query += " where " + where_conds.join(" and ");
+    }
+
+    query += " and entry_date = " + sqlstring.escape(entry_date);
+
+    send_cached_sql(query, res, key="table_" + query, content_func=(content) => {
+        return datatables.make_rows(content, entry_date, country, province);
+    });
 });
 
 app.get("/cases/totals", (req, res) => {
@@ -98,7 +133,7 @@ app.get("/cases/totals_sequence", (req, res) => {
             }
         }
 
-        return JSON.stringify(resp);
+        return resp;
     });
 });
 
@@ -155,7 +190,7 @@ app.get("/list/dates", (req, res) => {
 });
 
 app.get("/cases/first_days", (req, res) => {
-    let query = sqlstring.format("select * from datapoints where is_first_day = true");
+    let query = sqlstring.format("select * from datapoints where is_first_day = true order by entry_date;");
     send_cached_sql(query, res);
 });
 
@@ -189,18 +224,18 @@ function get(params, field) {
     else return null;
 }
 
-function send_cached_sql(query, res, content_func = (content) => JSON.stringify(content)) {
+function send_cached_sql(query, res, key = query, content_func = (content) => JSON.stringify(content), send_func = (content) => res.send(content)) {
     // if this query is in the cache, and it was updated less than a minute ago, return the cached version
-    if (sql_cache.hasOwnProperty(query) && (Date.now() - sql_cache[query].time) < sql_cache_age) {
-        res.send(sql_cache[query].content);
+    if (sql_cache.hasOwnProperty(key) && (Date.now() - sql_cache[key].time) < sql_cache_age) {
+        send_func(sql_cache[key].content);
     } else {
         corona_sql.sql.query(query,
             (err, result, fields) => {
                 if (err) throw err;
 
                 // updated the cache
-                sql_cache[query] = {"content": content_func(result), "time": Date.now()};
-                res.send(sql_cache[query].content);
+                sql_cache[key] = {"content": content_func(result), "time": Date.now()};
+                send_func(sql_cache[key].content);
             });
     }
 }

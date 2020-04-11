@@ -105,7 +105,6 @@ function show_data(data, label_prop, label_default) {
         
         $("#tablebody")[0].innerHTML += tr;
     }
-
 }
 
 function set_country(country) {
@@ -152,12 +151,13 @@ function reload_data() {
         level = "admin2";
     }
 
-    $.getJSON(
-        "/cases/totals",
+    $.get(
+        "/cases/totals_table",
         params,
         function(result) {
-            by_country[entry_date] = result;
-            show_data(result, level, def);
+            $("#tablebody")[0].innerHTML = result;
+            //by_country[entry_date] = result;
+            //show_data(result, level, def);
         }
     );
 }
