@@ -1,10 +1,12 @@
-# import pandas as pd
-# import numpy as np
-# from sklearn.preprocessing import MinMaxScaler, LabelEncoder
-# from keras.models import Sequential
-# from keras.layers import Dense, LSTM
+import pandas as pd
+from sklearn.preprocessing import MinMaxScaler, LabelEncoder
+from keras.models import Sequential
+from keras.layers import Dense, LSTM
+import numpy as np
 import sys
 import math
+import datetime
+import json
 
 import scipy.optimize
 
@@ -93,16 +95,30 @@ def predict_data(dates, cases, adv):
 
     return do_code(data, adv, mx)
 
-def logistic(x, numer, b, c):
-    return numer/(1 + b * (math.e ** (-c * x)))
+def logistic(t, a, b, c):
+    return c / (1 + a * np.exp(-b * t))
 
-print(scipy.optimize.curve_fit(logistic, [1, 2, 3, 4, 5], [2, 4, 8, 16, 32], p0 = [32, 1, 1]))
+# print(scipy.optimize.curve_fit(logistic, [1, 2, 3, 4, 5], [2, 4, 8, 16, 32], p0 = [32, 1, 1]))
 
-# if __name__ == "__main__":
-#     dates = [int(x) for x in sys.argv[1].split()]
-#     cases = [int(x) for x in sys.argv[2].split()]
-#     adv = int(sys.argv[3])
+if __name__ == "__main__":
+    dates = []
+    for d in sys.argv[1].split():
+        year, month, day = d.split('-')
+        dates.append(datetime.date(int(year), int(month), int(day)))
+    min_date = min(dates)
 
-#     x, y = predict_data(dates, cases, adv)
-#     print(' '.join(str(_) for _ in x))
-#     print(' '.join(str(_) for _ in y))
+    X = np.array([(d - min_date).days for d in dates]) + 1
+    Y = np.array([int(y) for y in sys.argv[2].split()])
+
+    adv = int(sys.argv[3])
+
+    x, y = predict_data(X, Y, adv)
+    d = {"x": x, "y": y}
+    print("data=" + json.dumps(d))
+
+    # bounds = (0, [7.3e9, 3, 7.3e9])
+
+    # (a, b, c), cov = scipy.optimize.curve_fit(logistic, X, Y, p0 = np.random.exponential(size=3), maxfev=10000, bounds=bounds)
+
+    # print(a, b, c)
+    
