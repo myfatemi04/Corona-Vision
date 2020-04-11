@@ -2,12 +2,12 @@
 <html>
 	<head>
 		<title>Corona Vision - Data by Country</title>
-		{{{styles}}}
-		<script src="/static/js/corona_datatables.js"></script>
-		<script src="/static/js/corona_globals.js"></script>
-		<script src="/static/js/corona_stats.js"></script>
-		<script src="/static/js/selector.js"></script>
-		<script src="/static/js/corona_util.js"></script>
+		{{> styles}}
+		<script src="/js/corona_datatables.js"></script>
+		<script src="/js/corona_globals.js"></script>
+		<script src="/js/corona_stats.js"></script>
+		<script src="/js/selector.js"></script>
+		<script src="/js/corona_util.js"></script>
 		<script>
 			function init() {
 				CORONA_GLOBALS.reload_function = update_date;
@@ -39,7 +39,7 @@
 		</script>
 	</head>
 	<body onload="init()">
-		{{{navbar}}}
+		{{> navbar}}
 		<div class="column-container">
 			<div style="flex: 1;">
 				<div class="scroll box d-flex flex-column" style="flex: 1;">
@@ -48,7 +48,7 @@
 
 					</select>
 					Region: 
-					{{{selectors}}}
+					{{>selectors}}
 					<div id="stats-info">
 						<code style="font-size: 1.5rem;">Loading...</code>
 					</div><br/>

@@ -1,12 +1,12 @@
 <html>
 	<head>
 		<title>Corona Vision - COVID-19 Charts</title>
-		{{{styles}}}
+		{{>styles}}
 		<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
-		<script src="/static/js/corona_globals.js"></script>
-		<script src="/static/js/corona_chart.js"></script>
-		<script src="/static/js/chart.min.js"></script>
-		<script src="/static/js/selector.js"></script>
+		<script src="/js/corona_globals.js"></script>
+		<script src="/js/corona_chart.js"></script>
+		<script src="/js/chart.min.js"></script>
+		<script src="/js/selector.js"></script>
 		<script>
 			function init() {
 				init_dates();
@@ -33,7 +33,7 @@
 		</script>
 	</head>
 	<body onload="init()">
-		{{{navbar}}}
+		{{>navbar}}
 		<div class="container p-2">
 			<!-- All javascript init must go in the head of the parent document -->
 			<div class="box d-flex flex-column">
@@ -43,8 +43,8 @@
 					Save Image
 				</button>
 				<select id="date" style="display: none;"></select>
-				{{{selectors}}}
-				{{{chart_options}}}
+				{{>selectors}}
+				{{>chart_options}}
 			</div>
 		</div>
 	</body>

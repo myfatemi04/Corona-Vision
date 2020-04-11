@@ -1,95 +1,40 @@
-const http = require('http');
+const express = require('express');
+const bodyparser = require('body-parser');
 const fs = require('fs');
-const url = require('url');
-const mustache = require('mustache');
+
+const Handlebars = require('hbs');
 const corona_sql = require('./corona_sql');
 const sqlstring = require('sqlstring');
 
-const hostname = '0.0.0.0';
-const port = process.argv[2] || 4040;
+Handlebars.registerPartial("navbar", fs.readFileSync("views/navbar.hbs", "utf-8"));
+Handlebars.registerPartial("styles", fs.readFileSync("views/styles.hbs", "utf-8"));
+Handlebars.registerPartial("selectors", fs.readFileSync("views/selectors.hbs", "utf-8"));
+Handlebars.registerPartial("chart_options", fs.readFileSync("views/chart_options.hbs", "utf-8"));
+Handlebars.registerPartial("map_panel", fs.readFileSync("views/map_panel.hbs", "utf-8"));
 
-const pages = {
-    "/": main_page,
-    "/charts": (req, res) => { res.end(mustache.render(templates.charts, templates)) },
-    "/map": (req, res) => { res.end(mustache.render(templates.map, templates)) },
-    // "/cases/box" // cases within a box
-    "/cases/totals": totals, // total cases for a region, filter by nation
-    "/cases/totals_sequence": totals_sequence,
-    "/cases/first_days": first_days,
-    "/cases/date": by_date,
-    "/list/countries": list_countries, // list countries for a date
-    "/list/provinces": list_provinces, // list provinces for a country for a date
-    "/list/admin2": list_admin2, // list admin2 for a province for a country for a date
-    "/list/dates": list_dates, // list all entry dates
-    "/whattodo": (req, res) => { res.end(mustache.render(templates.whattodo, templates)) },
-    "/recent": (req, res) => { res.end(mustache.render(templates.recent, templates)) },
-    "/history": (req, res) => { res.end(mustache.render(templates.spread_history, templates)) },
-    "/contact": (req, res) => { res.end(mustache.render(templates.contact, templates)) }
-};
+app = express();
 
-function get(params, field) {
-    if (field in params) return params[field];
-    else return null;
-}
+app.use(express.static('static'));
+app.use(bodyparser.urlencoded({
+    extended: true
+}));
 
-function main_page(req, res) {
-    res.end(mustache.render(templates.main_page, templates));
-}
+app.set('view engine', 'hbs');
 
-function list_countries(req, res) {
-    let params = url.parse(req.url, true).query;
-    let entry_date = get(params, "date") || "live";
+app.get("/", (req, res) => {
+    res.render("main_page");
+});
 
-    // base query
-    let query = "select distinct country from datapoints where country != '' and entry_date = " + sqlstring.escape(entry_date);
+app.get("/charts", (req, res) => {
+    res.render("charts");
+});
 
-    // require a province if necessary
-    if ("need_province" in params && params.need_province == 1) { query += " and province != ''"; }
+app.get("/map", (req, res) => {
+    res.render("map");
+});
 
-    // alphabetical order
-    query += " order by country";
-
-    send_cached_sql(query, res);
-}
-
-function list_provinces(req, res) {
-    let params = url.parse(req.url, true).query;
-
-    // require the country
-    if (!("country" in params)) res.end();
-
-    // base query
-    let query = sqlstring.format("select distinct province from datapoints where country = ? and province != ''" , params.country);
-
-    // require a county if necessary
-    if ("need_admin2" in params && params.need_admin2 == 1) { query += " and admin2 != ''"; }
-    
-    // alphabetical order
-    query += " order by province";
-
-    send_cached_sql(query, res);
-}
-
-function list_admin2(req, res) {
-    let params = url.parse(req.url, true).query;
-
-    // require the country and province
-    if (!("country" in params) || !("province" in params)) res.end();
-
-    // base query
-    let query = sqlstring.format("select distinct admin2 from datapoints where country = ? and province = ? and admin2 != '' order by admin2", [params.country, params.province]);
-    
-    send_cached_sql(query, res);
-}
-
-function list_dates(req, res) {
-    let query = "select distinct entry_date from datapoints order by entry_date desc";
-
-    send_cached_sql(query, res);
-}
-
-function totals(req, res) {
-    let params = url.parse(req.url, true).query;
+app.get("/cases/totals", (req, res) => {
+    let params = req.query;
 
     // get location and date
     let country = get(params, "country") || "";
@@ -112,10 +57,10 @@ function totals(req, res) {
     query += " and entry_date = " + sqlstring.escape(entry_date);
 
     send_cached_sql(query, res);
-}
+});
 
-function totals_sequence(req, res) {
-    let params = url.parse(req.url, true).query;
+app.get("/cases/totals_sequence", (req, res) => {
+    let params = req.query;
 
     // get location and date
     let country = get(params, "country") || "";
@@ -152,23 +97,99 @@ function totals_sequence(req, res) {
 
         return JSON.stringify(resp);
     });
-}
+});
 
-function first_days(req, res) {
+app.get("/list/countries", (req, res) => {
+    let params = req.query;
+    let entry_date = get(params, "date") || "live";
+
+    // base query
+    let query = "select distinct country from datapoints where country != '' and entry_date = " + sqlstring.escape(entry_date);
+
+    // require a province if necessary
+    if ("need_province" in params && params.need_province == 1) { query += " and province != ''"; }
+
+    // alphabetical order
+    query += " order by country";
+
+    send_cached_sql(query, res);
+});
+
+app.get("/list/provinces", (req, res) => {
+    let params = req.query;
+
+    // require the country
+    if (!("country" in params)) res.end();
+
+    // base query
+    let query = sqlstring.format("select distinct province from datapoints where country = ? and province != ''" , params.country);
+
+    // require a county if necessary
+    if ("need_admin2" in params && params.need_admin2 == 1) { query += " and admin2 != ''"; }
+    
+    // alphabetical order
+    query += " order by province";
+
+    send_cached_sql(query, res);
+});
+
+app.get("/list/admin2", (req, res) => {
+    let params = req.query;
+
+    // require the country and province
+    if (!("country" in params) || !("province" in params)) res.end();
+
+    // base query
+    let query = sqlstring.format("select distinct admin2 from datapoints where country = ? and province = ? and admin2 != '' order by admin2", [params.country, params.province]);
+    
+    send_cached_sql(query, res);
+});
+
+app.get("/list/dates", (req, res) => {
+    let query = "select distinct entry_date from datapoints order by entry_date desc";
+
+    send_cached_sql(query, res);
+});
+
+app.get("/cases/first_days", (req, res) => {
     let query = sqlstring.format("select * from datapoints where is_first_day = true");
     send_cached_sql(query, res);
-}
+});
 
-function by_date(req, res) {
-    let entry_date = get(url.parse(req.url, true).query, "date") || "live";
+app.get("/cases/date", (req, res) => {
+    let entry_date = get(req.query, "date") || "live";
     let query = sqlstring.format("select * from datapoints where entry_date = ? and is_primary = true", entry_date);
     send_cached_sql(query, res);
+});
+
+app.get("/whattodo", (req, res) => {
+    res.render("whattodo");
+});
+
+app.get("/recent", (req, res) => {
+    res.render("recent");
+});
+
+app.get("/history", (req, res) => {
+    res.render("spread_history");
+});
+
+app.get("/contact", (req, res) => {
+    res.render("contact");
+});
+
+const hostname = '0.0.0.0';
+const port = process.argv[2] || 4040;
+
+function get(params, field) {
+    if (field in params) return params[field];
+    else return null;
 }
 
 function send_cached_sql(query, res, content_func = (content) => JSON.stringify(content)) {
     // if this query is in the cache, and it was updated less than a minute ago, return the cached version
     if (sql_cache.hasOwnProperty(query) && (Date.now() - sql_cache[query].time) < sql_cache_age) {
-        res.end(sql_cache[query].content);
+        res.send(sql_cache[query].content);
     } else {
         corona_sql.sql.query(query,
             (err, result, fields) => {
@@ -176,7 +197,7 @@ function send_cached_sql(query, res, content_func = (content) => JSON.stringify(
 
                 // updated the cache
                 sql_cache[query] = {"content": content_func(result), "time": Date.now()};
-                res.end(sql_cache[query].content);
+                res.send(sql_cache[query].content);
             });
     }
 }
@@ -184,56 +205,4 @@ function send_cached_sql(query, res, content_func = (content) => JSON.stringify(
 const sql_cache = {};
 const sql_cache_age = 60000;
 
-const templates = {
-
-};
-
-const static_cache = {
-
-};
-
-const template_paths = [
-    'chart_options', 'chart_panel', 'charts',
-    'contact', 'main_page', 'map_panel', 'map', 'navbar',
-    'recent', 'selectors', 'spread_history', 'styles', 'stats_panel', 'whattodo'
-];
-
-console.log("Loading templates");
-for (let path of template_paths) {
-    fs.readFile("node_templates/" + path + ".html", "utf-8", (err, data) => {
-        templates[path] = data;
-    });
-}
-
-const server = http.createServer(
-    (req, res) => {
-        let path = url.parse(req.url).pathname;
-        if (pages.hasOwnProperty(path)) {
-            res.statusCode = 200;
-            res.setHeader("Content-Type", "text/html");
-            pages[path](req, res)
-        } else if (path.startsWith("/static/")) {
-            path = path.replace("..",  "").substring(1);
-            if (!static_cache.hasOwnProperty(path)) {
-                if (fs.existsSync(path)) {
-                    fs.readFile(path, "utf-8", (error, data) => {
-                        static_cache[path] = data;
-                        res.end(data)
-                    });
-                } else {
-                    res.statusCode = 404;
-                    res.end();
-                }
-            } else {
-                res.end(static_cache[path]);
-            }
-        } else {
-            res.statusCode = 404;
-            res.end();
-        }
-    }
-);
-
-server.listen(port, hostname, () => {
-    console.log(`Server running on ${hostname}:${port}!`);
-});
+app.listen(port, () => console.log(`Server started at ${hostname}:${port}!`));
