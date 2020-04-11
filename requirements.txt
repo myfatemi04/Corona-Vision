@@ -5,3 +5,5 @@ flask
 pandas
 requests
 beautifulsoup4
+scipy
+numpy
