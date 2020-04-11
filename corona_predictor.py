@@ -1,10 +1,12 @@
-import pandas as pd
-import numpy as np
-from sklearn.preprocessing import MinMaxScaler, LabelEncoder
-from keras.models import Sequential
-from keras.layers import Dense, LSTM
-import matplotlib.pyplot as plt
+# import pandas as pd
+# import numpy as np
+# from sklearn.preprocessing import MinMaxScaler, LabelEncoder
+# from keras.models import Sequential
+# from keras.layers import Dense, LSTM
 import sys
+import math
+
+import scipy.optimize
 
 def create_dataset(dataset, look_back=1):
     look_back=1
@@ -73,20 +75,12 @@ def do_code(data, adv, mx):
     testpred = model.predict(predX)
 
     predicted = [list(i)[0]*mx for i in list(testpred)]
-    xvals = range(0, len(testpred)
+    xvals = [int(x) for x in range(0, len(testpred))]
 
     return [xvals, predicted]
 
 
-    #output = pd.DataFrame({"Y" : [list(i)[0]*mx for i in list(testpred)]})
-
-    #output.insert(0, "X", range(0, len(testpred)))
-
-    #output.to_csv("output.csv", index=False, float_format="%.0f")
-
-
 def predict_data(dates, cases, adv):
-
     df = pd.DataFrame({"Date" : dates, "Cases" : cases})
 
     df = df.drop("Date", axis=1)
@@ -98,3 +92,17 @@ def predict_data(dates, cases, adv):
     data = df.values
 
     return do_code(data, adv, mx)
+
+def logistic(x, numer, b, c):
+    return numer/(1 + b * (math.e ** (-c * x)))
+
+print(scipy.optimize.curve_fit(logistic, [1, 2, 3, 4, 5], [2, 4, 8, 16, 32], p0 = [32, 1, 1]))
+
+# if __name__ == "__main__":
+#     dates = [int(x) for x in sys.argv[1].split()]
+#     cases = [int(x) for x in sys.argv[2].split()]
+#     adv = int(sys.argv[3])
+
+#     x, y = predict_data(dates, cases, adv)
+#     print(' '.join(str(_) for _ in x))
+#     print(' '.join(str(_) for _ in y))
