@@ -8,6 +8,17 @@ let index = {
 	log_recovered: 6
 };
 
+let plugins = [{
+	beforeDraw: function (chart, easing) {
+		var ctx = chart.chart.ctx;
+
+		ctx.save();
+		ctx.fillStyle = "#212121";
+		ctx.fillRect(0, 0, $("canvas")[0].width, $("canvas")[0].height);
+		ctx.restore();
+	}
+}];
+
 let waiting = null;
 
 function download_canvas() {
@@ -137,6 +148,7 @@ function new_chart(canvas_id) {
 	return new Chart(get_canvas(canvas_id), {
 		type: 'line',
 		data: data,
+		plugins: plugins,
 		options: {
 			responsive: true,
 			title: {
@@ -202,7 +214,6 @@ function reset_chart() {
 // ADD: time to recover (predicted)
 
 function fix_data(data, extra_days) {
-	console.log(data);
 	let last_date = new Date(data.entry_date[data.entry_date.length - 1]);
 	let first_date = new Date(data.entry_date[0]);
 	let diff = (last_date.getTime() - first_date.getTime());
