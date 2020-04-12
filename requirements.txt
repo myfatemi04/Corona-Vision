@@ -7,6 +7,3 @@ requests
 beautifulsoup4
 scipy
 numpy
-keras
-sklearn
-tensorflow

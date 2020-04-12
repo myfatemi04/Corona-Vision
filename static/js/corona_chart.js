@@ -270,8 +270,8 @@ function add_chart_data(data) {
 	}
 	
 	if (CORONA_GLOBALS.show_predictions) {
-		if (pre != 'd') raw[index.lstm_confirmed] = data.fit.confirmed.y;
-		else raw[index.lstm_confirmed] = [];
+		// if (pre != 'd') raw[index.lstm_confirmed] = data.fit.confirmed.y;
+		// else raw[index.lstm_confirmed] = [];
 	
 		// iterate through the dates for the predicted data
 		//let prop = "confirmed";
