@@ -1,11 +1,9 @@
 flask-sqlalchemy
 sqlalchemy
 mysqlclient
+pandas
 flask
 requests
 beautifulsoup4
 scipy
 numpy
-tensorflow>=2.0.0
-keras
-sklearn
