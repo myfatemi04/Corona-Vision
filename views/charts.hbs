@@ -18,7 +18,7 @@
 					{},
 					(data) => {
 						for (let result of data) {
-							$("#date")[0].innerHTML += `<option value="${result.entry_date}">${result.entry_date}</option>`;
+							if (result.entry_date != 'live') $("#date")[0].innerHTML += `<option value="${result.entry_date}">${result.entry_date}</option>`;
 						}
 						
 						CORONA_GLOBALS.chart = new_chart("chart");

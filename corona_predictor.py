@@ -84,7 +84,7 @@ if __name__ == "__main__":
         dates.append(datetime.date(int(year), int(month), int(day)))
 
     if not dates:
-        print("data=" + json.dumps({"MAX": 0, "T_INF": 0, "T_RISE": 1, "x": X, "y": Y}))
+        print("data=" + json.dumps({"MAX": 0, "T_INF": 0, "T_RISE": 1, "x": [], "y": []}))
         exit()
     
     min_date = dates[0]
