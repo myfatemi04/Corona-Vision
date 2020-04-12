@@ -127,7 +127,7 @@ h1 {
 .data-container {
 	display: flex;
 	flex-direction: column;
-	height: 20rem;
+	height: 40rem;
 	overflow-y: scroll;
 	
 	padding-top: 0;
@@ -167,4 +167,9 @@ code {
 
 .custom-bg {
 	background-color: var(--color-bg-dark, #212121);
+}
+
+.stats-label {
+	font-size: 0.75em;
+	font-weight: 800;
 }

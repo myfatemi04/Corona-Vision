@@ -265,6 +265,10 @@ app.get("/simulate/curve", (req, res) => {
     res.render("simulate_curve");
 });
 
+app.get("/sources", (req, res) => {
+    res.render("sources");
+});
+
 const hostname = '0.0.0.0';
 const port = process.argv[2] || 4040;
 

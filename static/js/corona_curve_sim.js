@@ -1,5 +1,5 @@
 let rate = 1;
-let contact = 0.2;
+let contact = 1;
 let max_size = 320000000;
 let max_hospital = 924000;
 let chart = null;
@@ -156,9 +156,17 @@ function init_curve_sim() {
         }
     );
 
+    $("#contact").change(
+        function() {
+            contact = parseFloat($("#contact")[0].value);
+            reload_chart();
+        }
+    );
+
     max_size = parseInt($("#max_size option:selected").attr("data-pop"));
     max_hospital = parseInt($("#max_size option:selected").attr("data-health"));
     rate = parseFloat($("#rate")[0].value);
+    contact = parseFloat($("#contact")[0].value);
 
     reload_chart();
 }

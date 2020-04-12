@@ -13,11 +13,16 @@ function update_stats() {
             admin2: admin2,
             date: entry_date
         },
-        function(data) {
-            if (data) {
-                $("#stats-info")[0].innerHTML = format_data(generate_name(country, province, admin2), data[0]);
+        function(data_) {
+            if (data_) {
+                data = data_[0];
+                $("#stats-info").show()
+                $("#stats-label")[0].innerHTML = generate_name(country, province, admin2)
+                for (let prop of ['confirmed', 'recovered', 'deaths', 'dconfirmed', 'serious']) {
+                    $("#stats-" + prop)[0].innerHTML = data[prop] == 0 ? "-" : data[prop];
+                }
             } else {
-                $("#stats-info")[0].innerHTML = '';
+                $("#stats-info").hide();
             }
         }
     );
@@ -29,17 +34,4 @@ function init_stats_panel() {
     };
 
     update_stats();
-}
-
-function format_data(label, data) {
-	let formatted = `
-	<div class="lato" style="background-color: #212121;">
-		<code><b>${label}</b></code><br/>
-		<code><b>Confirmed:</b> ${data.confirmed} (+${data.dconfirmed})</code><br/>
-		<code><b>Active:</b> ${data.active} (+${data.dactive})</code><br/>
-		<code><b>Deaths:</b> ${data.deaths} (+${data.ddeaths})</code><br/>
-		<code><b>Recoveries:</b> ${data.recovered} (+${data.drecovered})</code><br/>
-	</div>
-	`;
-	return formatted;
 }

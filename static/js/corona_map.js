@@ -169,6 +169,19 @@ function show_location(position) {
 	setTimeout(reload_cases, 500);
 }
 
+function format_infowindow_data(label, data) {
+	let formatted = `
+	<div class="lato" style="background-color: #212121;">
+		<code><b>${label}</b></code><br/>
+		<code><b>Confirmed:</b> ${data.confirmed} (+${data.dconfirmed})</code><br/>
+		<code><b>Active:</b> ${data.active} (+${data.dactive})</code><br/>
+		<code><b>Deaths:</b> ${data.deaths} (+${data.ddeaths})</code><br/>
+		<code><b>Recoveries:</b> ${data.recovered} (+${data.drecovered})</code><br/>
+	</div>
+	`;
+	return formatted;
+}
+
 function remove_previous_markers() {
 	for (let marker of active_markers) {
 		marker.setMap(null);
@@ -185,12 +198,15 @@ function find_cases() {
 	setTimeout(reload_cases, 500);
 }
 
-function add_world_info(person, entry_date) {
-	let xhr = new XMLHttpRequest();
-	xhr.onreadystatechange = function() {
-		if (this.readyState == 4 && this.status == 200) {
-			let data = JSON.parse(this.responseText)[0];
+function calibrate_zoomins(entry_date) {
+	$.getJSON(
+		'/cases/totals/',
+		{
+			date: entry_date
+		},
+		(data) => {
 			if (data) {
+				data = data[0];
 				zoomins.confirmed = data.confirmed/data.confirmed;
 				zoomins.active = data.confirmed/data.active;
 				zoomins.deaths = data.confirmed/data.deaths;
@@ -199,35 +215,9 @@ function add_world_info(person, entry_date) {
 				zoomins.dactive = data.confirmed/data.dactive;
 				zoomins.ddeaths = data.confirmed/data.ddeaths;
 				zoomins.drecovered = data.confirmed/data.drecovered;
-			} else {
 			}
 		}
-	}
-	xhr.open("GET", `/cases/totals?date=${entry_date}`)
-	xhr.send()
-}
-
-function add_province_info(person, entry_date) {
-	if (person && person.province) {
-		let xhr = new XMLHttpRequest();
-		xhr.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				let data = JSON.parse(this.responseText)[0];
-				if (data)
-					$("#province-info")[0].innerHTML = format_data(`Selected state: ${data.province}`, data);
-				else
-					$("#province-info")[0].innerHTML = '';
-			}
-		}
-		xhr.open("GET", `/cases/totals?country=${person.country}&province=${person.province}&date=${entry_date}`)
-		xhr.send()
-	} else {
-		$("#province-info")[0].innerHTML = '';
-	}
-}
-
-function update_most_recent(entry_date) {
-	add_world_info(most_recent_person, entry_date);
+	);
 }
 
 function generate_name(country, province, admin2) {
@@ -254,8 +244,7 @@ function reload_cases() {
 			remove_previous_markers();
 
 			let entry_date = $("#date")[0].value;
-			update_most_recent(entry_date);
-			// update_stats();
+			calibrate_zoomins(entry_date);
 
 			if (most_recent_person && most_recent_person.entry_date != entry_date) {
 				infowindow.close();
@@ -281,10 +270,10 @@ function reload_cases() {
 					new_marker.addListener('click', function(ev) {
 						let entry_date = $("#date")[0].value;
 						most_recent_person = person;
-						infowindow.setContent(`<div class="text-dark">${format_data(generate_name(person.country, person.province, person.admin2), person)}</div>`);
+						infowindow.setContent(`<div class="text-dark">${format_infowindow_data(generate_name(person.country, person.province, person.admin2), person)}</div>`);
 						infowindow.setPosition(ev.latLng);
 						infowindow.open(map);
-						update_most_recent(entry_date);
+						calibrate_zoomins(entry_date);
 					});
 
 					active_markers.push(new_marker);
