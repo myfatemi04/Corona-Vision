@@ -33,7 +33,7 @@ function init_stats_panel() {
 
 function format_data(label, data) {
 	let formatted = `
-	<div class="lato" style="font-size: 1.5rem; background-color: #212121;">
+	<div class="lato" style="background-color: #212121;">
 		<code><b>${label}</b></code><br/>
 		<code><b>Confirmed:</b> ${data.confirmed} (+${data.dconfirmed})</code><br/>
 		<code><b>Active:</b> ${data.active} (+${data.dactive})</code><br/>

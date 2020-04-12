@@ -1,8 +1,14 @@
-let CONFIRMED_IX = 0;
-let DEATHS_IX = 1;
-let RECOVERED_IX = 2;
-let ACTIVE_IX = 3;
-let LOGFIT_IX = 4;
+let index = {
+	confirmed: 0,
+	deaths: 1,
+	recovered: 2,
+	lstm_confirmed: 3,
+	log_confirmed: 4,
+	log_deaths: 5,
+	log_recovered: 6
+};
+
+let waiting = null;
 
 function download_canvas() {
 	let url = $("#chart")[0].toDataURL("image/png;base64");
@@ -38,46 +44,26 @@ function init_CORONA_GLOBALS() {
             CORONA_GLOBALS.reload_function();
         }
     );
-
-    $("input[name=display-confirmed]").change(
-        function() {
-            chart.data.datasets[CONFIRMED_IX].hidden = !this.checked;
-            chart.update();
-        }
-    );
-
-    $("input[name=display-deaths]").change(
-        function() {
-            chart.data.datasets[DEATHS_IX].hidden = !this.checked;
-            chart.update();
-        }
-    );
-
-    $("input[name=display-recovered]").change(
-        function() {
-            chart.data.datasets[RECOVERED_IX].hidden = !this.checked;
-            chart.update();
-        }
-    );
-
-    $("input[name=display-active]").change(
-        function() {
-            chart.data.datasets[ACTIVE_IX].hidden = !this.checked;
-            chart.update();
-        }
+	
+	$("select[name=show_predictions]").change(
+		function() {
+			CORONA_GLOBALS.show_predictions = this.value == "true" ? true : false;
+			CORONA_GLOBALS.reload_function();
+		}	
 	);
+
+	// for (let prop of ['confirmed', 'deaths', 'recovered', 'active']) {
+	// 	$("input[name=display-" + prop + "]").change(
+	// 		function() {
+	// 			chart.data.datasets[index[prop]].hidden = !this.checked;
+	// 		}
+	// 	);
+	// }
 	
 	$("input#smoothing").change(
 		function() {
 			CORONA_GLOBALS.smoothing = this.value;
 			reload_chart();
-		}
-	);
-
-	$("input[name=display-logfit]").change(
-		function() {
-			chart.data.datasets[LOGFIT_IX].hidden = !this.checked;
-			chart.update();
 		}
 	);
 }
@@ -111,23 +97,41 @@ function new_chart(canvas_id) {
 				lineTension: 0
 			},
 			{
-				label: 'Active',
-				backgroundColor: 'orange',
-				borderColor: 'orange',
+				label: 'LSTM predicted confirmed',
+				backgroundColor: 'lightgoldenrodyellow',
+				borderColor: 'lightgoldenrodyellow',
 				fill: false,
 				data: [],
 				lineTension: 0,
-				hidden: true
+				hidden: false
 			},
 			{
-				label: 'Predicted cases',
+				label: 'Logistic regression predicted confirmed',
 				backgroundColor: 'grey',
 				borderColor: 'grey',
 				fill: false,
 				data: [],
 				lineTension: 0,
 				hidden: false
-			}
+			},
+			// {
+			// 	label: 'Logistic regression predicted deaths',
+			// 	backgroundColor: 'lightcoral',
+			// 	borderColor: 'lightcoral',
+			// 	fill: false,
+			// 	data: [],
+			// 	lineTension: 0,
+			// 	hidden: false
+			// },
+			// {
+			// 	label: 'Logistic regression predicted recoveries',
+			// 	backgroundColor: 'lightgreen',
+			// 	borderColor: 'lightgreen',
+			// 	fill: false,
+			// 	data: [],
+			// 	lineTension: 0,
+			// 	hidden: false
+			// }
 		]
 	};
 	return new Chart(get_canvas(canvas_id), {
@@ -137,7 +141,7 @@ function new_chart(canvas_id) {
 			responsive: true,
 			title: {
 				display: true,
-				text: "Cases",
+				text: "Loading",
 				fontColor: "#f5f5f5",
 				fontSize: 30,
 				fontStyle: "",
@@ -185,7 +189,7 @@ function get_canvas(a) {
 
 function reset_chart() {
 	let chart = CORONA_GLOBALS.chart;
-	chart.options.title.text = 'Cases';
+	chart.options.title.text = 'Loading';
 	chart.data.labels = [];
 	for (let i = 0; i < chart.data.datasets.length; i++) {
 		chart.data.datasets[i].data = [];
@@ -193,73 +197,119 @@ function reset_chart() {
 	chart.update();
 }
 
+// ADD: confirmed cases (predicted)
+// ADD: mortality rate (predicted)
+// ADD: time to recover (predicted)
+
+function fix_data(data, extra_days) {
+	console.log(data);
+	let last_date = new Date(data.entry_date[data.entry_date.length - 1]);
+	let first_date = new Date(data.entry_date[0]);
+	let diff = (last_date.getTime() - first_date.getTime());
+	let day_length = 1000 * 60 * 60 * 24;
+	let num_days = diff / day_length;
+	let paired = {};
+	for (let i = 0; i < data.entry_date.length; i++) {
+		paired[data.entry_date[i]] = {
+			confirmed: data.confirmed[i],
+			recovered: data.recovered[i],
+			deaths: data.deaths[i],
+			dconfirmed: data.dconfirmed[i],
+			drecovered: data.drecovered[i],
+			ddeaths: data.ddeaths[i]
+		};
+	}
+
+	let new_days = null;
+
+	if (extra_days)
+		new_days = date_range(data.entry_date[0], num_days * 2);
+	else
+		new_days = date_range(data.entry_date[0], num_days);
+	
+	let new_data = {};
+	let props = ['confirmed', 'deaths', 'recovered', 'dconfirmed', 'ddeaths', 'drecovered'];
+	for (let day_n in new_days) {
+		let day = new_days[day_n];
+		for (let prop of props) {
+			if (!(prop in new_data)) {
+				new_data[prop] = [];
+			}
+			if (day in paired) {
+				new_data[prop].push(paired[day][prop]);
+			} else if (day_n < num_days) {
+				new_data[prop].push(new_data[prop][new_data[prop].length - 1]);
+			}
+		}
+	}
+
+	return {days: new_days, data: new_data};
+}
+ 
 function add_chart_data(data) {
 	reset_chart();
 	let chart = CORONA_GLOBALS.chart;
-	let raw = [[], [], [], [], []];
+	let raw = {};
 
 	chart.data.labels = data.entry_date;
+
 	let datasets = chart.data.datasets;
-	let extend_dates = data.entry_date.length;
-
-
-	if (CORONA_GLOBALS.chart_type == 'total') {
-		raw[CONFIRMED_IX] = data.confirmed;
-		raw[DEATHS_IX] = data.deaths;
-		raw[RECOVERED_IX] = data.recovered;
-		raw[ACTIVE_IX] = data.active;
-
-		raw[LOGFIT_IX] = generate_fit_data(data.fit, start=0, end=data.entry_date.length + extend_dates);
-		chart.data.labels = generate_dates(new Date(data.entry_date[0]), data.entry_date.length + extend_dates);
-	} else if (CORONA_GLOBALS.chart_type == 'daily-change') {
-		raw[CONFIRMED_IX] = data.dconfirmed;
-		raw[DEATHS_IX] = data.ddeaths;
-		raw[RECOVERED_IX] = data.drecovered;
-		raw[ACTIVE_IX] = data.dactive;
-
-		raw[LOGFIT_IX] = generate_derivative_data(data.fit, start=0, end=data.entry_date.length + extend_dates);
-		chart.data.labels =  generate_dates(new Date(data.entry_date[0]), data.entry_date.length + extend_dates);
+	let extra_days = data.entry_date.length;
+	
+	// now, we go through each date and add the values
+	let fixed = fix_data(data, CORONA_GLOBALS.show_predictions);
+	chart.data.labels = fixed.days;
+	
+	let func = CORONA_GLOBALS.chart_type == 'total' ? predict : deriv;
+	let pre = CORONA_GLOBALS.chart_type == 'daily-change' ? "d" : "";
+	
+	let props = ['confirmed', 'deaths', 'recovered'];
+	
+	for (let prop of props) {
+		raw[index[prop]] = fixed.data[pre + prop];
+	}
+	
+	if (CORONA_GLOBALS.show_predictions) {
+		if (pre != 'd') raw[index.lstm_confirmed] = data.fit.confirmed.y;
+		else raw[index.lstm_confirmed] = [];
+	
+		// iterate through the dates for the predicted data
+		//let prop = "confirmed";
+	
+		for (let prop of ['confirmed']) {
+			raw[index[prop] + 4] = [];
+			for (let day = 0; day < fixed.days.length; day++) {
+				raw[index[prop] + 4].push(func(data.fit[prop], day));
+			}
+		}
 	}
 
 	// NUMBER OF SLOTS FOR DATA
-	for (let i = 0; i < 5; i++) {
+	for (let i in raw) {
 		datasets[i].data = smooth_data(raw[i], CORONA_GLOBALS.smoothing);
 	}
+
+	last_raw = raw;
 
 	chart.update()
 }
 
-function generate_dates(start_date, length) {
-	let dates = [];
-	let next_date = start_date;
-	for (let i = 0; i < length; i++) {
-		dates.push(next_date.toISOString().substring(0, 10));
-		next_date.setDate(next_date.getDate() + 1);
+function date_range(start_date, num_days) {
+	let ret = [];
+	let d = new Date(start_date);
+	for (let i = 0; i < num_days; i++) {
+		ret.push(d.toISOString().substring(0, 10));
+		d.setTime(d.getTime() + 1000 * 60 * 60 * 24);
 	}
-	return dates;
+	return ret;
 }
 
-function generate_derivative_data(fit, start=0, end=10) {
-	let data = [];
-	let d = 0.001;
-	for (let i = start; i < end; i++) {
-		let diff = predict(fit, i + d) - predict(fit, i);
-		let deriv = diff/d;
-		data.push(deriv);
-	}
-	return data;
-}
-
-function generate_fit_data(fit, start=0, end=10) {
-	let data = [];
-	for (let i = start; i < end; i++) {
-		data.push(predict(fit, i));
-	}
-	return data;
+function deriv(fit, x) {
+	return (predict(fit, x + 0.001) - predict(fit, x)) / 0.001; 
 }
 
 function predict(fit, x) {
-	return fit.c/(1 + fit.a * Math.exp(-x * fit.b));
+	return fit.MAX/(1 + Math.exp(-(x - fit.T_INF)/fit.T_RISE));
 }
 
 function smooth_data(array, smoothing) {
@@ -306,13 +356,18 @@ function reload_chart() {
 		world: "World"
 	}
 	
+	waiting = params;
+
 	$.getJSON(
 		"/cases/totals_sequence",
 		params,
 		function(data) {
-			add_chart_data(data);
-			chart.options.title.text = 'Cases in: ' + label;
-			chart.update();
+			if (waiting == params) {
+				add_chart_data(data);
+				chart.options.title.text = 'Cases in: ' + label;
+				chart.update();
+				waiting = null;
+			}
 		}
 	)
 }

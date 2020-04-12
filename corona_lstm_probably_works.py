@@ -16,7 +16,7 @@ def create_dataset(dataset, look_back=1):
 		dataY.append(dataset[i + look_back, 0])
 	return numpy.array(dataX), numpy.array(dataY)
 
-def do_code(inp_arr, adv, lb, ep, graph):
+def do_code(inp_arr, adv, lb, epochs=100, graph=True):
 
 	numpy.random.seed(7)
 
@@ -28,7 +28,7 @@ def do_code(inp_arr, adv, lb, ep, graph):
 	scaler = MinMaxScaler(feature_range=(0, 1))
 	dataset = scaler.fit_transform(dataset)
 	train_size = int(len(dataset) * 0.67)
-	test_size = len(dataset) - train_size
+	#test_size = len(dataset) - train_size
     #train, test = dataset[0:train_size,:], dataset[train_size:len(dataset),:]
 	look_back = lb
 	trainX, trainY = create_dataset(dataset, look_back)
@@ -40,7 +40,7 @@ def do_code(inp_arr, adv, lb, ep, graph):
 	model.add(LSTM(4, input_shape=(1, look_back)))
 	model.add(Dense(1))
 	model.compile(loss='mean_squared_error', optimizer='adam')
-	model.fit(trainX, trainY, epochs=ep, batch_size=1, verbose=0)
+	model.fit(trainX, trainY, epochs=epochs, batch_size=1, verbose=0)
 
 
 	trainPredict = model.predict(trainX)
@@ -70,7 +70,7 @@ def do_code(inp_arr, adv, lb, ep, graph):
 	return trainY
 
 def from_csv():
-    df = read_csv("test_data.csv", usecols=[2], engine="python")
-    print(do_code(df["Cases"].tolist(), 10, 20, 10, True))
+    df = read_csv("test_data.csv", usecols=[1], engine="python")
+    print(do_code(df["Cases"].tolist(), adv=10, lb=20, epochs=10, graph=True))
 
 from_csv()

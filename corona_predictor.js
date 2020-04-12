@@ -20,11 +20,12 @@ module.exports = {
 
 function get_logistic(key, dates, confirmed) {
     console.log("Running logfit...");
-    confirmed = smooth_data(confirmed.split(" ").map((a) => parseFloat(a)), 1).join(" ");
+    // confirmed = smooth_data(confirmed.split(" ").map((a) => parseFloat(a)), 0).join(" ");
     return new Promise(function(resolve, reject) {
         if (key in cache && Date.now() - cache[key].time < (10 * 60 * 1000)) {
             console.log("Returned cached version");
             resolve(cache[key].json);
+            return;
         } else {
             cache[key] = {};
         }

@@ -18,12 +18,20 @@ body {
 	color: var(--color-fg-light, #f5f5f5);
 }
 
-a, a:hover {
-	color: var(--color-fg-light, #f5f5f5);
+nav a {
+	color: var(--color-fg-light, #f5f5f5) !important;
+}
+
+a:hover {
+	color: rgba(255, 255, 255, 0.75) !important;
 }
 
 .custom-nav-color {
 	background-color: var(--color-bg-dark, #212121);
+	color: var(--color-fg-light, #f5f5f5);
+}
+
+.custom-nav-color.nav-link {
 	color: var(--color-fg-light, #f5f5f5);
 }
 

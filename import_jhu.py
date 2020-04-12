@@ -190,7 +190,7 @@ def import_data(csv_text, entry_date, is_live):
 
             session.add(new_data)
 
-            if admin2 != '' and is_live:
+            if is_live:
                 data_row = {
                     "admin2": admin2, "province": province, "country": country,
                     "confirmed": confirmed, "deaths": deaths, "recovered": recovered, "active": active,

@@ -49,20 +49,67 @@
 				</h1>
 				<ul>
 					<li>
-						Smoothing factor: looks N days before a certain day, and N days after that certain day, and finds the average. If it's at the end of the chart, it fills in with the closest value.
-					</li>
-					<li>
-						Prediction: Uses a <i>logistic curve.</i><br/>
-						Logistic curves are similar to exponential growth, but take into account how much of the population is already infected.<br/>
-						Here's a good explanation: <a href="http://youtu.be/Kas0tIxDvrg">video</a><br/>
-						To fit to the curve, we used <code style="color: #f5f5f5">scipy</code>'s function <code style="color: #f5f5f5">scipy.optimize.curve_fit</code>. X = number of days since the first case, Y = number of cases. The function form is A/(1 + B * e^(-x * C)).
-					</li>
-					<li>
 						Please note that the predictions <b>will not always be accurate, and will continue to change as more data is collected.</b><br/>
 						This tool is just to provide a general idea of the potential cases in the future.
 					</li>
 					<li>
-						Active cases: # of total confirmed cases - # of deaths - # of recoveries.
+						Smoothing factor: looks N days before a certain day, and N days after that certain day, and finds the average. If it's at the end of the chart, it fills in with the closest value.
+					</li>
+					<li>
+						Prediction method 1: <i>logistic curve.</i><br/>
+						Logistic curves are similar to exponential growth, but take into account how much of the population is already infected.<br/>
+						Here's a good explanation: <a href="http://youtu.be/Kas0tIxDvrg">video</a><br/>
+						To fit to the curve, we used <code style="color: #f5f5f5">scipy</code>'s function <code style="color: #f5f5f5">scipy.optimize.curve_fit</code>. X = number of days since the first case, Y = number of cases. The function form is MAX/(1 + e^(-(x - inflection_x)/time_to_rise).<br/>
+						Because it takes a long time to train, we cached the data.<br/>
+						Code on <a href="http://github.com/o-wth/Corona-Vision">Github</a> in the file "corona_predictor.py".<br/>
+						Credits: Michael Fatemi
+					</li>
+					<li>
+						Prediction method 2: <i>Long Short Term Memory (LSTM)</i><br/>
+						This is a method of machine learning that can discover trends in data. We included this because we believe it will be able to model seasonal changes, which the logistic regression cannot do.<br/>
+						We used <code>pandas</code>, <code>numpy</code>, and <code>Tensorflow</code> for the LSTM.<br/>
+						To learn more about LSTM, look here: <a href="https://youtu.be/xPotjBiIFFA">video</a><br/>
+						Because it takes a long time to train, we cached the data.<br/>
+						Code on <a href="http://github.com/o-wth/Corona-Vision">Github</a> in the file "corona_predictor.py".<br/>
+						Credits: Suhas Nandiraju
+					</li>
+				</ul>
+				<h2>Technical info</h2>
+				<ul>
+					<li>Code: <a href="http://github.com/o-wth/Corona-Vision">Github</a></li>
+					<li>
+						Logistic regression w/ Python<br/>
+						Params:
+						<ul>
+							<li>
+								Bounds:
+								<ul>
+									<li>max(data) &lt; MAX &lt; 7.3e9</li>
+									<li>0 &lt; inflection_x &lt; 800</li>
+									<li>1 &lt; time_to_rise &lt; 800</li>
+								</ul>
+							</li>
+							<li>
+								Starting values:
+								<ul>
+									<li>MAX = max(data)</li>
+									<li>inflection_x = median date</li>
+									<li>time_to_rise = 30</li>
+								</ul>
+							</li>
+							<li>
+								Max iterations: 10,000
+							</li>
+						</ul>
+					</li>
+					<li>
+						LSTM model w/ Python, Tensorflow<br/>
+						Params:
+						<ul>
+							<li>Epochs = 10</li>
+							<li>Lookback = 20</li>
+							<li>Model: Input [1xLookback] --> LSTM [4] --> Dense [1]</li>
+						</ul>
 					</li>
 				</ul>
 			</div>

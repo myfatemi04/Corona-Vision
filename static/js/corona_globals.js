@@ -22,5 +22,6 @@ let CORONA_GLOBALS = {
     country_list: [],
     province_list: {},
     admin2_list: {},
-    smoothing: 0
+    smoothing: 0,
+    show_predictions: false
 };

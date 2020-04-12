@@ -120,7 +120,7 @@ app.get("/cases/totals_sequence", (req, res) => {
         query += " where " + where_conds.join(" and ");
     }
 
-    query += " order by entry_date";
+    query += " and entry_date != 'live' order by entry_date";
 
     get_sql(query).then(
         (content) => {
@@ -139,15 +139,30 @@ app.get("/cases/totals_sequence", (req, res) => {
                     }
                 }
             }
+
+            resp.fit = {};
+
+            let num_fit = 0;
             
-            logfit(admin2 + ", " + province + ", " + country, resp.entry_date.join(" "), resp.confirmed.join(" ")).then(
-                data => {
-                    resp.fit = data;
-                    res.json(resp);
-                }
-            ).catch(
-                data => res.json(resp)
-            );
+            for (let label of ['confirmed', 'deaths', 'recovered']) {
+                logfit(label + ":" + admin2 + ", " + province + ", " + country, resp.entry_date.join(" "), resp[label].join(" ")).then(
+                    (data) => {
+                        resp.fit[label] = data;
+                        num_fit += 1;
+
+                        // if it's the last one
+                        if (num_fit == 3) res.json(resp);
+                    }
+                ).catch(
+                    (err) => {
+                        resp.fit[label] = {"MAX": 0, "T_INF": 0, "T_RISE": 1, "x": X, "y": Y};
+                        num_fit += 1;
+                        // if it's the last one
+                        if (num_fit == 3) res.json(resp);
+                        //data => res.json(resp);
+                    }
+                );
+            }
         }
     );
 
@@ -244,6 +259,10 @@ app.get("/history", (req, res) => {
 
 app.get("/contact", (req, res) => {
     res.render("contact");
+});
+
+app.get("/simulate/curve", (req, res) => {
+    res.render("simulate_curve");
 });
 
 const hostname = '0.0.0.0';
