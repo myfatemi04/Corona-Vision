@@ -9,3 +9,4 @@ scipy
 numpy
 keras
 sklearn
+tensorflow
