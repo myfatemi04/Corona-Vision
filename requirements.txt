@@ -7,3 +7,6 @@ requests
 beautifulsoup4
 scipy
 numpy
+cntk
+keras
+sklearn

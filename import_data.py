@@ -84,6 +84,8 @@ def import_worldometers():
 						new_data[label] = text
 
 			add_or_update(session, new_data)
+			new_data['entry_date'] = date.today().isoformat()
+			add_or_update(session, new_data)
 
 def import_google_sheets(url, default_location, labels=['province', 'confirmed', 'dconfirmed', 'deaths', 'ddeaths', '', 'serious', 'recovered', '']):
 	response = requests.get(url)
@@ -123,6 +125,8 @@ def import_google_sheets(url, default_location, labels=['province', 'confirmed',
 			if 'total' in row['province'].lower(): row['province'] = ''
 			if 'total' in row['country'].lower(): row['country'] = ''
 			add_or_update(session, row)
+			row['entry_date'] = date.today().isoformat()
+			add_or_update(session, row)
 		session.commit()
 
 def import_selector(url, source_link, labels, location):
@@ -149,6 +153,8 @@ def import_selector(url, source_link, labels, location):
 	
 	with web_app.app.app_context():
 		session = db.session()
+		add_or_update(session, data)
+		data['entry_date'] = date.today().isoformat()
 		add_or_update(session, data)
 		session.commit()
 
@@ -179,6 +185,8 @@ def import_csv(url, source_link, location, labels, row='all'):
 		session = db.session()
 		for data in all_data:
 			add_or_update(session, data)
+			data['entry_date'] = date.today().isoformat()
+			add_or_update(session, data)
 		session.commit()
 
 methods = {
@@ -191,13 +199,5 @@ methods = {
 allowed_methods = methods.values() # [import_csv, import_selector]
 
 if __name__ == "__main__":
-	# update_live_data()
-	# print("Importing from USA")
-	# datasource = live_data_sources[0]
-	# args = datasource['args']
-	# method = methods[datasource['method']]
-	# try:
-	# 	method(**args)
-	# except Exception as e:
-	# 	print("Error during data load!", e, args)
-	data_download()
+	update_live_data()
+	# data_download()

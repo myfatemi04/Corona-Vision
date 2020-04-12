@@ -36,7 +36,6 @@ function table_col(options) {
     let number = options.number;
     let numberString = '-';
     let percentString = '';
-    let color = "#f5f5f5";
 
     if (options.hasOwnProperty("color")) {
         color = options.color;
@@ -50,31 +49,25 @@ function table_col(options) {
             if (options.hasOwnProperty("customNumer")) {
                 numer = options.customNumer;
             }
-            let percent = (100 * numer / options.denom).toFixed(2);
+            let percent = (100 * numer / options.denom).toFixed(1);
             percentString = "(" + percent + "%)";
         }
     }
 
-    let flex = 1;
-    if (options.hasOwnProperty("flex")) {
-        flex = options.flex;
+    let style = "flex: 1;";
+    if (options.hasOwnProperty("style")) {
+        style = options.style;
     }
 
-    return `<td class="mx-1" style="flex: ${flex}; color: ${color};">${numberString} ${percentString}</td>`;
-}
+    if (options.hasOwnProperty("color")) {
+        style = "color: " + options.color + ";" + style;
+    }
 
-function set_country(country) {
-    $("#country-selector").val(country);
-    $("#country-selector").trigger("change");
+    return `<td class="mx-1" style="${style}">${numberString} ${percentString}</td>`;
 }
 
 function set_country_link(label) {
     return `<a style="color: #3657ff;" href='javascript:set_country("${label}")';>${label} <i class="fas fa-angle-right"></i></a>`;
-}
-
-function set_province(province) {
-    $("#province-selector").val(province);
-    $("#province-selector").trigger("change");
 }
 
 function set_province_link(label) {
@@ -138,16 +131,16 @@ module.exports = {
             }
 
             let table_cols = [
-                {number: i, flex: 0.5},
-                {number: label_link, flex: 2},
-                {number: datapoint.confirmed, color: COLORS.confirmed},
+                {number: i, style: "flex: 0.5; color: #f5f5f5;"},
+                {number: label_link},
+                {number: datapoint.confirmed, color: COLORS.confirmed, style: "flex: 0.5; font-weight: 800;"},
                 {number: datapoint.dconfirmed, denom: datapoint.confirmed, color: COLORS.confirmed},
                 {number: datapoint.recovered, denom: datapoint.confirmed, color: COLORS.recovered},
                 {number: datapoint.deaths, denom: datapoint.confirmed, color: COLORS.deaths},
                 {number: datapoint.ddeaths, denom: datapoint.deaths, color: COLORS.deaths},
                 {number: datapoint.num_tests, customNumer: datapoint.confirmed, denom: datapoint.num_tests, digits: 2, color: COLORS.tests},
                 {number: datapoint.serious, denom: datapoint.confirmed, color: COLORS.serious},
-                {number: "<a href=" + datapoint.source_link + ">Source</a>"}
+                {number: "<a href=" + datapoint.source_link + ">Source</a>", style: "flex: 0.5;"}
             ];
 
             let tr = `<tr class="datatable-row" data-label="${label}">`;

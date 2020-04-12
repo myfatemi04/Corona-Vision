@@ -88,57 +88,6 @@ class Datapoint(Base):
 			"source_link": self.source_link
 		}
 
-# class LiveEntry(Base):
-# 	__tablename__ = "live"
-# 	data_id = Column(Integer, primary_key=True)
-
-# 	update_time = Column(DateTime, default=datetime.datetime.utcnow)
-
-# 	admin2 = Column(String(320))
-# 	province = Column(String(320))
-# 	country = Column(String(320))
-# 	group = Column(String(320))
-
-# 	confirmed = Column(Integer)
-# 	recovered = Column(Integer)
-# 	deaths = Column(Integer)
-# 	active = Column(Integer)
-# 	serious = Column(Integer)
-
-# 	dconfirmed = Column(Integer)
-# 	drecovered = Column(Integer)
-# 	ddeaths = Column(Integer)
-# 	dactive = Column(Integer)
-# 	dserious = Column(Integer)
-
-# 	num_tests = Column(Integer)
-
-# 	source_link = Column(String())
-	
-# 	def json_serializable(self):
-# 		return {
-# 			'data_id': self.data_id,
-# 			"admin2": self.admin2,
-# 			"province": self.province,
-# 			"country": self.country,
-# 			"group": self.group,
-			
-# 			"confirmed": int(self.confirmed),
-# 			"recovered": int(self.recovered),
-# 			"deaths": int(self.deaths),
-# 			"active": int(self.active),
-# 			"serious": int(self.serious),
-
-# 			"dconfirmed": int(self.dconfirmed),
-# 			"drecovered": int(self.drecovered),
-# 			"ddeaths": int(self.ddeaths),
-# 			"dactive": int(self.dactive),
-# 			"dserious": int(self.dserious),
-
-# 			"num_tests": int(self.num_tests),
-# 			"source_link": self.source_link
-# 		}
-
 def total_cases(country, province, date_):
 	session = db.session()
 	result = session.query(Datapoint).filter_by(
@@ -215,21 +164,23 @@ def add_or_update(session, data, commit=True):
 		'country':'',
 		'province':'',
 		'admin2':'',
-		'confirmed':0,
-		'dconfirmed':0,
-		'deaths':0,
-		'ddeaths':0,
-		'serious':0,
-		'dserious':0,
-		'recovered':0,
-		'drecovered':0,
-		'active':0,
-		'dactive':0,
-		'num_tests':0,
-		'source_link':'',
 		'group':'',
+		'latitude':0,
+		'longitude':0,
+		'location_labelled':False,
+		'location_accurate':False,
+		'is_first_day':False,
+		'is_primary':False,
+		'source_link':'',
 		'entry_date':'live'
 	}
+
+	# location_labels = {'latitude', 'longitude', 'location_labelled', 'location_accurate'}
+	stat_labels = {'confirmed', 'dconfirmed', 'deaths', 'ddeaths', 'serious', 'dserious', 'recovered', 'drecovered', 'active', 'dactive', 'num_tests'}
+	for stat in stat_labels:
+		default_data[stat] = 0
+
+
 	for label in default_data:
 		if label not in data:
 			data[label] = default_data[label]
@@ -239,36 +190,62 @@ def add_or_update(session, data, commit=True):
 	
 	data['country'] = standards.fix_country_name(data['country'])
 
-	location = {
+	primary = {
 		'country': data['country'],
 		'province': data['province'],
-		'admin2': data['admin2']
+		'admin2': data['admin2'],
+		'entry_date': data['entry_date']
 	}
 
-	existing = session.query(Datapoint).filter_by(**location, entry_date='live')
+	existing = session.query(Datapoint).filter_by(**primary)
 	obj = existing.first()
 	if obj:
-		updated = False
 		json_dict = obj.json_serializable()
 
-		for label in data:
-			if type(label) == str:
-				if data[label]:
-					setattr(obj, label, data[label])
-					if label != 'source_link':
-						updated = True
-			elif type(label) in [int, float]:
-				if data[label] > json_dict[label]:
-					setattr(obj, label, data[label])
-					updated = True
+		for label in stat_labels:
+			if data[label] > json_dict[label]:
+				setattr(obj, label, data[label])
+				obj.update_time = datetime.datetime.utcnow()
+				if data['source_link']:
+					obj.source_link = data['source_link']
 		
-		if updated:
-			obj.update_time = datetime.datetime.utcnow()
-			if data['source_link']:
-				obj.source_link = data['source_link']
+		# now we have an existing object.
+		# if the object's location is accurate, we don't
+		# touch its location
+		if not obj.location_accurate:
+			# if the object's location is not accurate, however,
+			# we try to estimate its location
+			estimated_location_data = standards.get_estimated_location(obj.country, obj.province)
+			estimated_location = estimated_location_data['location']
+			estimate_accurate = estimated_location_data['accurate']
+
+			# if we could find its location...
+			if estimated_location is not None:
+				# update the old location
+				est_lat, est_lng = estimated_location
+				obj.latitude = est_lat
+				obj.longitude = est_lng
+				obj.location_accurate = estimate_accurate
+				obj.location_labelled = True
 
 	else:
-		new_obj = Datapoint(**data)
+		if not data['location_labelled']:
+			# if the object's location is not labelled,
+			# we try to estimate its location
+			estimated_location_data = standards.get_estimated_location(obj.country, obj.province)
+			estimated_location = estimated_location_data['location']
+			estimate_accurate = estimated_location_data['accurate']
+
+			# if we could find its location...
+			if estimated_location is not None:
+				# set a location
+				est_lat, est_lng = estimated_location
+				data['latitude'] = est_lat
+				data['longitude'] = est_lng
+				data['location_accurate'] = estimate_accurate
+				data['location_labelled'] = True
+
+			new_obj = Datapoint(**data)
 
 		session.add(new_obj)
 	if commit:

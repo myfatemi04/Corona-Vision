@@ -69,6 +69,23 @@ def get_state_name(country_name, state_code):
 	elif state_code in state_names.values():
 		return state_code
 
+def get_estimated_location(country_name, province_name=''):
+	if province_name:
+		state_level_location = get_state_location(country_name, state_name)
+		if state_level_location:
+			return {"location": state_level_location, "accurate": True}
+
+	# if province_name is not empty, it means we failed to find its
+	# actual location at this point
+	is_accurate = not bool(province_name)
+	country_level_location = get_country_location(country_name)
+	
+	if country_level_location:
+		return {"location": country_level_location, "accurate": is_accurate}
+	else:
+		return {"location": None, "accurate": False}
+	
+
 fixes = {
 	"uk": "United Kingdom",
 	"us": "United States",
@@ -128,3 +145,6 @@ if __name__ == "__main__":
 	print("AF code to name: ", get_country_name("AF"))
 	print("Afghanistan name to code: ", get_country_code("Afghanistan"))
 	print("SD code to location: ", get_country_location("SD"))
+	print("Estimated location of Quebec, Canada: ", get_estimated_location("Canada", "Quebec"))
+	print("Estimated location of France: ", get_estimated_location("France", ""))
+	print("Estimated location of Virginia, US: ", get_estimated_location("United States", "Virginia"))

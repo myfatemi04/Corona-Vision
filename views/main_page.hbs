@@ -42,8 +42,6 @@
 		{{> navbar}}
 		<div class="d-flex flex-column">
 			<div class="scroll box d-flex flex-column">
-				{{!-- Region:
-				{{>selectors}} --}}
 				<div id="stats-info" class="lato" style="display: none; font-size: 3rem;">
 					<span id="stats-label" class="font-weight-bold"></span><br/>
 					<span id="stats-confirmed" class="font-weight-bold" style="color: #eb7a34"></span>
@@ -60,9 +58,9 @@
 			</div>
 			<div class="box">
 				Date:
-				<select class="custom-input-color form-control my-2" id="date" onchange="update_date()" style="border-radius: 0.25rem;">
-					
-				</select>
+				<select class="custom-input-color form-control my-2" id="date" onchange="update_date()" style="border-radius: 0.25rem;"></select><br/>
+				Region:
+				{{>selectors}}
 			</div>
 			<table id="datatable" class="data-container">
 				<thead class="border-bottom pos-sticky datatable-head custom-bg">
@@ -71,17 +69,17 @@
 							<input type="text" onkeyup="filter_table()" class="custom-input-color small-input" placeholder="Search for location" id="locationSearch">
 						</th>
 					</tr>
-					<tr class="d-flex py-2" style="font-size: 0.75rem;">
-						<th style="flex: 0.5;"></th>
-						<th style="flex: 2;">Location</th>
-						<th style="flex: 1;">Confirmed</th>
+					<tr class="d-flex py-2" style="font-size: 0.9rem;">
+						<th style="flex: 0.5;">#</th>
+						<th style="flex: 1;">Location</th>
+						<th style="flex: 0.5;">Confirmed</th>
 						<th style="flex: 1;">New</th>
 						<th style="flex: 1;">Recovered</th>
 						<th style="flex: 1;">Deaths</th>
 						<th style="flex: 1;">New</th>
 						<th style="flex: 1;">Tests</th>
 						<th style="flex: 1;">Serious cases</th>
-						<th style="flex: 1;">Source</th>
+						<th style="flex: 0.5;">Source</th>
 					</tr>
 				</thead>
 				<tbody id="tablebody">
