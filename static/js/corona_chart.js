@@ -12,7 +12,7 @@ let chart_type = "total";
 
 let predictor_type = "none";
 let log_predictor = {};
-let lstm_predictor = {};
+// let lstm_predictor = {};
 
 let plugins = [{
 	beforeDraw: function (chart, easing) {
@@ -71,7 +71,7 @@ function init_chart_options() {
 			} else {
 				predictor_type = "none";
 				reset_predicted_data_datapoints();
-				set_chart_data(last_added_data);
+				redraw_chart();
 			}
 		}	
 	);
@@ -272,17 +272,17 @@ function reset_chart_data() {
 }
 
 function redraw_chart() {
-	set_chart_data(last_added_data);
+	set_chart_data({...last_added_data.data, entry_date: last_added_data.days.slice(0, last_added_data.data.confirmed.length)});
 }
 
 function set_chart_data(data) {
 	reset_chart_data();
-	last_added_data = data;
 	let datasets = chart.data.datasets;
 
 	// now, we go through each date and fill in any missing dates with a filler
 	let show_predictions = predictor_type != "none";
 	let fixed = fix_data(data, show_predictions);
+	last_added_data = fixed;
 
 	chart.data.labels = fixed.days;
 
@@ -295,25 +295,32 @@ function set_chart_data(data) {
 		$.post(
 			"//coronavision-ml.herokuapp.com/predict/log",
 			{
-				X: last_added_data.entry_date.join(" "),
-				Y: last_added_data.confirmed.join(" ")
+				X: fixed.days.slice(fixed.data.confirmed.length).join(" "),
+				Y: fixed.data.confirmed.join(" ")
 			},
 			(log_predictor_json) => {
-				predictor_type = "log";
-				add_log_predictor(log_predictor_json);
+				// make sure they didn't change the settings
+				if (predictor_type == "log") {
+					predictor_type = "log";
+					add_log_predictor(log_predictor_json);
+				}
 			},
 			"json"
 		);
-	} else if (predictor_type == "lstm") {
+	} 
+	else if (predictor_type == "lstm") {
 		$.post(
 			"//coronavision-ml.herokuapp.com/predict/lstm",
 			{
-				X: last_added_data.entry_date.join(" "),
-				Y: last_added_data.confirmed.join(" ")
+				X: fixed.days.slice(fixed.data.confirmed.length).join(" "),
+				Y: fixed.data.confirmed.join(" ")
 			},
 			(lstm_predictor_json) => {
-				predictor_type = "lstm";
-				add_lstm_predictor(lstm_predictor_json);
+				// make sure they didn't change the settings
+				if (predictor_type == "lstm") {
+					predictor_type = "lstm";
+					add_lstm_predictor(lstm_predictor_json);
+				}
 			},
 			"json"
 		);
@@ -400,7 +407,6 @@ function reload_chart() {
 				set_chart_data(data);
 				chart.options.title.text = 'Cases in: ' + label;
 				chart.update();
-				waiting = null;
 			}
 		}
 	)
