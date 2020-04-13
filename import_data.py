@@ -199,5 +199,4 @@ methods = {
 allowed_methods = methods.values() # [import_csv, import_selector]
 
 if __name__ == "__main__":
-	update_live_data()
-	# data_download()
+	data_download()

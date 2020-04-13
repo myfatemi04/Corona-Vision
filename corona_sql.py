@@ -232,7 +232,7 @@ def add_or_update(session, data, commit=True):
 		if not data['location_labelled']:
 			# if the object's location is not labelled,
 			# we try to estimate its location
-			estimated_location_data = standards.get_estimated_location(obj.country, obj.province)
+			estimated_location_data = standards.get_estimated_location(data['country'], data['province'])
 			estimated_location = estimated_location_data['location']
 			estimate_accurate = estimated_location_data['accurate']
 
