@@ -196,7 +196,10 @@ methods = {
 	"csv": import_csv
 }
 
-allowed_methods = methods.values() # [import_csv, import_selector]
-
 if __name__ == "__main__":
+	# # United States data import (for testing)
+	# datasource = live_data_sources[0]
+	# args = datasource['args']
+	# method = methods[datasource['method']]
+	# method(**args)
 	data_download()

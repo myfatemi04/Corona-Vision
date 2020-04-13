@@ -159,6 +159,7 @@ def json_list(cases):
 	return json.dumps([case.json_serializable() for case in cases])
 
 # assume we already have the app context
+# # if bulk_insert=True, it returns an object instead of adding it 
 def add_or_update(session, data, commit=True):
 	default_data = {
 		'country':'',
@@ -177,9 +178,9 @@ def add_or_update(session, data, commit=True):
 
 	# location_labels = {'latitude', 'longitude', 'location_labelled', 'location_accurate'}
 	stat_labels = {'confirmed', 'dconfirmed', 'deaths', 'ddeaths', 'serious', 'dserious', 'recovered', 'drecovered', 'active', 'dactive', 'num_tests'}
+	
 	for stat in stat_labels:
 		default_data[stat] = 0
-
 
 	for label in default_data:
 		if label not in data:
@@ -208,6 +209,10 @@ def add_or_update(session, data, commit=True):
 				obj.update_time = datetime.datetime.utcnow()
 				if data['source_link']:
 					obj.source_link = data['source_link']
+
+		for label in ['is_first_day', 'is_primary']:
+			if data[label]:
+				setattr(obj, label, data[label])
 		
 		# now we have an existing object.
 		# if the object's location is accurate, we don't
@@ -245,8 +250,7 @@ def add_or_update(session, data, commit=True):
 				data['location_accurate'] = estimate_accurate
 				data['location_labelled'] = True
 
-			new_obj = Datapoint(**data)
-
+		new_obj = Datapoint(**data)
 		session.add(new_obj)
 	if commit:
 		session.commit()

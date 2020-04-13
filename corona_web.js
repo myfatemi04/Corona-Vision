@@ -239,7 +239,7 @@ app.get("/cases/first_days", (req, res) => {
 
 app.get("/cases/date", (req, res) => {
     let entry_date = get(req.query, "date") || "live";
-    let query = sqlstring.format("select * from datapoints where entry_date = ? and is_primary = true", entry_date);
+    let query = sqlstring.format("select * from datapoints where entry_date = ? and location_labelled = true", entry_date);
     get_sql(query).then(
         content => res.json(content)
     );

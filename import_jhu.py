@@ -121,6 +121,9 @@ def import_data(csv_text, entry_date, is_live):
     print("\tFinished downloading and processing")
     print("\tUploading...")
 
+    # # For BULK inserts
+    # to_add = []
+
     with web_app.app.app_context():
         session = db.session()
         i = 0
@@ -159,52 +162,55 @@ def import_data(csv_text, entry_date, is_live):
                 yesterday_deaths = datapoint.deaths
                 yesterday_active = datapoint.active
 
-            new_data = Datapoint(
-                entry_date=entry_date,
+            # new_data = Datapoint(
+            #     entry_date=entry_date,
                 
-                admin2=admin2,
-                province=province,
-                country=country,
+            #     admin2=admin2,
+            #     province=province,
+            #     country=country,
                 
-                latitude=lat,
-                longitude=lng,
+            #     latitude=lat,
+            #     longitude=lng,
 
-                location_labelled=location_labelled,
-                location_accurate=location_accurate,
-                is_first_day=is_first_day,
-                is_primary=is_primary,
+            #     location_labelled=location_labelled,
+            #     location_accurate=location_accurate,
+            #     is_first_day=is_first_day,
+            #     is_primary=is_primary,
                 
-                confirmed=confirmed,
-                deaths=deaths,
-                recovered=recovered,
-                active=active,
+            #     confirmed=confirmed,
+            #     deaths=deaths,
+            #     recovered=recovered,
+            #     active=active,
 
-                dconfirmed=confirmed-yesterday_confirmed,
-                ddeaths=deaths-yesterday_deaths,
-                drecovered=recovered-yesterday_recovered,
-                dactive=active-yesterday_active
-            )
+            #     dconfirmed=confirmed-yesterday_confirmed,
+            #     ddeaths=deaths-yesterday_deaths,
+            #     drecovered=recovered-yesterday_recovered,
+            #     dactive=active-yesterday_active
+            # )
 
-            if i % 500 == 0:
+            data_row = {
+                "admin2": admin2, "province": province, "country": country,
+                "latitude": lat, "longitude": lng,
+                "location_labelled": location_labelled, "location_accurate": location_accurate,
+                "is_first_day": is_first_day, "is_primary": is_primary,
+                "confirmed": confirmed, "deaths": deaths, "recovered": recovered, "active": active,
+                "dconfirmed": confirmed-yesterday_confirmed,
+                "ddeaths": deaths-yesterday_deaths,
+                "drecovered": recovered-yesterday_recovered,
+                "dactive": active-yesterday_active,
+                "source_link": "https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports"
+            }
+
+            if i % 100 == 0:
                 print("\t" + str(i) + "/" + str(len(data_points)))
 
-            session.add(new_data)
+            add_or_update(session, {**data_row, "entry_date": entry_date}, commit=True)
 
             if is_live:
-                data_row = {
-                    "admin2": admin2, "province": province, "country": country,
-                    "confirmed": confirmed, "deaths": deaths, "recovered": recovered, "active": active,
-                    "dconfirmed": confirmed-yesterday_confirmed,
-                    "ddeaths": deaths-yesterday_deaths,
-                    "drecovered": recovered-yesterday_recovered,
-                    "dactive": active-yesterday_active,
-                    "source_link": "https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports"
-                    
-                }
-                add_or_update(session, data_row, commit=False)
+                add_or_update(session, data_row, commit=True)
 
             i += 1
-        
+
         session.commit()
         
         print(f"\tImported data for date {entry_date}")
@@ -212,7 +218,7 @@ def import_data(csv_text, entry_date, is_live):
 def download_data_for_date(entry_date):
     with web_app.app.app_context():
         session = db.session()
-        existing_data = session.query(Datapoint).filter_by(entry_date=entry_date).first()
+        existing_data = session.query(Datapoint).filter_by(entry_date=entry_date, is_primary=True).first()
 
         # don't do it again
         if existing_data:

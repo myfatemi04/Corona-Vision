@@ -31,12 +31,11 @@ function download_canvas() {
 }
 
 function init_chart() {
-	init_CORONA_GLOBALS();
+	init_chart_options();
 	reload_chart();
-	CORONA_GLOBALS.reload_function = reload_chart;
 }
 
-function init_CORONA_GLOBALS() {
+function init_chart_options() {
     let chart = CORONA_GLOBALS.chart;
 
     $("select[name=scale-type]").change(
@@ -52,14 +51,24 @@ function init_CORONA_GLOBALS() {
     $("select[name=chart-type]").change(
         function() {
             CORONA_GLOBALS.chart_type = this.value;
-            CORONA_GLOBALS.reload_function();
+            reload_chart();
         }
     );
 	
 	$("select[name=show_predictions]").change(
 		function() {
 			CORONA_GLOBALS.show_predictions = this.value == "true" ? true : false;
-			CORONA_GLOBALS.reload_function();
+			reload_chart();
+			// $.getJSON(
+			// 	"http://coronavision-ml.herokuapp.com/predict/log",
+			// 	{
+			// 		X: last_added_data.entry_date.join(" "),
+			// 		Y: last_added_data.confirmed.join(" ")
+			// 	},
+			// 	(data) => {
+			// 		set_chart_data(last_added_data, {log_fit: data});
+			// 	}
+			// )
 		}	
 	);
 
@@ -218,7 +227,7 @@ function fix_data(data, extra_days) {
 	let first_date = new Date(data.entry_date[0]);
 	let diff = (last_date.getTime() - first_date.getTime());
 	let day_length = 1000 * 60 * 60 * 24;
-	let num_days = diff / day_length;
+	let num_days = diff / day_length + 1;
 	let paired = {};
 	for (let i = 0; i < data.entry_date.length; i++) {
 		paired[data.entry_date[i]] = {
@@ -257,18 +266,26 @@ function fix_data(data, extra_days) {
 	return {days: new_days, data: new_data};
 }
  
-function add_chart_data(data) {
+let last_added_data = {};
+
+function set_chart_data(data, models) {
 	reset_chart();
+	last_added_data = data;
 	let chart = CORONA_GLOBALS.chart;
 	let raw = {};
 
 	chart.data.labels = data.entry_date;
 
 	let datasets = chart.data.datasets;
-	let extra_days = data.entry_date.length;
+
+	let show_predictions = CORONA_GLOBALS.show_predictions;
+	
+	// if ("log_fit" in models) {
+	// 	show_predictions = true;
+	// }
 	
 	// now, we go through each date and add the values
-	let fixed = fix_data(data, CORONA_GLOBALS.show_predictions);
+	let fixed = fix_data(data, show_predictions);
 	chart.data.labels = fixed.days;
 	
 	let func = CORONA_GLOBALS.chart_type == 'total' ? predict : deriv;
@@ -280,19 +297,19 @@ function add_chart_data(data) {
 		raw[index[prop]] = fixed.data[pre + prop];
 	}
 	
-	if (CORONA_GLOBALS.show_predictions) {
+	if (show_predictions) {
+		for (let prop of ['confirmed']) {
+			raw[index[prop] + 4] = [];
+			for (let day = 0; day < fixed.days.length; day++) {
+				// raw[index[prop] + 4].push(func(models.log_fit, day))
+				raw[index[prop] + 4].push(func(data.fit[prop], day));
+			}
+		}
 		// if (pre != 'd') raw[index.lstm_confirmed] = data.fit.confirmed.y;
 		// else raw[index.lstm_confirmed] = [];
 	
 		// iterate through the dates for the predicted data
 		//let prop = "confirmed";
-	
-		for (let prop of ['confirmed']) {
-			raw[index[prop] + 4] = [];
-			for (let day = 0; day < fixed.days.length; day++) {
-				raw[index[prop] + 4].push(func(data.fit[prop], day));
-			}
-		}
 	}
 
 	// NUMBER OF SLOTS FOR DATA
@@ -374,7 +391,7 @@ function reload_chart() {
 		params,
 		function(data) {
 			if (waiting == params) {
-				add_chart_data(data);
+				set_chart_data(data, {});
 				chart.options.title.text = 'Cases in: ' + label;
 				chart.update();
 				waiting = null;

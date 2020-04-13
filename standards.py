@@ -71,7 +71,7 @@ def get_state_name(country_name, state_code):
 
 def get_estimated_location(country_name, province_name=''):
 	if province_name:
-		state_level_location = get_state_location(country_name, state_name)
+		state_level_location = get_state_location(country_name, province_name)
 		if state_level_location:
 			return {"location": state_level_location, "accurate": True}
 
@@ -148,3 +148,4 @@ if __name__ == "__main__":
 	print("Estimated location of Quebec, Canada: ", get_estimated_location("Canada", "Quebec"))
 	print("Estimated location of France: ", get_estimated_location("France", ""))
 	print("Estimated location of Virginia, US: ", get_estimated_location("United States", "Virginia"))
+	print("State code of Virginia, US: ", get_state_code("United States", "Virginia"))

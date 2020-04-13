@@ -23,8 +23,7 @@
 					{},
 					(data) => {
 						for (let result of data) {
-							if (result.entry_date != 'live')
-								$("#date")[0].innerHTML += `<option value="${result.entry_date}">${result.entry_date}</option>`;
+							if (result.entry_date != 'live') $("#date")[0].innerHTML += `<option value="${result.entry_date}">${result.entry_date == "live" ? "Live map" : result.entry_date}</option>`;
 						}
 						init_map();
 					}
