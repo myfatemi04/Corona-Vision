@@ -293,7 +293,7 @@ function set_chart_data(data) {
 
 	if (predictor_type == "log") {
 		$.post(
-			"http://coronavision-ml.herokuapp.com/predict/log",
+			"//coronavision-ml.herokuapp.com/predict/log",
 			{
 				X: last_added_data.entry_date.join(" "),
 				Y: last_added_data.confirmed.join(" ")
@@ -306,7 +306,7 @@ function set_chart_data(data) {
 		);
 	} else if (predictor_type == "lstm") {
 		$.post(
-			"http://coronavision-ml.herokuapp.com/predict/lstm",
+			"//coronavision-ml.herokuapp.com/predict/lstm",
 			{
 				X: last_added_data.entry_date.join(" "),
 				Y: last_added_data.confirmed.join(" ")
