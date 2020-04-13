@@ -204,10 +204,10 @@ def import_data(csv_text, entry_date, is_live):
             if i % 100 == 0:
                 print("\t" + str(i) + "/" + str(len(data_points)))
 
-            add_or_update(session, {**data_row, "entry_date": entry_date}, commit=True)
+            add_or_update(session, {**data_row, "entry_date": entry_date}, commit=False)
 
             if is_live:
-                add_or_update(session, data_row, commit=True)
+                add_or_update(session, data_row, commit=False)
 
             i += 1
 
