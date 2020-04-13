@@ -312,7 +312,6 @@ function set_chart_data(data) {
 				Y: last_added_data.confirmed.join(" ")
 			},
 			(lstm_predictor_json) => {
-				console.log(lstm_predictor_json);
 				predictor_type = "lstm";
 				add_lstm_predictor(lstm_predictor_json);
 			},
