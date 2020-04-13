@@ -140,29 +140,31 @@ app.get("/cases/totals_sequence", (req, res) => {
                 }
             }
 
-            resp.fit = {};
+            res.json(resp);
 
-            let num_fit = 0;
+            // resp.fit = {};
+
+            // let num_fit = 0;
             
-            for (let label of ['confirmed', 'deaths', 'recovered']) {
-                logfit(label + ":" + admin2 + ", " + province + ", " + country, resp.entry_date.join(" "), resp[label].join(" ")).then(
-                    (data) => {
-                        resp.fit[label] = data;
-                        num_fit += 1;
+            // for (let label of ['confirmed', 'deaths', 'recovered']) {
+            //     logfit(label + ":" + admin2 + ", " + province + ", " + country, resp.entry_date.join(" "), resp[label].join(" ")).then(
+            //         (data) => {
+            //             resp.fit[label] = data;
+            //             num_fit += 1;
 
-                        // if it's the last one
-                        if (num_fit == 3) res.json(resp);
-                    }
-                ).catch(
-                    (err) => {
-                        resp.fit[label] = {"MAX": 0, "T_INF": 0, "T_RISE": 1, "x": X, "y": Y};
-                        num_fit += 1;
-                        // if it's the last one
-                        if (num_fit == 3) res.json(resp);
-                        //data => res.json(resp);
-                    }
-                );
-            }
+            //             // if it's the last one
+            //             if (num_fit == 3) res.json(resp);
+            //         }
+            //     ).catch(
+            //         (err) => {
+            //             resp.fit[label] = {"MAX": 0, "T_INF": 0, "T_RISE": 1, "x": X, "y": Y};
+            //             num_fit += 1;
+            //             // if it's the last one
+            //             if (num_fit == 3) res.json(resp);
+            //             //data => res.json(resp);
+            //         }
+            //     );
+            // }
         }
     );
 

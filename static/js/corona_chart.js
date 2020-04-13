@@ -2,11 +2,17 @@ let index = {
 	confirmed: 0,
 	deaths: 1,
 	recovered: 2,
-	lstm_confirmed: 3,
-	log_confirmed: 4,
-	log_deaths: 5,
-	log_recovered: 6
+	predicted: 3
 };
+
+let chart = null;
+let chart_smoothing = 0;
+
+let chart_type = "total";
+
+let predictor_type = "none";
+let log_predictor = {};
+let lstm_predictor = {};
 
 let plugins = [{
 	beforeDraw: function (chart, easing) {
@@ -36,12 +42,9 @@ function init_chart() {
 }
 
 function init_chart_options() {
-    let chart = CORONA_GLOBALS.chart;
-
     $("select[name=scale-type]").change(
         function() {
             if (this.value == 'logarithmic' || this.value == 'linear') {
-                CORONA_GLOBALS.scale_type = this.value;
                 chart.options.scales.yAxes[0].type = this.value;
                 chart.update();
             }
@@ -50,39 +53,32 @@ function init_chart_options() {
 
     $("select[name=chart-type]").change(
         function() {
-            CORONA_GLOBALS.chart_type = this.value;
+            chart_type = this.value;
             reload_chart();
         }
     );
 	
 	$("select[name=show_predictions]").change(
 		function() {
-			CORONA_GLOBALS.show_predictions = this.value == "true" ? true : false;
-			reload_chart();
-			// $.getJSON(
-			// 	"http://coronavision-ml.herokuapp.com/predict/log",
-			// 	{
-			// 		X: last_added_data.entry_date.join(" "),
-			// 		Y: last_added_data.confirmed.join(" ")
-			// 	},
-			// 	(data) => {
-			// 		set_chart_data(last_added_data, {log_fit: data});
-			// 	}
-			// )
+			if (this.value == "log") {
+				chart.data.datasets[index.predicted].data = [];
+				predictor_type = "log";
+				redraw_chart();
+			} else if (this.value == "lstm") {
+				chart.data.datasets[index.predicted].data = [];
+				predictor_type = "lstm";
+				redraw_chart();
+			} else {
+				predictor_type = "none";
+				reset_predicted_data_datapoints();
+				set_chart_data(last_added_data);
+			}
 		}	
 	);
-
-	// for (let prop of ['confirmed', 'deaths', 'recovered', 'active']) {
-	// 	$("input[name=display-" + prop + "]").change(
-	// 		function() {
-	// 			chart.data.datasets[index[prop]].hidden = !this.checked;
-	// 		}
-	// 	);
-	// }
 	
 	$("input#smoothing").change(
 		function() {
-			CORONA_GLOBALS.smoothing = this.value;
+			chart_smoothing = this.value;
 			reload_chart();
 		}
 	);
@@ -117,41 +113,14 @@ function new_chart(canvas_id) {
 				lineTension: 0
 			},
 			{
-				label: 'LSTM predicted confirmed',
-				backgroundColor: 'lightgoldenrodyellow',
-				borderColor: 'lightgoldenrodyellow',
-				fill: false,
-				data: [],
-				lineTension: 0,
-				hidden: false
-			},
-			{
-				label: 'Logistic regression predicted confirmed',
+				label: 'Predicted Cases',
 				backgroundColor: 'grey',
 				borderColor: 'grey',
 				fill: false,
 				data: [],
 				lineTension: 0,
 				hidden: false
-			},
-			// {
-			// 	label: 'Logistic regression predicted deaths',
-			// 	backgroundColor: 'lightcoral',
-			// 	borderColor: 'lightcoral',
-			// 	fill: false,
-			// 	data: [],
-			// 	lineTension: 0,
-			// 	hidden: false
-			// },
-			// {
-			// 	label: 'Logistic regression predicted recoveries',
-			// 	backgroundColor: 'lightgreen',
-			// 	borderColor: 'lightgreen',
-			// 	fill: false,
-			// 	data: [],
-			// 	lineTension: 0,
-			// 	hidden: false
-			// }
+			}
 		]
 	};
 	return new Chart(get_canvas(canvas_id), {
@@ -209,7 +178,6 @@ function get_canvas(a) {
 }
 
 function reset_chart() {
-	let chart = CORONA_GLOBALS.chart;
 	chart.options.title.text = 'Loading';
 	chart.data.labels = [];
 	for (let i = 0; i < chart.data.datasets.length; i++) {
@@ -268,56 +236,93 @@ function fix_data(data, extra_days) {
  
 let last_added_data = {};
 
-function set_chart_data(data, models) {
-	reset_chart();
-	last_added_data = data;
-	let chart = CORONA_GLOBALS.chart;
-	let raw = {};
+function reset_predicted_data_datapoints() {
+	chart.data.datasets[index.predicted].data = [];
+}
 
-	chart.data.labels = data.entry_date;
-
-	let datasets = chart.data.datasets;
-
-	let show_predictions = CORONA_GLOBALS.show_predictions;
-	
-	// if ("log_fit" in models) {
-	// 	show_predictions = true;
-	// }
-	
-	// now, we go through each date and add the values
-	let fixed = fix_data(data, show_predictions);
-	chart.data.labels = fixed.days;
-	
-	let func = CORONA_GLOBALS.chart_type == 'total' ? predict : deriv;
-	let pre = CORONA_GLOBALS.chart_type == 'daily-change' ? "d" : "";
-	
-	let props = ['confirmed', 'deaths', 'recovered'];
-	
-	for (let prop of props) {
-		raw[index[prop]] = fixed.data[pre + prop];
+function add_log_predictor(fit) {
+	reset_predicted_data_datapoints();
+	let func = chart_type == "total" ? predict_log : deriv_log;
+	for (let day = 0; day < chart.data.labels.length; day++) {
+		chart.data.datasets[index.predicted].data.push(func(fit, day));
 	}
-	
-	if (show_predictions) {
-		for (let prop of ['confirmed']) {
-			raw[index[prop] + 4] = [];
-			for (let day = 0; day < fixed.days.length; day++) {
-				// raw[index[prop] + 4].push(func(models.log_fit, day))
-				raw[index[prop] + 4].push(func(data.fit[prop], day));
+	chart.update();
+}
+
+function add_lstm_predictor({y}) {
+	reset_predicted_data_datapoints();
+	for (let day = 0; day < y.length; day++) {
+		if (chart_type == "total") {
+			chart.data.datasets[index.predicted].data.push(y[day]);
+		} else {
+			if (day == 0) {
+				chart.data.datasets[index.predicted].data.push(y[0]);
+			} else {
+				chart.data.datasets[index.predicted].data.push(y[day] - y[day - 1]);
 			}
 		}
-		// if (pre != 'd') raw[index.lstm_confirmed] = data.fit.confirmed.y;
-		// else raw[index.lstm_confirmed] = [];
+	}
+	chart.update();
+}
+
+function reset_chart_data() {
+	for (let i in chart.datasets) {
+		chart.datasets[i].data = [];
+	}
+}
+
+function redraw_chart() {
+	set_chart_data(last_added_data);
+}
+
+function set_chart_data(data) {
+	reset_chart_data();
+	last_added_data = data;
+	let datasets = chart.data.datasets;
+
+	// now, we go through each date and fill in any missing dates with a filler
+	let show_predictions = predictor_type != "none";
+	let fixed = fix_data(data, show_predictions);
+
+	chart.data.labels = fixed.days;
+
+	let props = ['confirmed', 'deaths', 'recovered'];
+	if (chart_type == "daily-change") {
+		props = ['dconfirmed', 'ddeaths', 'drecovered'];
+	}
+
+	if (predictor_type == "log") {
+		$.post(
+			"http://coronavision-ml.herokuapp.com/predict/log",
+			{
+				X: last_added_data.entry_date.join(" "),
+				Y: last_added_data.confirmed.join(" ")
+			},
+			(log_predictor_json) => {
+				predictor_type = "log";
+				add_log_predictor(log_predictor_json);
+			},
+			"json"
+		);
+	} else if (predictor_type == "lstm") {
+		$.post(
+			"http://coronavision-ml.herokuapp.com/predict/lstm",
+			{
+				X: last_added_data.entry_date.join(" "),
+				Y: last_added_data.confirmed.join(" ")
+			},
+			(lstm_predictor_json) => {
+				console.log(lstm_predictor_json);
+				predictor_type = "lstm";
+				add_lstm_predictor(lstm_predictor_json);
+			},
+			"json"
+		);
+	}
 	
-		// iterate through the dates for the predicted data
-		//let prop = "confirmed";
+	for (let i in props) {
+		datasets[i].data = smooth_data(fixed.data[props[i]], chart_smoothing);
 	}
-
-	// NUMBER OF SLOTS FOR DATA
-	for (let i in raw) {
-		datasets[i].data = smooth_data(raw[i], CORONA_GLOBALS.smoothing);
-	}
-
-	last_raw = raw;
 
 	chart.update()
 }
@@ -332,15 +337,19 @@ function date_range(start_date, num_days) {
 	return ret;
 }
 
-function deriv(fit, x) {
-	return (predict(fit, x + 0.001) - predict(fit, x)) / 0.001; 
+function deriv_log(fit, x) {
+	return (predict_log(fit, x + 0.001) - predict_log(fit, x)) / 0.001; 
 }
 
-function predict(fit, x) {
+function predict_log(fit, x) {
 	return fit.MAX/(1 + Math.exp(-(x - fit.T_INF)/fit.T_RISE));
 }
 
 function smooth_data(array, smoothing) {
+	if (typeof(array) == "undefined") {
+		return array;
+	}
+
 	// smoothing is too high
 	if (smoothing > array.length - 1) {
 		smoothing = array.length - 1;
@@ -375,8 +384,6 @@ function reload_chart() {
 	
 	let label = generate_name(country, province, admin2);
 
-	let chart = CORONA_GLOBALS.chart;
-
 	let params = {
 		country: country,
 		province: province,
@@ -391,7 +398,7 @@ function reload_chart() {
 		params,
 		function(data) {
 			if (waiting == params) {
-				set_chart_data(data, {});
+				set_chart_data(data);
 				chart.options.title.text = 'Cases in: ' + label;
 				chart.update();
 				waiting = null;
