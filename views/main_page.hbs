@@ -41,26 +41,45 @@
 	<body onload="init()">
 		{{> navbar}}
 		<div class="d-flex flex-column">
-			<div class="scroll box d-flex flex-column">
-				<div id="stats-info" class="lato" style="display: none; font-size: 3rem;">
-					<span id="stats-label" class="font-weight-bold"></span><br/>
-					<span id="stats-confirmed" class="font-weight-bold" style="color: #eb7a34"></span>
-					<span class="stats-label">Confirmed</span><br/>
-					<span id="stats-dconfirmed" class="font-weight-bold" style="color: #ffbe96"></span>
-					<span class="stats-label">New cases today</span><br/>
-					<span id="stats-recovered" class="font-weight-bold text-success"></span>
-					<span class="stats-label">Recoveries</span><br/>
-					<span id="stats-deaths" class="font-weight-bold" style="color: #ff5252"></span>
-					<span class="stats-label">Deaths</span><br/>
-					<span id="stats-serious" class="font-weight-bold" style="color: #b02020"></span>
-					<span class="stats-label">Severe cases</span><br/>
+			<div class="column-container">
+				<div class="box" style="flex: 1;">
+					Date:
+					<select class="custom-input-color form-control my-2" id="date" onchange="update_date()" style="border-radius: 0.25rem;"></select><br/>
+					Region:
+					{{>selectors}}
 				</div>
-			</div>
-			<div class="box">
-				Date:
-				<select class="custom-input-color form-control my-2" id="date" onchange="update_date()" style="border-radius: 0.25rem;"></select><br/>
-				Region:
-				{{>selectors}}
+				<div class="box" style="flex: 1;">
+					<div id="stats-info" class="lato" style="display: none; font-size: 1.5rem;">
+						<span id="stats-label" class="font-weight-bold"></span><br/>
+						<span id="stats-confirmed" class="font-weight-bold" style="color: #eb7a34"></span>
+						<span class="stats-label">Confirmed</span><br/>
+						<span id="stats-dconfirmed" class="font-weight-bold" style="color: #ffbe96"></span>
+						<span class="stats-label">New cases today</span><br/>
+						<span id="stats-recovered" class="font-weight-bold text-success"></span>
+						<span class="stats-label">Recoveries</span><br/>
+						<span id="stats-deaths" class="font-weight-bold" style="color: #ff5252"></span>
+						<span class="stats-label">Deaths</span><br/>
+						<span id="stats-serious" class="font-weight-bold" style="color: #b02020"></span>
+						<span class="stats-label">Severe cases</span><br/>
+					</div>
+				</div>
+				<div class="box" style="flex: 1;">
+					<h3>Sources</h3>
+						<ul>
+					<li>
+						<a href="https://www.worldometers.info/coronavirus/">Worldometers (live country-level data, testing data)</a>
+					</li>
+					<li>
+						<a href="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports">JHU (county-level data for the US, province-level data for Netherlands)</a>
+					</li>
+					<li>
+						<a href="https://bnonews.com/index.php/2020/04/the-latest-coronavirus-cases/">BNO (live state-level data)</a>
+					</li>
+					<li>
+						Local government websites (province-level data)
+					</li>
+				</ul>
+				</div>
 			</div>
 			<table id="datatable" class="data-container">
 				<thead class="border-bottom pos-sticky datatable-head custom-bg">

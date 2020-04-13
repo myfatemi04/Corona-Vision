@@ -173,3 +173,13 @@ code {
 	font-size: 0.75em;
 	font-weight: 800;
 }
+
+.dropdown-item {
+	background-color: var(--color-bg-dark, #212121) !important;
+	color: var(--color-fg-light, #f5f5f5) !important;
+}
+
+.dropdown-item:hover {
+	background-color: #454545 !important;
+	color: var(--color-fg-light, #f5f5f5) !important;
+}

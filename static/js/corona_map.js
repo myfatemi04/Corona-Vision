@@ -85,11 +85,10 @@ let dark_mode_style = [
 ];
 
 let infowindow = null;
-let feature_display = "active"; // can be either: active, confirmed, deaths, or recovered
-let map_type = "total"; // can be either: total, daily-change
+let feature_display = "confirmed"; // can be either: confirmed, deaths, recovered, or dconfirmed
 let circle_colors = {
-	active: "#de7c21",
-	confirmed: "#ebf765",
+	confirmed: "#de7c21",
+	dconfirmed: "#de7c21",
 	deaths: "#f54842",
 	recovered: "#39e639"
 }
@@ -139,12 +138,6 @@ function init_coronamap() {
 }
 
 function init_map() {
-	$("select[name=map-type]").change(
-		function() {
-			map_type = this.value;
-			reload_cases();
-		}
-	);
 	$("select[name=map-display]").change(
 		function() {
 			feature_display = this.value;
@@ -250,8 +243,7 @@ function reload_cases() {
 				infowindow.close();
 			}
 
-			let county_found = false;
-			let feature = (map_type == "daily-change" ? "d" : "") + feature_display;
+			let feature = feature_display;
 			for (let person of JSON.parse(this.responseText)) {
 				if (person[feature] > 0) {
 					let new_marker = new google.maps.Circle({
