@@ -1,9 +1,0 @@
-flask-sqlalchemy
-sqlalchemy
-mysqlclient
-pandas
-flask
-requests
-beautifulsoup4
-scipy
-numpy

@@ -6,12 +6,7 @@ const Handlebars = require('hbs');
 const corona_sql = require('./corona_sql');
 const sqlstring = require('sqlstring');
 
-const ExpressCache = require('express-cache-middleware')
-const cacheManager = require('cache-manager')
-
 const datatables = require('./corona_datatable_back');
-
-const {logfit} = require('./corona_predictor');
 
 datatables.load_country_list();
 
