@@ -18,7 +18,7 @@ function update_stats() {
                 data = data_[0];
                 $("#stats-info").show()
                 $("#stats-label")[0].innerHTML = generate_name(country, province, admin2)
-                for (let prop of ['confirmed', 'recovered', 'deaths', 'dconfirmed', 'serious']) {
+                for (let prop of ['confirmed', 'recovered', 'deaths', 'dconfirmed', 'serious', 'num_tests']) {
                     $("#stats-" + prop)[0].innerHTML = data[prop] == 0 ? "-" : data[prop];
                 }
             } else {

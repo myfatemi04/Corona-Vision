@@ -80,6 +80,8 @@
 						<span class="stats-label">Deaths</span><br/>
 						<span id="stats-serious" class="font-weight-bold" style="color: #b02020"></span>
 						<span class="stats-label">Severe cases</span><br/>
+						<span id="stats-num_tests" class="font-weight-bold" style="color: #2121f5"></span>
+						<span class="stats-label">Number of tests</span><br/>
 					</div>
 					<a href="/sources">Sources</a>
 				</div>
@@ -122,15 +124,15 @@
 						</tr>
 						<tr class="d-flex py-2" style="font-size: 0.9rem;">
 							<th style="flex: 1;">#</th>
-							<th style="flex: 1;">Location</th>
-							<th style="flex: 1;">Confirmed</th>
-							<th style="flex: 1;">New</th>
-							<th style="flex: 1;">Recovered</th>
-							<th style="flex: 1;">Deaths</th>
+							<th style="flex: 4;">Location</th>
+							<th style="flex: 4;">Confirmed</th>
 							{{!-- <th style="flex: 1;">New</th> --}}
-							<th style="flex: 1;">Tests</th>
-							<th style="flex: 1;">Severe</th>
-							<th style="flex: 1;">Source</th>
+							<th style="flex: 2;">Recovered</th>
+							<th style="flex: 2;">Deaths</th>
+							{{!-- <th style="flex: 1;">New</th> --}}
+							{{!-- <th style="flex: 1;">Tests</th> --}}
+							<th style="flex: 2;">Severe</th>
+							{{!-- <th style="flex: 1;">Source</th> --}}
 						</tr>
 					</thead>
 					<tbody id="tablebody">

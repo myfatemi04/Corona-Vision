@@ -4,12 +4,12 @@ let country_list = [];
 let province_list = {};
 
 let COLORS = {
-    confirmed: "#eb7734",
+    confirmed: "#fcba03",
     recovered: "#34eb4f",
     deaths: "#eb3d34",
     active: "#eb8c34",
     tests: "#3440eb",
-    serious: "#bf4b49"
+    serious: "#fc8003"
 };
 
 function nFormatter(num, digits) {
@@ -37,10 +37,6 @@ function table_col(options) {
     let numberString = '-';
     let percentString = '';
 
-    if (options.hasOwnProperty("color")) {
-        color = options.color;
-    }
-
     if (number != 0 && typeof number != 'undefined') {
         if (options.hasOwnProperty("digits")) numberString = nFormatter(number, options.digits);
         else numberString = number;
@@ -53,17 +49,15 @@ function table_col(options) {
             percentString = "(" + percent + "%)";
         }
     }
+    
+    let color = options.color || "#f5f5f5";
+    let flex = options.flex || "2";
+    let fontWeight = options.fontWeight || 800;
 
-    let style = "flex: 1;";
-    if (options.hasOwnProperty("style")) {
-        style = options.style;
-    }
+    let style = `color: ${color}; flex: ${flex}; font-weight: ${fontWeight};`;
+    style += "" || options.style;
 
-    if (options.hasOwnProperty("color")) {
-        style = "color: " + options.color + ";" + style;
-    }
-
-    return `<td class="mx-1" style="${style}">${numberString} ${percentString}</td>`;
+    return `<td class="mx-1" style='${style}'>${numberString} ${percentString}</td>`;
 }
 
 let ico = ""; // <i class="fas fa-angle-right"></i>
@@ -122,7 +116,7 @@ module.exports = {
             html = `
             <tr>
                 <td class="mx-1" style="flex: 1;"></td>
-                <td class="mx-1" style="flex: 1;">
+                <td class="mx-1" style="flex: 2;">
                     ${(province == '' || province == 'all' ? deselect_country_link : (admin2 == '' || admin2 == 'all' ? deselect_province_link : deselect_admin2_link))}
                 </td>
             </tr>`;
@@ -155,16 +149,16 @@ module.exports = {
             }
 
             let table_cols = [
-                {number: i, style: "flex: 1; color: #f5f5f5;"},
-                {number: label_link},
-                {number: datapoint.confirmed, color: COLORS.confirmed, style: "flex: 1; font-weight: 800;"},
-                {number: datapoint.dconfirmed, denom: datapoint.confirmed, color: COLORS.confirmed},
-                {number: datapoint.recovered, denom: datapoint.confirmed, color: COLORS.recovered},
-                {number: datapoint.deaths, denom: datapoint.confirmed, color: COLORS.deaths},
+                {number: i, flex: 1, color: "#f5f5f5"},
+                {number: label_link, flex: 4},
+                {number: datapoint.confirmed + " (+" + datapoint.dconfirmed + ")", color: COLORS.confirmed, flex: 4},
+                //{number: datapoint.dconfirmed, color: COLORS.confirmed},
+                {number: datapoint.recovered, color: COLORS.recovered},
+                {number: datapoint.deaths, color: COLORS.deaths},
                 //{number: datapoint.ddeaths, denom: datapoint.deaths, color: COLORS.deaths},
-                {number: datapoint.num_tests, customNumer: datapoint.confirmed, denom: datapoint.num_tests, digits: 2, color: COLORS.tests},
-                {number: datapoint.serious, denom: datapoint.confirmed, color: COLORS.serious},
-                {number: "<a href=" + datapoint.source_link + ">Source</a>", style: "flex: 1;"}
+                // {number: datapoint.num_tests, digits: 2, color: COLORS.tests},
+                {number: datapoint.serious, color: COLORS.serious},
+                // {number: "<a href=" + datapoint.source_link + ">Source</a>", style: "flex: 1;"}
             ];
 
             let tr = `<tr class="datatable-row" data-label="${label}">`;
