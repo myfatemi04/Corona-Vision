@@ -3,20 +3,47 @@
 	<head>
 		<title>Corona Vision - Data by Country</title>
 		{{> styles}}
+		<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
 		<script src="/js/corona_datatables.js"></script>
 		<script src="/js/corona_globals.js"></script>
+		<script src="/js/corona_chart.js"></script>
 		<script src="/js/corona_stats.js"></script>
-		<script src="/js/selector.js"></script>
 		<script src="/js/corona_util.js"></script>
+		<script src="/js/selector.js"></script>
 		<script>
 			function init() {
-				CORONA_GLOBALS.reload_function = update_date;
+				chart = new_chart("chart");
+				init_chart_options();
 				init_dates();
 			}
 
-			function update_date() {
+			function update() {
+				reload_data();  // corona_datatables.js
+				update_stats(); // corona_stats.js
+ 				reload_chart(); // corona_chart.js
+			}
+
+			function update_nochart() {
 				reload_data();
 				update_stats();
+			}
+
+			function prev_day() {
+				let date_elem = $("#date")[0];
+				if (date_elem.selectedIndex < date_elem.length - 1) {
+					date_elem.selectedIndex += 1;
+				}
+				$("#date").trigger("change");
+				$("#date-label")[0].innerHTML = $("#date option:selected")[0].innerHTML;
+			}
+
+			function next_day() {
+				let date_elem = $("#date")[0];
+				if (date_elem.selectedIndex > 0) {
+					date_elem.selectedIndex -= 1;
+				}
+				$("#date").trigger("change");
+				$("#date-label")[0].innerHTML = $("#date option:selected")[0].innerHTML;
 			}
 
 			function init_dates() {
@@ -28,11 +55,9 @@
 							$("#date")[0].innerHTML += `<option value="${result.entry_date}">${result.entry_date == "live" ? "Live data" : result.entry_date}</option>`;
 						}
 						
-						init_selectors();
+						init_selectors(update, 0);
 						init_stats_panel();
-
-						CORONA_GLOBALS.reload_function = update_date;
-						update_date();
+						update();
 					}
 				)
 			}
@@ -42,13 +67,7 @@
 		{{> navbar}}
 		<div class="d-flex flex-column">
 			<div class="column-container">
-				<div class="box" style="flex: 1;">
-					Date:
-					<select class="custom-input-color form-control my-2" id="date" onchange="update_date()" style="border-radius: 0.25rem;"></select><br/>
-					Region:
-					{{>selectors}}
-				</div>
-				<div class="box" style="flex: 1;">
+				<div class="box">
 					<div id="stats-info" class="lato" style="display: none; font-size: 1.5rem;">
 						<span id="stats-label" class="font-weight-bold"></span><br/>
 						<span id="stats-confirmed" class="font-weight-bold" style="color: #eb7a34"></span>
@@ -62,49 +81,63 @@
 						<span id="stats-serious" class="font-weight-bold" style="color: #b02020"></span>
 						<span class="stats-label">Severe cases</span><br/>
 					</div>
+					<a href="/sources">Sources</a>
 				</div>
 				<div class="box" style="flex: 1;">
-					<h3>Sources</h3>
-						<ul>
-					<li>
-						<a href="https://www.worldometers.info/coronavirus/">Worldometers (live country-level data, testing data)</a>
-					</li>
-					<li>
-						<a href="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports">JHU (county-level data for the US, province-level data for Netherlands)</a>
-					</li>
-					<li>
-						<a href="https://bnonews.com/index.php/2020/04/the-latest-coronavirus-cases/">BNO (live state-level data)</a>
-					</li>
-					<li>
-						Local government websites (province-level data)
-					</li>
-				</ul>
+					Date:
+					<select class="custom-input-color form-control my-2" id="date" onchange="update_nochart()" style="border-radius: 0.25rem;"></select><br/>
+					Region:
+					{{>selectors}}
 				</div>
 			</div>
-			<table id="datatable" class="data-container">
-				<thead class="border-bottom pos-sticky datatable-head custom-bg">
-					<tr class="d-flex py-2">
-						<th style="flex: 1;">
-							<input type="text" onkeyup="filter_table()" class="custom-input-color small-input" placeholder="Search for location" id="locationSearch">
-						</th>
-					</tr>
-					<tr class="d-flex py-2" style="font-size: 0.9rem;">
-						<th style="flex: 0.5;">#</th>
-						<th style="flex: 1;">Location</th>
-						<th style="flex: 0.5;">Confirmed</th>
-						<th style="flex: 1;">New</th>
-						<th style="flex: 1;">Recovered</th>
-						<th style="flex: 1;">Deaths</th>
-						<th style="flex: 1;">New</th>
-						<th style="flex: 1;">Tests</th>
-						<th style="flex: 1;">Serious cases</th>
-						<th style="flex: 0.5;">Source</th>
-					</tr>
-				</thead>
-				<tbody id="tablebody">
-					
-				</tbody>
-			</table>
+			<div class="column-container">
+				<div id="chart-container" class="box d-flex flex-column" style="flex: 1; height: 50em;">
+					<canvas id="chart"></canvas>
+					<a id="download-chart" style="display: none;"></a>
+					<button class="btn custom-button-color my-2" onclick="download_canvas()">
+						Save Image
+					</button>
+					{{>chart_options}}
+					<a href="/charts_info">More info about the charts</a>
+				</div>
+				<table id="datatable" class="data-container" style="flex: 1; height: 50em;">
+					<thead class="border-bottom pos-sticky datatable-head custom-bg">
+						<tr class="d-flex py-2">
+							<th style="flex: 2;">
+								<input type="text" onkeyup="filter_table()" class="custom-input-color small-input" placeholder="Search for location" id="locationSearch">
+							</th>
+							<th style="flex: 1;">
+								<a href="javascript:prev_day()">
+									Previous day
+								</a>
+							</th>
+							<th style="flex: 1;" id="date-label">
+								
+							</th>
+							<th style="flex: 1;">
+								<a href="javascript:next_day()">
+									Next day
+								</a>
+							</th>
+						</tr>
+						<tr class="d-flex py-2" style="font-size: 0.9rem;">
+							<th style="flex: 1;">#</th>
+							<th style="flex: 1;">Location</th>
+							<th style="flex: 1;">Confirmed</th>
+							<th style="flex: 1;">New</th>
+							<th style="flex: 1;">Recovered</th>
+							<th style="flex: 1;">Deaths</th>
+							{{!-- <th style="flex: 1;">New</th> --}}
+							<th style="flex: 1;">Tests</th>
+							<th style="flex: 1;">Severe</th>
+							<th style="flex: 1;">Source</th>
+						</tr>
+					</thead>
+					<tbody id="tablebody">
+						
+					</tbody>
+				</table>
+			</div>
 		</div>
 	</body>
 </html>

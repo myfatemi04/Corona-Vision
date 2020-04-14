@@ -29,9 +29,5 @@ function update_stats() {
 }
 
 function init_stats_panel() {
-    CORONA_GLOBALS.reload_function = function() {
-        update_stats();
-    };
-
     update_stats();
 }

@@ -22,10 +22,8 @@
 						}
 						
 						chart = new_chart("chart");
-						CORONA_GLOBALS.reload_function = reload_chart;
-						CORONA_GLOBALS.need_child = 0;
 						init_chart_options();
-						init_selectors();
+						init_selectors(reload_chart, 0);
 						reload_chart();
 					}
 				)
@@ -36,8 +34,8 @@
 		{{>navbar}}
 		<div class="container p-2">
 			<div class="box d-flex flex-column">
-				<a id="download-chart" style="display: none;"></a>
 				<canvas id="chart"></canvas>
+				<a id="download-chart" style="display: none;"></a>
 				<button class="btn custom-button-color my-2" onclick="download_canvas()">
 					Save Image
 				</button>

@@ -8,7 +8,7 @@ const sqlstring = require('sqlstring');
 
 const datatables = require('./corona_datatable_back');
 
-datatables.load_country_list();
+// datatables.load_country_list();
 
 Handlebars.registerPartial("navbar", fs.readFileSync("views/navbar.hbs", "utf-8"));
 Handlebars.registerPartial("styles", fs.readFileSync("views/styles.hbs", "utf-8"));
@@ -31,6 +31,10 @@ app.get("/", (req, res) => {
 
 app.get("/charts", (req, res) => {
     res.render("charts");
+});
+
+app.get("/charts_info", (req, res) => {
+    res.render("charts_info");
 });
 
 app.get("/map", (req, res) => {
@@ -62,7 +66,7 @@ app.get("/cases/totals_table", (req, res) => {
 
     get_sql(query, key="table_" + query).then(
         content => {
-            res.send(datatables.make_rows(content, entry_date, country, province));
+            res.send(datatables.make_rows(content, country, province, admin2));
         }
     );
 });

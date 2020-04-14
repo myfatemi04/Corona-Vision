@@ -35,12 +35,12 @@ function add_selector_items(id, head, country_list) {
     }
 }
 
-function init_selectors() {
+function init_selectors(after_change, need_child) {
     $.getJSON(
         "/list/countries",
         {
             date: $("#date")[0].value,
-            need_province: CORONA_GLOBALS.need_child
+            need_province: need_child
         },
         function(data) {
             CORONA_GLOBALS.country_list = data.map(({country}) => country);
@@ -68,20 +68,20 @@ function init_selectors() {
                         {
                             country: country,
                             date: $("#date")[0].value,
-                            need_admin2: CORONA_GLOBALS.need_child
+                            need_admin2: need_child
                         },
                         function(data) {
                             CORONA_GLOBALS.province_list[country] = data.map(({province}) => province);
                             add_selector_items("province-selector", province_head, CORONA_GLOBALS.province_list[country]);
-                            CORONA_GLOBALS.reload_function();
+                            after_change();
                         }
                     )
                 } else {
                     add_selector_items("province-selector", province_head, CORONA_GLOBALS.province_list[country]);
-                    CORONA_GLOBALS.reload_function();
+                    after_change();
                 }
             } else {
-                CORONA_GLOBALS.reload_function();
+                after_change();
             }
         }
     );
@@ -109,15 +109,15 @@ function init_selectors() {
                         function(data) {
                             CORONA_GLOBALS.admin2_list[country][province] = data.map(({admin2}) => admin2);
                             add_selector_items("admin2-selector", admin2_head, CORONA_GLOBALS.admin2_list[country][province]);
-                            CORONA_GLOBALS.reload_function();
+                            after_change();
                         }
                     );
                 } else {
                     add_selector_items("admin2-selector", admin2_head, CORONA_GLOBALS.admin2_list[country][province]);
-                    CORONA_GLOBALS.reload_function();
+                    after_change();
                 }
             } else {
-                CORONA_GLOBALS.reload_function();
+                after_change();
             }
         }
     );
@@ -125,8 +125,7 @@ function init_selectors() {
     $("#admin2-selector").change(
         function() {
             CORONA_GLOBALS.admin2 = $("#admin2-selector")[0].value;
-            
-            CORONA_GLOBALS.reload_function();
+            after_change();
         }
     );
 }
