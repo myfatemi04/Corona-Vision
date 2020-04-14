@@ -5,11 +5,13 @@ const fs = require('fs');
 const Handlebars = require('hbs');
 const corona_sql = require('./corona_sql');
 const sqlstring = require('sqlstring');
+const NewsAPI = require('newsapi');
+
+const newsapi = new NewsAPI(process.env.NEWS_API_KEY);
 
 const datatables = require('./corona_datatable_back');
 
-// datatables.load_country_list();
-
+/* Register the "partials" - handlebars templates that can be included in other templates */
 Handlebars.registerPartial("navbar", fs.readFileSync("views/navbar.hbs", "utf-8"));
 Handlebars.registerPartial("styles", fs.readFileSync("views/styles.hbs", "utf-8"));
 Handlebars.registerPartial("selectors", fs.readFileSync("views/selectors.hbs", "utf-8"));
@@ -18,29 +20,42 @@ Handlebars.registerPartial("map_panel", fs.readFileSync("views/map_panel.hbs", "
 
 app = express();
 
+/* Static data url */
 app.use(express.static('static'));
+
+/* For POST request body */
 app.use(bodyparser.urlencoded({
     extended: true
 }));
 
+/* Use Handlebars */
 app.set('view engine', 'hbs');
 
+/* Main Page
+ * The Main Page includes charts, data tables, and live stats */
 app.get("/", (req, res) => {
     res.render("main_page");
 });
 
+/* Chart Page
+ * The Chart Page includes customizable chart with LSTM and Logistic predictions */
 app.get("/charts", (req, res) => {
     res.render("charts");
 });
 
+/* Technical info about the charts */
 app.get("/charts_info", (req, res) => {
     res.render("charts_info");
 });
 
+/* Map Page
+ * The Map Page includes a map of the most recent cases, to the state level. */
 app.get("/map", (req, res) => {
     res.render("map");
 });
 
+/* Totals Table (backend)
+ * Provides an HTML table that can be inserted into the main page */
 app.get("/cases/totals_table", (req, res) => {
     let params = req.query;
 
@@ -71,6 +86,8 @@ app.get("/cases/totals_table", (req, res) => {
     );
 });
 
+/* Totals API
+ * This provides results for a given country, province, or county */
 app.get("/cases/totals", (req, res) => {
     let params = req.query;
 
@@ -99,6 +116,8 @@ app.get("/cases/totals", (req, res) => {
     );
 });
 
+/* Totals Sequence API
+ * Gives the most recent data, with missing dates __not__ filled in (yet) */
 app.get("/cases/totals_sequence", (req, res) => {
     let params = req.query;
 
@@ -140,35 +159,12 @@ app.get("/cases/totals_sequence", (req, res) => {
             }
 
             res.json(resp);
-
-            // resp.fit = {};
-
-            // let num_fit = 0;
-            
-            // for (let label of ['confirmed', 'deaths', 'recovered']) {
-            //     logfit(label + ":" + admin2 + ", " + province + ", " + country, resp.entry_date.join(" "), resp[label].join(" ")).then(
-            //         (data) => {
-            //             resp.fit[label] = data;
-            //             num_fit += 1;
-
-            //             // if it's the last one
-            //             if (num_fit == 3) res.json(resp);
-            //         }
-            //     ).catch(
-            //         (err) => {
-            //             resp.fit[label] = {"MAX": 0, "T_INF": 0, "T_RISE": 1, "x": X, "y": Y};
-            //             num_fit += 1;
-            //             // if it's the last one
-            //             if (num_fit == 3) res.json(resp);
-            //             //data => res.json(resp);
-            //         }
-            //     );
-            // }
         }
     );
 
 });
 
+/* Countries API - returns a list of all countries for a given date */
 app.get("/list/countries", (req, res) => {
     let params = req.query;
     let entry_date = get(params, "date") || "live";
@@ -189,6 +185,7 @@ app.get("/list/countries", (req, res) => {
     );
 });
 
+/* Provinces API - gives a list of provinces for a given country and date */
 app.get("/list/provinces", (req, res) => {
     let params = req.query;
 
@@ -209,6 +206,7 @@ app.get("/list/provinces", (req, res) => {
     );
 });
 
+/* County API - gives a list of counties for a given country, province, and date */
 app.get("/list/admin2", (req, res) => {
     let params = req.query;
 
@@ -223,6 +221,7 @@ app.get("/list/admin2", (req, res) => {
     );
 });
 
+/* Dates API - list all dates that we have on record */
 app.get("/list/dates", (req, res) => {
     let query = "select distinct entry_date from datapoints order by entry_date desc";
 
@@ -231,6 +230,7 @@ app.get("/list/dates", (req, res) => {
     );
 });
 
+/* First Days API - returns the stats for each country on the first day of infection */
 app.get("/cases/first_days", (req, res) => {
     let query = sqlstring.format("select * from datapoints where is_first_day = true order by entry_date;");
     get_sql(query).then(
@@ -238,6 +238,7 @@ app.get("/cases/first_days", (req, res) => {
     );
 });
 
+/* Cases-by-date API - returns all cases (with a labelled location) for a given date. Used by the map */
 app.get("/cases/date", (req, res) => {
     let entry_date = get(req.query, "date") || "live";
     let query = sqlstring.format("select * from datapoints where entry_date = ? and location_accurate = true and admin2 = ''", entry_date);
@@ -246,26 +247,81 @@ app.get("/cases/date", (req, res) => {
     );
 });
 
+/* What To Do Page - gives information about how to make homemade masks, general social distancing tips,
+ * and organizations that you can donate to to help healthcare workers. */
 app.get("/whattodo", (req, res) => {
     res.render("whattodo");
 });
 
-app.get("/recent", (req, res) => {
-    res.render("recent");
+function removeDuplicateArticles(articles) {
+    let seen_urls = {};
+    let new_articles = [];
+    for (let article of articles) {
+        if (!(article.url in seen_urls)) {
+            new_articles.push(article);
+            seen_urls[article.url] = 1;
+        }
+    }
+    return new_articles;
+}
+
+/* Recent Page - recent news about COVID-19 from the News API */
+let recent_news = {};
+app.get("/news", (req, res) => {
+    let possible_categories = ['business', 'entertainment', 'general', 'health', 'science', 'sports', 'technology'];
+    let category = req.query['category'] || "general";
+    if (!possible_categories.includes(category)) {
+        category = "general";
+    }
+
+    /* 1000 ms/s * 60 s/m * 60 m/h * 1 h --> 1 hour cache age */
+    let newsCacheExists = category in recent_news;
+    if (newsCacheExists) {
+        let newsCacheShouldBeUpdated = Date.now() - recent_news[category].update_time > 1000 * 60 * 60 * 1;
+        if (!newsCacheShouldBeUpdated) {
+            res.render("news", {articles: recent_news[category].articles});
+            return;
+        }
+    }
+    
+    newsapi.v2.topHeadlines({
+        q: 'coronavirus',
+        language: 'en',
+        country: 'us',
+        category: category
+    }).then(
+        response => {
+            recent_news[category] = {
+                articles: removeDuplicateArticles(response.articles),
+                update_time: Date.now()
+            }
+            res.render("news", {articles: recent_news[category].articles.slice(0, 10)});
+        }
+    ).catch(
+        response => {
+            console.log("There was an error during the News API! ", response);
+            res.render("news", {articles: []});
+        }
+    );
 });
 
+/* History Page - lists the first days */
 app.get("/history", (req, res) => {
     res.render("spread_history");
 });
 
+/* Contact Page - lists ways you can reach us for feedback or feature requests */
 app.get("/contact", (req, res) => {
     res.render("contact");
 });
 
+/* Simulate Curve Page - would let you input the population, healthcare system capacity,
+ * and growth rate of the virus. We aren't sure if we should do it yet though. */
 app.get("/simulate/curve", (req, res) => {
     res.render("simulate_curve");
 });
 
+/* Sources Page - lists the sources we use (Worldometers, BNO news, JHU, covid.iscii.es, etc.) */
 app.get("/sources", (req, res) => {
     res.render("sources");
 });

@@ -55,7 +55,7 @@ function table_col(options) {
     let fontWeight = options.fontWeight || 800;
 
     let style = `color: ${color}; flex: ${flex}; font-weight: ${fontWeight};`;
-    style += "" || options.style;
+    style += options.style || "";
 
     return `<td class="mx-1" style='${style}'>${numberString} ${percentString}</td>`;
 }
