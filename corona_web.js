@@ -250,7 +250,7 @@ app.get("/cases/date", (req, res) => {
 app.get("/geojson", (req, res) => {
     let entry_date = req.query['date'] || 'live';
     let feature = req.query['feature'] || 'confirmed';
-    let query = sqlstring.format("select * from datapoints where entry_date = ? and location_accurate = true and admin2 = '' and country != ''", entry_date);
+    let query = sqlstring.format("select * from datapoints where entry_date = ? and location_accurate = true and admin2 = '' and country != '' and confirmed > 10", entry_date);
     get_sql(query).then(
         content => res.json(geojson(content, feature))
     );
@@ -369,8 +369,12 @@ app.get("/sources", (req, res) => {
     res.render("sources");
 });
 
+app.get("/test-gcloud", (req, res) => {
+    res.send("Domain is directed to Google Cloud App Engine");
+});
+
 const hostname = '0.0.0.0';
-const port = process.argv[2] || 4040;
+const port = process.env.PORT || 4040;
 
 function get(params, field) {
     if (field in params) return params[field];
