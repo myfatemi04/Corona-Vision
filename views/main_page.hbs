@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Corona Vision - Data by Country</title>
+		<title>Corona Vision</title>
 		{{> styles}}
 		<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
 		<script src="/js/corona_datatables.js"></script>
@@ -100,7 +100,9 @@
 						Save Image
 					</button>
 					{{>chart_options}}
-					<a href="/charts_info">More info about the charts</a>
+					<div>
+						<a href="/charts_info">More info about the charts</a>
+					</div>
 				</div>
 				<table id="datatable" class="data-container" style="flex: 1; height: 50em;">
 					<thead class="border-bottom pos-sticky datatable-head custom-bg">

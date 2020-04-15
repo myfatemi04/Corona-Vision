@@ -16,7 +16,7 @@ Handlebars.registerPartial("navbar", fs.readFileSync("views/navbar.hbs", "utf-8"
 Handlebars.registerPartial("styles", fs.readFileSync("views/styles.hbs", "utf-8"));
 Handlebars.registerPartial("selectors", fs.readFileSync("views/selectors.hbs", "utf-8"));
 Handlebars.registerPartial("chart_options", fs.readFileSync("views/chart_options.hbs", "utf-8"));
-Handlebars.registerPartial("map_panel", fs.readFileSync("views/map_panel.hbs", "utf-8"));
+// Handlebars.registerPartial("map_panel", fs.readFileSync("views/map_panel.hbs", "utf-8"));
 
 app = express();
 
@@ -241,11 +241,54 @@ app.get("/cases/first_days", (req, res) => {
 /* Cases-by-date API - returns all cases (with a labelled location) for a given date. Used by the map */
 app.get("/cases/date", (req, res) => {
     let entry_date = get(req.query, "date") || "live";
-    let query = sqlstring.format("select * from datapoints where entry_date = ? and location_accurate = true and admin2 = ''", entry_date);
+    let query = sqlstring.format("select * from datapoints where entry_date = ? and location_accurate = true and admin2 = '' and country != ''", entry_date);
     get_sql(query).then(
         content => res.json(content)
     );
 });
+
+app.get("/geojson", (req, res) => {
+    let entry_date = req.query['date'] || 'live';
+    let feature = req.query['feature'] || 'confirmed';
+    let query = sqlstring.format("select * from datapoints where entry_date = ? and location_accurate = true and admin2 = '' and country != ''", entry_date);
+    get_sql(query).then(
+        content => res.json(geojson(content, feature))
+    );
+});
+
+function to_radius(feature) {
+    if(feature < 2)
+        return 2
+    else
+        return 2 * (Math.log10(feature))
+}
+
+function geojson(content, feature) {
+    let feature_list = [];
+    for (let datapoint of content) {
+        let name = datapoint.country || "World";
+        if (datapoint.province) name = datapoint.province + ", " + name;
+        if (datapoint.admin2) name = datapoint.admin2 + ", " + name;
+        feature_list.push({
+            id: name,
+            type: "Feature",
+            properties: {
+                radius: to_radius(datapoint[feature]),
+                name: name,
+                ...datapoint
+            },
+            geometry: {
+                coordinates: [datapoint.longitude, datapoint.latitude],
+                type: 'Point'
+            }
+        });
+    }
+    return {
+        type: "FeatureCollection",
+        features: feature_list
+    };
+
+}
 
 /* What To Do Page - gives information about how to make homemade masks, general social distancing tips,
  * and organizations that you can donate to to help healthcare workers. */

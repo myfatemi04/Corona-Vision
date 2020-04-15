@@ -3,17 +3,92 @@
 	<head>
 		<title>Corona Vision - Coronavirus Map</title>
 		{{>styles}}
-		<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
-		<script src="/js/corona_globals.js"></script>
-		<script src="/js/corona_stats.js"></script>
-		<script src="/js/corona_map.js"></script>
 
-		<script async defer
-		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAMm-5SUX6ELt2KfUfEF49RpvgRIj8J6w4&callback=init_coronamap">
-		</script>
+		{{!-- Mapbox --}}
+		<link href='https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css' rel='stylesheet' />
+		<script src='https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js'></script>
 
 		<script>
-			function init() {
+			let circle_colors = {
+				confirmed: "#de7c21",
+				dconfirmed: "#de7c21",
+				deaths: "#f54842",
+				recovered: "#39e639"
+			};
+
+			let options = {
+				date: "live",
+				feature: "confirmed"
+			};
+
+			let map = null;
+
+			function update_source() {
+				let date = options.date;
+				let feature = options.feature;
+				map.setPaintProperty('confirmed-layer', 'circle-color', circle_colors[feature]);
+				map.getSource('confirmed').setData(`/geojson?date=${date}&feature=${feature}`);
+			}
+
+			function popup_html(data) {
+				let formatted = `
+				<div class="lato infowindow">
+					<code><b>${data.name}</b></code><br/>
+					<code><b>Confirmed:</b> ${data.confirmed} (+${data.dconfirmed})</code><br/>
+					<code><b>Active:</b> ${data.active} (+${data.dactive})</code><br/>
+					<code><b>Deaths:</b> ${data.deaths} (+${data.ddeaths})</code><br/>
+					<code><b>Recoveries:</b> ${data.recovered} (+${data.drecovered})</code><br/>
+				</div>
+				`;
+				return formatted;
+			}
+
+			function init()  {
+				mapboxgl.accessToken = 'pk.eyJ1IjoibXlmYXRlbWkwNCIsImEiOiJjazkwZ2podXQwMWtnM21ucGNmOHp0Z2F2In0.ug8iItUIT1dWaoHaYY2B3A';
+				map = new mapboxgl.Map({
+					container: 'map',
+					style: 'mapbox://styles/myfatemi04/ck90gnq0z07ha1iqvvzjfflbm',
+					interactive: true,
+					center: [0, 0],
+					zoom: 1,
+					minZoom: 0
+				})
+				
+				map.on('load', () => {
+					map.addSource('confirmed', {
+						type: 'geojson',
+						data: '/geojson?date=live'
+					});
+					map.addLayer({
+						'id': 'confirmed-layer',
+						'type': 'circle',
+						'source': 'confirmed',
+						'paint': {
+							'circle-color': circle_colors.confirmed,
+							'circle-radius': ['get', 'radius'],
+							'circle-opacity': 0.8
+						}
+					});
+				});
+
+				map.on('click', 'confirmed-layer', (e) => {
+					let feature = e.features[0];
+					new mapboxgl.Popup()
+						.setLngLat(e.lngLat)
+						.setHTML(popup_html(feature.properties))
+						.addTo(map);
+				});
+
+				$("select[name=map-date]").change(function() {
+					options.date = $("select[name=map-date]").val();
+					update_source();
+				});
+
+				$("select[name=map-feature]").change(function() {
+					options.feature = $("select[name=map-feature]").val();
+					update_source();
+				});
+
 				init_dates();
 			}
 
@@ -23,9 +98,8 @@
 					{},
 					(data) => {
 						for (let result of data) {
-							if (result.entry_date != 'live') $("#date")[0].innerHTML += `<option value="${result.entry_date}">${result.entry_date == "live" ? "Live map" : result.entry_date}</option>`;
+							$("#date")[0].innerHTML += `<option value="${result.entry_date}">${result.entry_date == "live" ? "Live map" : result.entry_date}</option>`;
 						}
-						init_map();
 					}
 				)
 			}
@@ -33,12 +107,23 @@
 	</head>
 	<body onload="init()">
 		{{>navbar}}
-		<!-- Map and charts -->
-		<div class="container-fluid dashboard-container p-2">
-			<!-- Map -->
-			<div class="mx-2 scroll box" style="flex: 3;">
-				{{>map_panel}}
+		<div class="scroll box">
+			<h3>Map</h3>
+			Source: Johns Hopkins University, BNO News, Worldometers. This is <b>not</b> a duplicate of the JHU map.
+			<div class="d-flex flex-column">
+				<noscript>
+					This website requires JavaScript to run.
+				</noscript>
+				<select name="map-feature" class="custom-input-color form-control my-2">
+					<option value="confirmed">Confirmed cases</option>
+					<option value="recovered">Recovered cases</option>
+					<option value="deaths">Deaths</option>
+					<option value="dconfirmed">24H Change in confirmed cases</option>
+				</select>
+				<select name="map-date" class="custom-input-color form-control my-2" id="date" >
+				</select>
 			</div>
+			<div id="map" class="map my-2"></div>
 		</div>
 	</body>
 </html>

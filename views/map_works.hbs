@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Corona Vision - Coronavirus Map</title>
+		{{>styles}}
+		<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+		<script src="/js/corona_globals.js"></script>
+		<script src="/js/corona_stats.js"></script>
+		<script src="/js/corona_map.js"></script>
+
+		<script async defer
+		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAMm-5SUX6ELt2KfUfEF49RpvgRIj8J6w4&callback=init_coronamap">
+		</script>
+
+		<script>
+			function init() {
+				init_dates();
+			}
+
+			function init_dates() {
+				$.getJSON(
+					"/list/dates",
+					{},
+					(data) => {
+						for (let result of data) {
+							if (result.entry_date != 'live') $("#date")[0].innerHTML += `<option value="${result.entry_date}">${result.entry_date == "live" ? "Live map" : result.entry_date}</option>`;
+						}
+						init_map();
+					}
+				)
+			}
+		</script>
+	</head>
+	<body onload="init()">
+		{{>navbar}}
+		<!-- Map and charts -->
+		<div class="container-fluid dashboard-container p-2">
+			<!-- Map -->
+			<div class="mx-2 scroll box" style="flex: 3;">
+				{{>map_panel}}
+			</div>
+		</div>
+	</body>
+</html>
