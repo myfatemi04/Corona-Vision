@@ -168,9 +168,11 @@ app.get("/cases/totals_sequence", (req, res) => {
                     resp[label].push(content[i][label]);
                 }
 
-                // we don't increment the data index if the date isn't found
-                if (utc_iso(day) == content[i].entry_date) i += 1;
+                // we don't increment the data index if the next date isn't found
                 day.setUTCDate(day.getUTCDate() + 1);
+                if (i + 1 < content.length) {
+                    if (utc_iso(day) == content[i + 1].entry_date) i += 1;
+                }
             }
 
             res.json(resp);
