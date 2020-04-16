@@ -258,7 +258,7 @@ app.get("/cases/first_days", (req, res) => {
 /* Cases-by-date API - returns all cases (with a labelled location) for a given date. Used by the map */
 app.get("/cases/date", (req, res) => {
     let entry_date = get(req.query, "date") || "live";
-    let query = sqlstring.format("select * from datapoints where entry_date = ? and location_accurate = true and admin2 = '' and country != ''", entry_date);
+    let query = sqlstring.format("select * from datapoints where entry_date = ? and latitude != 0 and longitude != 0 and admin2 = '' and country != ''", entry_date);
     get_sql(query).then(
         content => res.json(content)
     );
@@ -267,7 +267,7 @@ app.get("/cases/date", (req, res) => {
 app.get("/geojson", (req, res) => {
     let entry_date = req.query['date'] || 'live';
     let feature = req.query['feature'] || 'confirmed';
-    let query = sqlstring.format("select * from datapoints where entry_date = ? and location_accurate = true and admin2 = '' and country != '' and confirmed > 10", entry_date);
+    let query = sqlstring.format("select * from datapoints where entry_date = ? and latitude != 0 and longitude != 0 and admin2 = '' and country != '' and confirmed > 10", entry_date);
     get_sql(query).then(
         content => res.json(geojson(content, feature))
     );

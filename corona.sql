@@ -13,9 +13,7 @@ create table datapoints (
 	
 	latitude float(10, 6) default 0,
 	longitude float(10, 6) default 0,
-
-	location_labelled boolean default false,
-	location_accurate boolean default false,
+	
 	is_first_day boolean default false,
 	is_primary boolean default false,
 	
