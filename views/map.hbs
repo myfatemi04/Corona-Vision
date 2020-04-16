@@ -12,35 +12,43 @@
 			let isTouchDevice = 'ontouchstart' in document.documentElement;
 			let circle_colors = {
 				confirmed: {
-					property: 'radius',
+					property: 'confirmed',
 					type: 'exponential',
 					stops: [
-						[0, '#ffff00'],
-						[10, '#ff0000'],
+						[1e0, '#ffff00'],
+						[1e3, '#ffaa00'],
+						[1e6, '#ff6600'],
+						[1e9, '#ff0000'],
 					]
 				},
 				dconfirmed: {
-					property: 'radius',
+					property: 'dconfirmed',
 					type: 'exponential',
 					stops: [
-						[0, '#ffff00'],
-						[10, '#ff0000'],
+						[1e0, '#ffff00'],
+						[1e3, '#ffaa00'],
+						[1e6, '#ff6600'],
+						[1e9, '#ff0000'],
 					]
 				},
 				deaths: {
-					property: 'radius',
+					property: 'deaths',
 					type: 'exponential',
 					stops: [
-						[0, '#ffaa00'],
-						[10, '#aa0000'],
+						[1e0, '#ffaa00'],
+						[1e3, '#ff6600'],
+						[1e6, '#ff3300'],
+						[1e9, '#ff0000'],
 					]
 				},
 				recovered: {
-					property: 'radius',
+					property: 'recovered',
 					type: 'exponential',
 					stops: [
-						[0, 'rgba(0, 255, 0, 0)'],
-						[10, 'rgba(0, 255, 0, 1)'],
+						[1e0, 'rgba(0, 255, 0, 0.5)'],
+						[1e3, 'rgba(0, 255, 0, 0.75)'],
+						[1e6, 'rgba(0, 255, 0, 1)'],
+						[1e9, 'rgba(0, 255, 0, 1)'],
 					]
 				}
 			};
@@ -56,11 +64,15 @@
 				closeOnClick: true
 			});
 
-			function update_source() {
-				let date = options.date;
+			function update_feature() {
 				let feature = options.feature;
 				map.setPaintProperty('confirmed-layer', 'circle-color', circle_colors[feature]);
-				map.getSource('confirmed').setData(`/geojson?date=${date}&feature=${feature}`);
+				map.setPaintProperty('confirmed-layer', 'circle-radius', ['*', 2, ['log10', ['get', feature]]]);
+			}
+
+			function update_date() {
+				let date = options.date;
+				map.getSource('confirmed').setData(`/geojson?date=${date}`);
 			}
 
 			function popup_html(data) {
@@ -97,15 +109,8 @@
 						'type': 'circle',
 						'source': 'confirmed',
 						'paint': {
-							'circle-color': {
-								property: 'radius',
-								type: 'exponential',
-								stops: [
-									[0, '#ffff00'],
-									[10, '#ff0000'],
-								]
-							},
-							'circle-radius': ['get', 'radius'],
+							'circle-color': circle_colors.confirmed,
+							'circle-radius': ['*', 2, ['log10', ['get', 'confirmed']]],
 							'circle-opacity': 0.8
 						}
 					});
@@ -136,12 +141,12 @@
 
 				$("select[name=map-date]").change(function() {
 					options.date = $("select[name=map-date]").val();
-					update_source();
+					update_date();
 				});
 
 				$("select[name=map-feature]").change(function() {
 					options.feature = $("select[name=map-feature]").val();
-					update_source();
+					update_feature();
 				});
 
 				init_dates();

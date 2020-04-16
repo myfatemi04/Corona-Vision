@@ -259,28 +259,34 @@ app.get("/cases/first_days", (req, res) => {
 app.get("/cases/date", (req, res) => {
     let entry_date = get(req.query, "date") || "live";
     let query = sqlstring.format("select * from datapoints where entry_date = ? and latitude != 0 and longitude != 0 and admin2 = '' and country != ''", entry_date);
-    get_sql(query).then(
+    get_sql(query).then( 
         content => res.json(content)
     );
 });
 
+geojson_cache = {};
+geojson_max_age = 1000 * 60 * 15; // 15-minute caching
 app.get("/geojson", (req, res) => {
     let entry_date = req.query['date'] || 'live';
-    let feature = req.query['feature'] || 'confirmed';
     let query = sqlstring.format("select * from datapoints where entry_date = ? and latitude != 0 and longitude != 0 and admin2 = '' and country != '' and confirmed > 10", entry_date);
+    if (query in geojson_cache) {
+        let {data, update_time} = geojson_cache[query];
+        if (Date.now() - update_time < geojson_max_age) {
+            res.json(data);
+            return;
+        }
+    }
+
     get_sql(query).then(
-        content => res.json(geojson(content, feature))
+        content => {
+            let geojson_result = geojson(content);
+            geojson_cache[query] = {data: geojson_result, update_time: Date.now()};
+            res.json(geojson_result);
+        }
     );
 });
 
-function to_radius(feature) {
-    if(feature < 2)
-        return 2
-    else
-        return 2 * (Math.log10(feature))
-}
-
-function geojson(content, feature) {
+function geojson(content) {
     let feature_list = [];
     for (let datapoint of content) {
         let name = datapoint.country || "World";
@@ -290,7 +296,6 @@ function geojson(content, feature) {
             id: name,
             type: "Feature",
             properties: {
-                radius: to_radius(datapoint[feature]),
                 name: name,
                 ...datapoint
             },
