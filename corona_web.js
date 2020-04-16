@@ -116,6 +116,15 @@ app.get("/cases/totals", (req, res) => {
     );
 });
 
+function utc_iso(date) {
+    let year = date.getUTCFullYear();
+    let month = `${date.getUTCMonth() + 1}`;
+    let day = `${date.getUTCDate()}`;
+    month = month.padStart(2, "0");
+    day = day.padStart(2, "0");
+    return year + "-" + month + "-" + day;
+}
+
 /* Totals Sequence API
  * Gives the most recent data, with missing dates __not__ filled in (yet) */
 app.get("/cases/totals_sequence", (req, res) => {
@@ -142,20 +151,26 @@ app.get("/cases/totals_sequence", (req, res) => {
 
     get_sql(query).then(
         (content) => {
-            let labels = ['confirmed', 'recovered', 'deaths', 'active', 'dconfirmed', 'drecovered', 'ddeaths', 'dactive', 'entry_date'];
+            let labels = ['confirmed', 'recovered', 'deaths', 'active', 'dconfirmed', 'drecovered', 'ddeaths', 'dactive'];
             let resp = {};
-
+            
+            resp.entry_date = [];
             for (let label of labels) {
                 resp[label] = [];
             }
 
-            for (let row of content) {
-                // live data for this is janky
-                if (row.entry_date != 'live') {
-                    for (let label of labels) {
-                        resp[label].push(row[label]);
-                    }
+            let day = new Date(content[0].entry_date);
+            let last_day = new Date(content[content.length - 1].entry_date);
+            let i = 0;
+            while (day <= last_day) {
+                resp.entry_date.push(utc_iso(day));
+                for (let label of labels) {
+                    resp[label].push(content[i][label]);
                 }
+
+                // we don't increment the data index if the date isn't found
+                if (utc_iso(day) == content[i].entry_date) i += 1;
+                day.setUTCDate(day.getUTCDate() + 1);
             }
 
             res.json(resp);
