@@ -9,40 +9,11 @@
 		<script src='https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js'></script>
 
 		<script>
-			let isTouchDevice = 'ontouchstart' in document.documentElement;
 			let circle_colors = {
-				confirmed: {
-					property: 'radius',
-					type: 'exponential',
-					stops: [
-						[0, '#ffff00'],
-						[10, '#ff0000'],
-					]
-				},
-				dconfirmed: {
-					property: 'radius',
-					type: 'exponential',
-					stops: [
-						[0, '#ffff00'],
-						[10, '#ff0000'],
-					]
-				},
-				deaths: {
-					property: 'radius',
-					type: 'exponential',
-					stops: [
-						[0, '#ffaa00'],
-						[10, '#aa0000'],
-					]
-				},
-				recovered: {
-					property: 'radius',
-					type: 'exponential',
-					stops: [
-						[0, 'rgba(0, 255, 0, 0)'],
-						[10, 'rgba(0, 255, 0, 1)'],
-					]
-				}
+				confirmed: "#de7c21",
+				dconfirmed: "#de7c21",
+				deaths: "#f54842",
+				recovered: "#39e639"
 			};
 
 			let options = {
@@ -52,8 +23,8 @@
 
 			let map = null;
 			let popup = new mapboxgl.Popup({
-				closeButton: true,
-				closeOnClick: true
+				closeButton: false,
+				closeOnClick: false
 			});
 
 			function update_source() {
@@ -92,46 +63,60 @@
 						type: 'geojson',
 						data: '/geojson?date=live'
 					});
+					//https://docs.mapbox.com/vector-tiles/reference/mapbox-boundaries-v3/
 					map.addLayer({
+						'id': 'admin0',
+						'source': {
+							'type': 'vector',
+							'url': "mapbox://myfatemi04.1q8ipy2y"
+						},
+						'source-layer': 'ne_10m_admin_0_countries-128vi3',
+						'type': 'fill',
+						'paint': {
+							'fill-color': [
+								'rgb',
+								128,
+								128,
+								128
+							]
+						}
+					});
+					
+					setTimeout(() => {
+						for (let boundary of map.queryRenderedFeatures({'layers': ['admin0']})) {
+							let {NAME, NAME_CIAWF, ADMIN, GEOUNIT} = boundary.properties;
+							console.log({NAME, NAME_CIAWF, ADMIN, GEOUNIT});
+							boundary.properties.confirmed = 100;
+						}
+
+					}, 1000)
+
+					{{!-- map.addLayer({
 						'id': 'confirmed-layer',
 						'type': 'circle',
 						'source': 'confirmed',
 						'paint': {
-							'circle-color': {
-								property: 'radius',
-								type: 'exponential',
-								stops: [
-									[0, '#ffff00'],
-									[10, '#ff0000'],
-								]
-							},
+							'circle-color': circle_colors.confirmed,
 							'circle-radius': ['get', 'radius'],
 							'circle-opacity': 0.8
 						}
-					});
+					}); --}}
+					
 				});
 
-				map.on('mouseenter', 'confirmed-layer', (e) => {
+				map.on('mouseenter', 'admin0', (e) => {
 					map.getCanvas().style.cursor = 'pointer';
 					let feature = e.features[0];
-					popup
+					console.log(feature);
+					{{!-- popup
 						.setLngLat(feature.geometry.coordinates)
-						.setHTML(popup_html(feature.properties))
-						.addTo(map);
+						.setHTML(JSON.stringify(feature.properties))
+						.addTo(map); --}}
 				});
 
-				map.on('mouseleave', 'confirmed-layer', (e) => {
+				map.on('mouseleave', 'admin0', (e) => {
 					map.getCanvas().style.cursor = '';
 					popup.remove();
-				});
-
-				map.on('click', 'confirmed-layer', (e) => {
-					map.getCanvas().style.cursor = 'pointer';
-					let feature = e.features[0];
-					popup
-						.setLngLat(feature.geometry.coordinates)
-						.setHTML(popup_html(feature.properties))
-						.addTo(map);
 				});
 
 				$("select[name=map-date]").change(function() {
