@@ -297,8 +297,9 @@ function set_chart_data(data) {
 	if (predictor_type == "log") {
 		$.post(
 			// DEBUG MARKER
+			"//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/log",
 			//"//localhost:5050/predict/log",
-			"//coronavision-ml.herokuapp.com/predict/log",
+			//"//coronavision-ml.herokuapp.com/predict/log",
 			{
 				X: fixed.days.slice(fixed.data.confirmed.length).join(" "),
 				Y: fixed.data.confirmed.join(" ")
@@ -316,8 +317,9 @@ function set_chart_data(data) {
 	else if (predictor_type == "lstm") {
 		$.post(
 			// DEBUG MARKER
+			"//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/lstm",
 			//"//localhost:5050/predict/lstm",
-			"//coronavision-ml.herokuapp.com/predict/lstm",
+			//"//coronavision-ml.herokuapp.com/predict/lstm",
 			{
 				X: fixed.days.slice(fixed.data.confirmed.length).join(" "),
 				Y: fixed.data.confirmed.join(" ")

@@ -1,3 +1,0 @@
-runtime: python37
-entrypoint: cd data_collection && python import_data.py
-service: data_collection
