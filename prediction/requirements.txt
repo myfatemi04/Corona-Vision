@@ -1,0 +1,8 @@
+flask
+flask-cors
+keras==2.2.5
+numpy
+pandas
+sklearn
+scipy
+tensorflow==1.14.0

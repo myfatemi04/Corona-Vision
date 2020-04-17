@@ -1,0 +1,3 @@
+runtime: python37
+entrypoint: cd prediction && python web_app.py
+service: prediction

@@ -1,1 +1,0 @@
-web: node corona_web.js $PORT

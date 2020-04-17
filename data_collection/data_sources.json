@@ -1,0 +1,385 @@
+{"live":
+	[
+		{
+			"args":
+			{
+				"url": "https://docs.google.com/spreadsheets/u/0/d/e/2PACX-1vR30F8lYP3jG7YOq8es0PBpJIE5yvRVZffOyaqC0GgMBN6yt0Q-NI8pxS7hd1F9dYXnowSC6zpZmW9D/pubhtml/sheet?gid=1902046093&range=A1:I68",
+				"defaults": {
+					"country": "United States"
+				}
+			},
+			"method": "google_sheets",
+			"label": "BNO News USA"
+		},
+		{
+			"args":
+			{
+				"url": "https://docs.google.com/spreadsheets/u/0/d/e/2PACX-1vR30F8lYP3jG7YOq8es0PBpJIE5yvRVZffOyaqC0GgMBN6yt0Q-NI8pxS7hd1F9dYXnowSC6zpZmW9D/pubhtml/sheet?headers=false&gid=0&range=A1:I210",
+				"defaults": {},
+				"labels": ["country", "confirmed", "dconfirmed", "deaths", "ddeaths", "", "serious", "recovered", ""]
+			},
+			"method": "google_sheets",
+			"label": "BNO News World"
+		},
+		{
+			"args":
+			{
+				"url": "https://docs.google.com/spreadsheets/u/0/d/e/2PACX-1vR30F8lYP3jG7YOq8es0PBpJIE5yvRVZffOyaqC0GgMBN6yt0Q-NI8pxS7hd1F9dYXnowSC6zpZmW9D/pubhtml/sheet?headers=false&gid=338130207&range=A1:I20",
+				"defaults": {
+					"country": "Canada"
+				}
+			},
+			"method": "google_sheets",
+			"label": "BNO News Canada"
+		},
+		{
+			"args":
+			{
+				"url": "https://docs.google.com/spreadsheets/u/0/d/e/2PACX-1vR30F8lYP3jG7YOq8es0PBpJIE5yvRVZffOyaqC0GgMBN6yt0Q-NI8pxS7hd1F9dYXnowSC6zpZmW9D/pubhtml/sheet?headers=false&gid=572527899&range=A1:I17",
+				"defaults": {
+					"country": "Australia"
+				}
+			},
+			"method": "google_sheets",
+			"label": "BNO News Australia"
+		},
+		{
+			"args":
+			{
+				"url": "https://docs.google.com/spreadsheets/u/0/d/e/2PACX-1vR30F8lYP3jG7YOq8es0PBpJIE5yvRVZffOyaqC0GgMBN6yt0Q-NI8pxS7hd1F9dYXnowSC6zpZmW9D/pubhtml/sheet?headers=false&gid=108415730",
+				"defaults": {
+					"country": "China"
+				},
+				"labels": ["province", "confirmed", "deaths", "serious", "", "recovered"]
+			},
+			"method": "google_sheets",
+			"label": "BNO News China"
+		},
+		{
+			"args": {},
+			"method": "worldometers",
+			"label": "Worldometers"
+		},
+		{
+			"args": {
+				"url": "http://www.salute.gov.it/portale/nuovocoronavirus/dettaglioContenutiNuovoCoronavirus.jsp?lingua=english&id=5367&area=nuovoCoronavirus&menu=vuoto",
+				"source_link": "http://www.salute.gov.it/portale/nuovocoronavirus/dettaglioContenutiNuovoCoronavirus.jsp?lingua=english&id=5367&area=nuovoCoronavirus&menu=vuoto",
+				"defaults": {
+					"country": "Italy"
+				},
+				"labels": {
+					"confirmed": [".col-lg-4.col-md-12.col-sm-12", 0, "div", 1, "::number"],
+					"deaths": [".col-lg-4.col-md-12.col-sm-12", 1, "div", 1, "::number"],
+					"recovered": [".col-lg-4.col-md-12.col-sm-12", 2, "div", 1, "::number"],
+					"serious": ["div.col-md-8", 0, "ul", 1, "li", 2, "b", 0, "::number"]
+				}
+			},
+			"method": "selector",
+			"label": "Italy"
+		},
+		{
+			"args": {
+				"url": "https://covid19.isciii.es/resources/data.csv",
+				"source_link": "https://covid19.isciii.es/",
+				"defaults": {
+					"country": "Spain"
+				},
+				"labels": {
+					"confirmed": "Casos",
+					"deaths": "Defunciones",
+					"recovered": "Recuperados",
+					"dconfirmed": "Casos24h"
+				}
+			},
+			"method": "csv",
+			"label": "Spain"
+		},
+		{
+			"args": {
+				"url": "https://covid19.isciii.es/resources/ccaa.csv",
+				"source_link": "https://covid19.isciii.es/",
+				"defaults": {
+					"country": "Spain"
+				},
+				"labels": {
+					"province": "CCAA",
+					"confirmed": "Casos",
+					"dconfirmed": "Ultimas 24h"
+				}
+			},
+			"method": "csv",
+			"label": "Spain Provinces"
+		},
+		{
+			"args": {
+				"url": "https://services6.arcgis.com/L1SotImj1AAZY1eK/arcgis/rest/services/dpc_regioni_covid19/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=totale_casi%20desc&resultOffset=0",
+				"source_link": "http://opendatadpc.maps.arcgis.com/apps/opsdashboard/index.html#/b0c68bce2cce478eaac82fe38d4138b1",
+				"defaults": {
+					"country": "Italy"
+				},
+				"labels": {
+					"province": ["attributes", "denominazione_regione"],
+					"latitude": ["attributes", "latitudine"],
+					"longitude": ["attributes", "longitudine"],
+					"confirmed": ["attributes", "totale_casi"],
+					"deaths": ["attributes", "deceduti"]
+				},
+				"namespace": ["features"]
+			},
+			"method": "json",
+			"label": "Italy Provinces"
+		},
+		{
+			"args": {
+				"url": "https://services6.arcgis.com/L1SotImj1AAZY1eK/arcgis/rest/services/dpc_province_covid19/FeatureServer/0/query?f=json&where=totale_casi%20%3E%200&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=totale_casi",
+				"source_link": "http://opendatadpc.maps.arcgis.com/apps/opsdashboard/index.html#/b0c68bce2cce478eaac82fe38d4138b1",
+				"defaults": {
+					"country": "Italy"
+				},
+				"labels": {
+					"province": ["attributes", "denominazione_regione"],
+					"admin2": ["attributes", "denominazione_provincia"],
+					"latitude": ["attributes", "latitudine"],
+					"longitude": ["attributes", "longitudine"],
+					"confirmed": ["attributes", "totale_casi"]
+				},
+				"namespace": ["features"]
+			},
+			"method": "json",
+			"label": "Italy Admin2"
+		},
+		{
+			"args": {
+				"url": "https://services.arcgis.com/CCZiGSEQbAxxFVh3/ArcGIS/rest/services/COVID19_Concelhos_V/FeatureServer/0/query?where=1%3D1&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&resultType=standard&distance=0.0&units=esriSRUnit_Meter&returnGeodetic=false&outFields=*&returnGeometry=false&returnCentroid=false&featureEncoding=esriDefault&multipatchOption=xyFootprint&maxAllowableOffset=&geometryPrecision=&outSR=&datumTransformation=&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=Distrito&outStatistics=%5B%7B%22statisticType%22%3A+%22sum%22%2C+%22onStatisticField%22%3A+%22ConfirmadosAcumulado_Conc%22%2C+%22outStatisticField%22%3A+%22Confirmed%22%7D%5D&having=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&returnExceededLimitFeatures=true&quantizationParameters=&sqlFormat=none&f=pjson&token=",
+				"source_link": "https://www.arcgis.com/apps/opsdashboard/index.html#/acf023da9a0b4f9dbb2332c13f635829",
+				"defaults": {
+					"country": "Portugal"
+				},
+				"labels": {
+					"province": ["attributes", "Distrito", "::cap"],
+					"confirmed": ["attributes", "SUM_ConfirmadosAcumulado_Conc"]
+				},
+				"namespace": ["features"]
+			},
+			"method": "json",
+			"label": "Portugal Provinces"
+		},
+		{
+			"args": {
+				"url": "https://services.arcgis.com/CCZiGSEQbAxxFVh3/arcgis/rest/services/COVID19_Concelhos_V/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=ConfirmadosAcumulado_Conc%20desc",
+				"source_link": "https://www.arcgis.com/apps/opsdashboard/index.html#/acf023da9a0b4f9dbb2332c13f635829",
+				"defaults": {
+					"country": "Portugal"
+				},
+				"labels": {
+					"province": ["attributes", "Distrito", "::cap"],
+					"admin2": ["attributes", "Concelho", "::cap"],
+					"confirmed": ["attributes", "ConfirmadosAcumulado_Conc"]
+				},
+				"namespace": ["features"]
+			},
+			"method": "json",
+			"label": "Portugal Admin2"
+		},
+		{
+			"args": {
+				"url": "https://services2.arcgis.com/RiHDI9SnFmD3Itzs/arcgis/rest/services/%EC%8B%9C%EB%8F%84%EB%B3%84_%EC%BD%94%EB%A1%9C%EB%82%98/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=%EB%B0%9C%EC%83%9D%EC%9E%90%EC%88%98%20desc&resultOffset=0",
+				"source_link": "https://esrikrmkt.maps.arcgis.com/apps/MapSeries/index.html?appid=b379f788425349168d02669285758af0",
+				"defaults": {
+					"country": "South Korea"
+				},
+				"labels": {
+					"confirmed": ["attributes", "발생자수"],
+					"deaths": ["attributes", "사망자수"],
+					"province": ["attributes", "CTP_ENG_NM"]
+				},
+				"namespace": ["features"]
+			},
+			"method": "json",
+			"label": "Korea Provinces"
+		},
+		{
+			"args": {
+				"url": "https://data.covid19japan.com/summary/latest.json",
+				"source_link": "https://covid19japan.com",
+				"defaults": {
+					"country": "Japan"
+				},
+				"labels": {
+					"province": ["name"],
+					"confirmed": ["confirmed"],
+					"deaths": ["deaths"],
+					"recovered": ["recovered"]	
+				},
+				"namespace": ["prefectures"]
+			},
+			"method": "json",
+			"label": "Japan provinces"
+		},
+		{
+			"args": {},
+			"method": "jhu",
+			"label": "Johns Hopkins University"
+		},
+		{
+			"args": {
+				"url": "https://services7.arcgis.com/mOBPykOjAyBO2ZKk/arcgis/rest/services/Coronaf%C3%A4lle_in_den_Bundesl%C3%A4ndern/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Fallzahl%20desc&resultOffset=0",
+				"source_link": "https://npgeo-de.maps.arcgis.com/apps/opsdashboard/index.html#/2694322fc7894bf5886647f652f093ca",
+				"defaults": {
+					"country": "Germany"
+				},
+				"labels": {
+					"province": ["attributes", "LAN_ew_GEN"],
+					"confirmed": ["attributes", "Fallzahl"],
+					"deaths": ["attributes", "Death"]
+				},
+				"namespace": ["features"]
+			},
+			"method": "json",
+			"label": "Germany Provinces"
+		},
+		{
+			"args": {
+				"url": "https://covidtracking.com/api/v1/states/current.json",
+				"source_link": "https://covidtracking.com",
+				"defaults": {
+					"country": "United States"
+				},
+				"labels": {
+					"province": ["state", "::us_state_code"],
+					"num_tests": ["total"]
+				},
+				"namespace": []
+			},
+			"method": "json",
+			"label": "Testing by state"
+		}
+	],
+"historical":
+	[
+		{
+			"args": {
+				"url": "https://covidtracking.com/api/v1/states/daily.json",
+				"source_link": "https://covidtracking.com",
+				"defaults": {
+					"country": "United States"
+				},
+				"labels": {
+					"entry_date": ["date", "::str", "::ymd"],
+					"province": ["state", "::us_state_code"],
+					"num_tests": ["total"]
+				},
+				"namespace": []
+			},
+			"method": "json",
+			"label": "Testing by state"
+		},
+		{
+			"args": {
+				"url": "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-andamento-nazionale.json",
+				"source_link": "http://opendatadpc.maps.arcgis.com/apps/opsdashboard/index.html#/b0c68bce2cce478eaac82fe38d4138b1",
+				"defaults": {
+					"country": "Italy"
+				},
+				"labels": {
+					"entry_date": ["data", "::date_t"],
+					"serious": ["terapia_intensiva"],
+					"confirmed": ["totale_casi"],
+					"recovered": ["dimessi_guariti"],
+					"deaths": ["deceduti"],
+					"num_tests": ["tamponi"]
+				},
+				"namespace": []
+			},
+			"method": "json",
+			"label": "Italy National Historical"
+		},
+		{
+			"args": {
+				"url": "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-regioni.json",
+				"source_link": "http://opendatadpc.maps.arcgis.com/apps/opsdashboard/index.html#/b0c68bce2cce478eaac82fe38d4138b1",
+				"defaults": {
+					"country": "Italy"
+				},
+				"labels": {
+					"entry_date": ["data", "::date_t"],
+					"province": ["denominazione_regione"],
+					"serious": ["terapia_intensiva"],
+					"confirmed": ["totale_casi"],
+					"recovered": ["dimessi_guariti"],
+					"deaths": ["deceduti"],
+					"num_tests": ["tamponi"],
+					"latitude": ["lat"],
+					"longitude": ["long"]
+				},
+				"namespace": []
+			},
+			"method": "json",
+			"label": "Italy Provincial Historical"
+		},
+		{
+			"args": {
+				"url": "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-province.json",
+				"source_link": "http://opendatadpc.maps.arcgis.com/apps/opsdashboard/index.html#/b0c68bce2cce478eaac82fe38d4138b1",
+				"defaults": {
+					"country": "Italy"
+				},
+				"labels": {
+					"entry_date": ["data", "::date_t"],
+					"province": ["denominazione_regione"],
+					"admin2": ["denominazione_provincia"],
+					"confirmed": ["totale_casi"]
+				},
+				"namespace": []
+			},
+			"method": "json",
+			"label": "Italy Admin2 Historical"
+		},
+		{
+			"args": {},
+			"method": "jhu_range",
+			"label": "Johns Hopkins University Historical Data"
+		},
+		{
+			"args": {
+				"url": "https://raw.githubusercontent.com/datasets/covid-19/master/data/us_confirmed.csv",
+				"source_link": "https://github.com/datasets/covid-19",
+				"labels": {
+					"country": "Country/Region",
+					"province": "Province/State",
+					"admin2": "Admin2",
+					"latitude": "Lat",
+					"longitude": "Long",
+					"confirmed": "Case"
+				}
+			},
+			"defaults": {},
+			"method": "csv",
+			"label": "USA Confirmed ALL"
+		},
+		{
+			"args": {
+				"url": "https://raw.githubusercontent.com/datasets/covid-19/master/data/time-series-19-covid-combined.csv",
+				"source_link": "https://github.com/datasets/covid-19",
+				"labels": {
+					"entry_date": "Date",
+					"country": "Country/Region",
+					"province": "Province/State",
+					"latitude": "Lat",
+					"longitude": "Long",
+					"confirmed": "Confirmed",
+					"recovered": "Recovered",
+					"deaths": "Deaths"
+				}
+			},
+			"defaults": {},
+			"method": "csv",
+			"label": "Github Dataset - non USA"
+		},
+		{
+			"args": {},
+			"method": "update_all_deltas",
+			"label": "Updating all daily changes(deltas)"
+		}
+	]
+}

@@ -1,4 +1,0 @@
-beautifulsoup4
-flask
-flask-sqlalchemy
-# there's a lot more
