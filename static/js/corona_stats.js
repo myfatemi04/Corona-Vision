@@ -19,7 +19,14 @@ function update_stats() {
                 $("#stats-info").show()
                 $("#stats-label")[0].innerHTML = generate_name(country, province, admin2)
                 for (let prop of ['confirmed', 'recovered', 'deaths', 'dconfirmed', 'serious', 'num_tests']) {
-                    $("#stats-" + prop)[0].innerHTML = data[prop] == 0 ? "-" : data[prop];
+                    if (("source_" + prop) in data && data["source_" + prop]) {
+                        if (data["source_" + prop] == "calculated") {
+                            data["source_" + prop] = "javascript:alert('This data is aggregated from more specific sources, e.g. adding up individual state totals');";
+                        }
+                        $("#stats-" + prop)[0].innerHTML = `<a style="color: inherit; text-decoration: underline;" href="${data['source_' + prop]}">` + (data[prop] == 0 ? "-" : data[prop]) + "</a>";
+                    } else {
+                        $("#stats-" + prop)[0].innerHTML = data[prop] == 0 ? "-" : data[prop];
+                    }
                 }
             } else {
                 $("#stats-info").hide();

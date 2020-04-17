@@ -58,6 +58,9 @@ function table_col(options) {
     style += options.style || "";
 
     if ("source" in options && options.source) {
+        if (options.source == "calculated") {
+            options.source = "javascript:alert(\"This data is aggregated from more specific sources, e.g. adding up individual state totals\");";
+        }
         return `<td class="mx-1" style='${style}'><a href='${options.source}' style='color: inherit; text-decoration: underline;'>${numberString} ${percentString}</a></td>`;
     }
 
@@ -131,7 +134,7 @@ module.exports = {
             let label = datapoint[label_prop];
             
             let label_link = label;
-            if (label && label != label_default) {
+            if (label) {
                 let label = datapoint[label_prop];
                 if (label_prop == 'country') {
                     // if (country_list.includes(label)) {

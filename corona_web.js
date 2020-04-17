@@ -280,8 +280,8 @@ app.get("/cases/date", (req, res) => {
 geojson_cache = {};
 geojson_max_age = 1000 * 60 * 15; // 15-minute caching
 app.get("/geojson", (req, res) => {
-    let entry_date = req.query['date'] || 'live';
-    let query = sqlstring.format("select * from datapoints where entry_date = ? and latitude != 0 and longitude != 0 and admin2 = '' and country != '' and confirmed > 10", entry_date);
+    let entry_date = req.query['date'] || new Date().toISOString().substring(0, 10);
+    let query = sqlstring.format("select * from datapoints where entry_date = ? and latitude is not null and longitude is not null and admin2 = '' and country != '' and confirmed > 10", entry_date);
     if (query in geojson_cache) {
         let {data, update_time} = geojson_cache[query];
         if (Date.now() - update_time < geojson_max_age) {

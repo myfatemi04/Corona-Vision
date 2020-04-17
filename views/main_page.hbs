@@ -55,6 +55,7 @@
 							$("#date")[0].innerHTML += `<option value="${result.entry_date}">${result.entry_date == "live" ? "Live data" : result.entry_date}</option>`;
 						}
 						
+						$("#date-label")[0].innerHTML = $("#date option:selected")[0].innerHTML;
 						init_selectors(update, 0);
 						init_stats_panel();
 						update();
@@ -106,13 +107,18 @@
 				</div>
 				<table id="datatable" class="data-container" style="flex: 1; height: 50em;">
 					<thead class="border-bottom pos-sticky datatable-head custom-bg">
+						<tr>
+							<th>
+								Click on any stat to see its source.
+							</th>
+						</tr>
 						<tr class="d-flex py-2">
 							<th style="flex: 2;">
 								<input type="text" onkeyup="filter_table()" class="custom-input-color small-input" placeholder="Search for location" id="locationSearch">
 							</th>
 							<th style="flex: 1;">
 								<a href="javascript:prev_day()">
-									Previous day
+									Previous
 								</a>
 							</th>
 							<th style="flex: 1;" id="date-label">
@@ -120,7 +126,7 @@
 							</th>
 							<th style="flex: 1;">
 								<a href="javascript:next_day()">
-									Next day
+									Next
 								</a>
 							</th>
 						</tr>
