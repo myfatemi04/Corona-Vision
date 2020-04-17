@@ -151,7 +151,7 @@ app.get("/cases/totals_sequence", (req, res) => {
 
     get_sql(query).then(
         (content) => {
-            let labels = ['confirmed', 'recovered', 'deaths', 'active', 'dconfirmed', 'drecovered', 'ddeaths', 'dactive'];
+            let labels = ['confirmed', 'recovered', 'deaths', 'active'];
             let resp = {};
             
             resp.entry_date = [];
@@ -162,7 +162,8 @@ app.get("/cases/totals_sequence", (req, res) => {
             let day = new Date(content[0].entry_date);
             let last_day = new Date(content[content.length - 1].entry_date);
             let i = 0;
-            while (day <= last_day) {
+            // <, NOT <=, because the most recent day's data is incomplete
+            while (day < last_day) {
                 resp.entry_date.push(utc_iso(day));
                 for (let label of labels) {
                     resp[label].push(content[i][label]);
@@ -174,8 +175,20 @@ app.get("/cases/totals_sequence", (req, res) => {
                     if (utc_iso(day) == content[i + 1].entry_date) i += 1;
                 }
             }
+            
+            let daily_changes = {};
+            for (let label of labels) {
+                let daily_label = "d" + label;
+                let last_val = 0;
+                daily_changes[daily_label] = [];
+                for (let i = 0; i < resp[label].length; i++) {
+                    let this_val = resp[label][i];
+                    daily_changes[daily_label].push(this_val - last_val)
+                    last_val = this_val;
+                }
+            }
 
-            res.json(resp);
+            res.json({...resp, ...daily_changes});
         }
     );
 
