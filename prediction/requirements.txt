@@ -4,4 +4,4 @@ numpy
 pandas
 sklearn
 scipy
-tensorflow
+tensorflow==1.14

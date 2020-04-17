@@ -318,7 +318,7 @@ function set_chart_data(data) {
 		$.post(
 			// DEBUG MARKER
 			"//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/lstm",
-			//"//localhost:5050/predict/lstm",
+			// "//localhost:5050/predict/lstm",
 			//"//coronavision-ml.herokuapp.com/predict/lstm",
 			{
 				X: fixed.days.slice(fixed.data.confirmed.length).join(" "),
