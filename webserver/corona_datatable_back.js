@@ -82,6 +82,24 @@ function set_admin2_link(label) {
     return `<a style="color: #3657ff;" href='javascript:set_admin2("${label}")';>${label} ${ico}</a>`
 }
 
+function format_update_time(update_time) {
+    let diff = Date.now() - update_time;
+    let {ms, s, m, h, d} = {ms: diff, s: diff/1000, m: diff/60000, h: diff/3600000, d: diff/86400000}
+    if (s < 1) {
+        return Math.round(ms) + "ms ago";
+    }
+    if (m < 1) {
+        return Math.round(s) + "s ago";
+    }
+    if (h < 1) {
+        return Math.round(m) + "m ago";
+    }
+    if (d < 1) {
+        return Math.round(h) + "h ago";
+    }
+    return Math.round(d) + "d ago";
+}
+
 let deselect_country_link = `<a href="javascript:set_country('');"><i class="fas fa-angle-double-left"></i> Go back</a>`;
 let deselect_province_link = `<a href="javascript:set_province('');"><i class="fas fa-angle-double-left"></i> Go back</a>`;
 let deselect_admin2_link = `<a href="javascript:set_admin2('');"><i class="fas fa-angle-double-left"></i> Go back</a>`;
@@ -102,6 +120,7 @@ module.exports = {
     //         }
     //     });
     // },
+    format_update_time: format_update_time,
     make_rows: (data, country, province, admin2) => {
         // if the country isn't specified, we are listing countries
         if (country == 'all' || country == '') { label_prop = 'country'; label_default = 'World'; }
@@ -158,6 +177,7 @@ module.exports = {
 
             let table_cols = [
                 {number: i, flex: 1, color: "#f5f5f5"},
+                {number: format_update_time(datapoint.update_time)},
                 {number: label_link, flex: 4},
                 {number: datapoint.confirmed + " (+" + datapoint.dconfirmed + ")", source: datapoint.source_confirmed, color: COLORS.confirmed, flex: 4},
                 //{number: datapoint.dconfirmed, color: COLORS.confirmed},

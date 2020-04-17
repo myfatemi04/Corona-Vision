@@ -270,6 +270,13 @@ if __name__ == "__main__":
 	elif sys.argv[1] == 'historical':
 		downloader = Thread(target=update_historical_data, name="Data downloader", daemon=True)
 		downloader.start()
+	elif sys.argv[1].startswith('jhu'):
+		d = sys.argv[1][3:]
+		y, m, d = d.split('-')
+		y = int(y)
+		m = int(m)
+		d = int(d)
+		import_jhu.download_data_for_date(date(y, m, d))
 
 	PORT = 6060
 	if "PORT" in os.environ:

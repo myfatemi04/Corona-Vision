@@ -1,7 +1,7 @@
 const mysql = require('mysql');
 
 let con = mysql.createConnection(
-    process.env.DATABASE_URL
+    process.env.DATABASE_URL + "?timezone=utc"
 );
 
 con.connect(function(err) {

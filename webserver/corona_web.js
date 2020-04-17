@@ -33,8 +33,23 @@ app.set('view engine', 'hbs');
 
 /* Main Page
  * The Main Page includes charts, data tables, and live stats */
+let last_update = null;
 app.get("/", (req, res) => {
-    res.render("main_page");
+    if (last_update == null || (Date.now() - last_update > 60000)) {
+        get_sql("select MAX(update_time) as update_time from datapoints;").then(
+            data => {
+                last_update = data[0]['update_time'];
+                res.render("main_page", {last_update: datatables.format_update_time(last_update)});
+            }
+        ).catch(
+            err => {
+                res.render("main_page", {last_update: "Recently"});
+                console.err("Error during update time selection")
+            }
+        );
+    } else {
+        res.render("main_page", {last_update: datatables.format_update_time(last_update)});
+    }
 });
 
 /* Chart Page

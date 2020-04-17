@@ -1,6 +1,10 @@
-from corona_sql import Session, Datapoint
+from corona_sql import *
 
-sess = Session()
+
+# session = Session()
+# country_overall = calc_overall_country("China", "2020-04-16", session)
+# print(country_overall)
+
 # dates = [result[0] for result in sess.query(Datapoint.entry_date).distinct().order_by(Datapoint.entry_date).all()]
 
 # print("This day   Day before")
@@ -46,14 +50,14 @@ sess = Session()
 # sess.commit()
 
 # add continents
-import standards
-# countries = standards.country_names.values()
-sess = Session()
-countries = [c[0] for c in sess.query(Datapoint.country).distinct().all()]
-i = 0
-for country in countries:
-    i += 1
-    continent = standards.get_continent(country)
-    print(f'\r{i}/{len(countries)} {country}', end='                          \r')
-    sess.query(Datapoint).filter_by(country=country).update({'group': continent})
-    sess.commit()
+# import standards
+# # countries = standards.country_names.values()
+# sess = Session()
+# countries = [c[0] for c in sess.query(Datapoint.country).distinct().all()]
+# i = 0
+# for country in countries:
+#     i += 1
+#     continent = standards.get_continent(country)
+#     print(f'\r{i}/{len(countries)} {country}', end='                          \r')
+#     sess.query(Datapoint).filter_by(country=country).update({'group': continent})
+#     sess.commit()
