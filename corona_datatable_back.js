@@ -57,6 +57,11 @@ function table_col(options) {
     let style = `color: ${color}; flex: ${flex}; font-weight: ${fontWeight};`;
     style += options.style || "";
 
+    if ("source" in options && options.source) {
+        return `<td class="mx-1" style='${style}'><a href='${options.source}' style='color: inherit; text-decoration: underline;'>${numberString} ${percentString}</a></td>`;
+    }
+
+
     return `<td class="mx-1" style='${style}'>${numberString} ${percentString}</td>`;
 }
 
@@ -151,13 +156,13 @@ module.exports = {
             let table_cols = [
                 {number: i, flex: 1, color: "#f5f5f5"},
                 {number: label_link, flex: 4},
-                {number: datapoint.confirmed + " (+" + datapoint.dconfirmed + ")", color: COLORS.confirmed, flex: 4},
+                {number: datapoint.confirmed + " (+" + datapoint.dconfirmed + ")", source: datapoint.source_confirmed, color: COLORS.confirmed, flex: 4},
                 //{number: datapoint.dconfirmed, color: COLORS.confirmed},
-                {number: datapoint.recovered, color: COLORS.recovered},
-                {number: datapoint.deaths, color: COLORS.deaths},
+                {number: datapoint.recovered, color: COLORS.recovered, source: datapoint.source_recovered},
+                {number: datapoint.deaths, color: COLORS.deaths, source: datapoint.source_deaths},
                 //{number: datapoint.ddeaths, denom: datapoint.deaths, color: COLORS.deaths},
                 // {number: datapoint.num_tests, digits: 2, color: COLORS.tests},
-                {number: datapoint.serious, color: COLORS.serious},
+                {number: datapoint.serious, color: COLORS.serious, source: datapoint.source_serious},
                 // {number: "<a href=" + datapoint.source_link + ">Source</a>", style: "flex: 1;"}
             ];
 
