@@ -26,7 +26,8 @@ for index, row in country_code_df.iterrows():
 us_state_location_df = pd.read_csv("location_data/us_state_locations.tsv", sep='\t')
 for index, row in us_state_location_df.iterrows():
 	state_code, lat, lng, state_name = row
-	state_locations['US', state_code] = (lat, lng)
+	if not pd.isna(lat):
+		state_locations['US', state_code] = (lat, lng)
 	state_codes['US', state_name.lower()] = state_code
 	state_names['US', state_code] = state_name
 
@@ -143,6 +144,7 @@ def fix_country_name(country):
 
 	return country
 
+import string
 def normalize_name(country, province='', admin2=''):
 	if country is None:
 		country = ''
@@ -150,6 +152,46 @@ def normalize_name(country, province='', admin2=''):
 		province = ''
 	if admin2 is None:
 		admin2 = ''
+
+	country = country.strip()
+	province = province.strip()
+	admin2 = admin2.strip()
+
+	if country == 'U.S.': country = "United States"
+	province = province.replace("U.S.", "US")
+	admin2 = admin2.replace("U.S.", "US")
+
+	# country = string.capwords(country)
+	# province = string.capwords(province)
+	# admin2 = string.capwords(admin2)
+
+	if country == 'Hong Kong SAR':
+		country = 'Hong Kong'
+	if country == 'Guam':
+		country = "United States"
+		province = "Guam"
+	if country == 'Korea':
+		country = 'South Korea'
+	if country == "Faeroe Islands":
+		country = "Faroe Islands"
+
+	# swap province, admin2
+	if province == 'U.S.' and country=='United States':
+		province = admin2
+		admin2 = ''
+	if 'SAR' in country:
+		country = country.replace('SAR', '').strip()
+	if province == country:
+		province = admin2
+		admin2 = ''
+	if province == get_country_code(country):
+		province = admin2
+		admin2 = ''
+
+	if 'Virgin Islands' in province and country == 'United States':
+		province = 'Virgin Islands'
+		country = 'United States'
+	
 	country = get_country_name(country)
 	country = fix_country_name(country)
 	if ", " in province and admin2 == '':
@@ -157,7 +199,13 @@ def normalize_name(country, province='', admin2=''):
 
 	province = get_state_name(country, province)
 	admin2 = remove_end(admin2, " county")
-
+	if "diamond princess" in province.lower():
+		province = "Diamond Princess"
+	if "wuhan" in province.lower() and "repatriated" in province.lower():
+		province = "Wuhan (repatriated)"
+	if province.lower() == 'u.s. virgin islands':
+		province = 'Virgin Islands'
+	return country, province, admin2
 
 def get_admin2_province(country, province):
 	comma_index = province.rfind(", ")
@@ -205,3 +253,4 @@ if __name__ == "__main__":
 	print("Estimated location of Virginia, US: ", get_estimated_location("United States", "Virginia"))
 	print("State code of Virginia, US: ", get_state_code("United States", "Virginia"))
 	print("Admin2/province of Chicago, IL: ", get_admin2_province("US", "Chicago, IL"))
+	print("GU state name: ", get_state_name("US", "GU"))

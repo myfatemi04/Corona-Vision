@@ -153,7 +153,12 @@ def upload(rows, defaults={}, source_link='', recount=True):
 			row_link = row['source_link']
 			del row['source_link']
 		
+		# fix the location's name
 		location = select(row, ['country', 'province', 'admin2'])
+		location = standards.normalize_name(*location)
+		row['country'] = location[0]
+		row['province'] = location[1]
+		row['admin2'] = location[2]
 
 		# skip empty datapoints
 		has_data = False

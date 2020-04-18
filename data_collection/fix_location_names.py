@@ -1,7 +1,81 @@
 from corona_sql import *
 
+def fix_location_names():
+    print("Fixing location names...")
+    session = Session()
+    all_countries = session.query(Datapoint.country, Datapoint.province, Datapoint.admin2).distinct()
+    for row in all_countries:
+        country, province, admin2 = row
 
-# session = Session()
+        # find all places that need to be updated
+        updates = session.query(Datapoint).filter_by(country=country, province=province, admin2=admin2)
+
+        # normalize the name
+        new_country, new_province, new_admin2 = standards.normalize_name(country, province, admin2)
+
+        # see if the normalized name is different
+        if new_country == country and new_province == province and new_admin2 == admin2:
+            continue
+        else:
+            print(country, province, admin2, "-->", new_country, new_province, new_admin2)
+
+        # update the names. if another is found, check which one has more confirmed cases, and delete that one.
+        for update in updates:
+            actual = session.query(Datapoint).filter_by(country=new_country, province=new_province, admin2=admin2, entry_date=update.entry_date).first()
+            
+            # update the name
+            update.country = new_country
+            update.province = new_province
+            update.admin2 = new_admin2
+
+            # if another is found, check which has more confirmed cases
+            if actual:
+                # delete whichever one has less cases
+                if actual.confirmed >= update.confirmed:
+                    print("\rDeleting new", end='\r')
+                    session.delete(update)
+                else:
+                    print("\rDeleting old", end='\r')
+                    session.delete(actual)
+            else:
+                print("\rRenaming", end='\r')
+
+    print("\rCommitting...")
+    session.commit()
+
+# this is like a CS lab
+def remove_duplicates():
+    print("Removing duplicates...")
+    session = Session()
+    seen = {}
+    rows = session.query(Datapoint)
+    for row in rows:
+        primary = row.country, row.province, row.admin2, row.entry_date
+        if primary in seen:
+            # if it's been seen before, merge them together
+            other = seen[primary]
+            
+            for label in ['confirmed', 'deaths', 'recovered', 'active', 'num_tests', 'serious']:
+                if getattr(row, label) > getattr(other, label):
+                    setattr(other, label, getattr(row, label))
+            
+            for l in ['dconfirmed', 'ddeaths', 'drecovered', 'dactive', 'dserious']:
+                if not getattr(other, l) and getattr(row, l):
+                    setattr(other, l, getattr(row, l))
+            
+            print("Updated", primary)
+
+            # delete the one that wasn't original
+            session.delete(row)
+        else:
+            seen[primary] = row
+
+    print("Committing...")
+    session.commit()
+
+fix_location_names()
+remove_duplicates()
+
 # country_overall = calc_overall_country("China", "2020-04-16", session)
 # print(country_overall)
 

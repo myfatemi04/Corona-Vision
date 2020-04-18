@@ -3,19 +3,18 @@ use corona;
 drop table if exists datapoints;
 create table datapoints (
 	data_id integer not null auto_increment primary key,
-	entry_date varchar(16),
+	entry_date varchar(16) primary key,
 	update_time datetime not null default CURRENT_TIMESTAMP,
 	
-	admin2 varchar(320) default '',
-	province varchar(320) default '',
-	country varchar(320) default '',
+	admin2 varchar(320) default '' primary key,
+	province varchar(320) default '' primary key,
+	country varchar(320) default '' primary key,
 	`group` varchar(320) default '',
 	
-	latitude float(10, 6) default 0,
-	longitude float(10, 6) default 0,
+	latitude float(10, 6),
+	longitude float(10, 6),
 	
 	is_first_day boolean default false,
-	is_primary boolean default false,
 	
 	confirmed integer default 0,
 	recovered integer default 0,
@@ -31,7 +30,11 @@ create table datapoints (
 
 	num_tests integer default 0,
 
-	source_link TEXT
+	source_confirmed TEXT,
+	source_recovered TEXT,
+	source_deaths TEXT,
+	source_serious TEXT,
+	source_num_tests TEXt
 );
 
 drop table if exists live;
