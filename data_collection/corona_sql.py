@@ -274,7 +274,7 @@ sums = (func.sum(Datapoint.confirmed), func.sum(Datapoint.deaths), func.sum(Data
 sum_labels = ['confirmed', 'deaths', 'recovered', 'dconfirmed', 'ddeaths', 'drecovered', 'num_tests']
 
 def calc_overall_province(country, province, entry_date, session):
-	overall_province = session.query(Datapoint.country, Datapoint.province, *sums)\
+	overall_province = session.query(*sums)\
 			.filter(Datapoint.country == country, Datapoint.province == province, Datapoint.admin2 != '', Datapoint.entry_date == entry_date)\
 			.first()
 	if overall_province:
@@ -292,7 +292,7 @@ def calc_overall(entry_date, session):
 		.filter(Datapoint.country != '', Datapoint.province == '', Datapoint.admin2 == '', Datapoint.entry_date == entry_date)\
 		.first()
 	if overall:
-		return tuple([entry_date, '', '', '', *overall])
+		return (entry_date, '', '', '', *overall)
 
 def update_overall(session, entry_date, country, province, admin2, confirmed, deaths, recovered, dconfirmed, ddeaths, drecovered, num_tests):
 	# find an overall datapoint
