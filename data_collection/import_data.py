@@ -23,7 +23,17 @@ import standards
 import import_jhu
 
 
-data_sources = json.load(open("data_sources.json", encoding="utf-8"), encoding="utf-8")
+data_sources = {'live': [], 'historical': []}
+source_files = [
+	"data_sources/data_sources.json",
+	"data_sources/us_states.json"
+]
+for filename in source_files:
+	data_source = json.load(open(filename, encoding="utf-8"), encoding="utf-8")
+	if 'live' in data_source:
+		data_sources['live'] += data_source['live']
+	if 'historical' in data_source:
+		data_sources['historical'] += data_source['historical']
 
 # daily reports link: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports
 def data_download():
@@ -211,13 +221,24 @@ def import_df(df, labels, row):
 		
 	return all_data
 
-def import_json(url, labels, namespace):
+def import_json(url, labels, namespace, allow=[]):
 	resp = requests.get(url)
 	content = find_json(resp.json(), namespace)
 	data = []
 	if type(content) == list:
 		for row in content:
-			data.append(extract_json_data(row, labels))
+			try:
+				allowed = True
+				for rule in allow:
+					select, match, match_type = rule
+					if match_type == '==':
+						allowed = allowed and (find_json(row, select) == match)
+					elif match_type == '!=':
+						allowed = allowed and (find_json(row, select) != match)
+				if allowed:
+					data.append(extract_json_data(row, labels))
+			except KeyError:
+				print("\rKeyError", end='\r')
 	else:
 		data.append(extract_json_data(content, labels))
 	
@@ -229,6 +250,7 @@ def extract_json_data(row, labels):
 		try:
 			j = find_json(row, labels[label])
 		except KeyError:
+			print("\rKeyError on ", label)
 			continue
 		if j is not None:
 			result[label] = j
@@ -297,15 +319,18 @@ def hello():
 	return redirect("https://www.coronavision.us/")
 
 if __name__ == "__main__":
+
+	use_server = False
+
 	# DEBUG MARKER
-	# data_download()
-	# upload_datasource(data_sources['live'][-1])
-	# exit()
 	if len(sys.argv) == 1:
-		downloader = Thread(target=data_download, name="Data downloader", daemon=True)
+		downloader = Thread(target=data_download, name="Data downloader", daemon=not use_server)
 		downloader.start()
+	elif sys.argv[1] == 'testlast':
+		print("Testing the most recent live data source...")
+		upload_datasource(data_sources['live'][-1])
 	elif sys.argv[1] == 'historical':
-		downloader = Thread(target=update_historical_data, name="Data downloader", daemon=True)
+		downloader = Thread(target=update_historical_data, name="Data downloader", daemon=not use_server)
 		downloader.start()
 	elif sys.argv[1].startswith('jhu'):
 		d = sys.argv[1][3:]
@@ -315,9 +340,11 @@ if __name__ == "__main__":
 		d = int(d)
 		import_jhu.download_data_for_date(date(y, m, d))
 
-	# DEBUG MARKER
-	PORT = 6060
-	if "PORT" in os.environ:
-		PORT = os.environ['PORT']
-	app.run("0.0.0.0", port=PORT)
-	input()
+	if use_server:
+		# DEBUG MARKER
+		PORT = 6060
+		if "PORT" in os.environ:
+			PORT = os.environ['PORT']
+		app.run("0.0.0.0", port=PORT)
+	else:
+		input()

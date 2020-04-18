@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import json
 
 state_locations = {}
 state_codes = {}
@@ -19,6 +20,8 @@ country_code_df = pd.read_csv("location_data/country_codes.csv")
 for index, row in country_code_df.iterrows():
 	code = row['Code']
 	name = row['Name']
+	if pd.isna(code):
+		continue
 	country_codes[name.lower()] = code
 	country_codes[name.split(",")[0].lower()] = code
 	country_names[code] = name
@@ -27,9 +30,46 @@ us_state_location_df = pd.read_csv("location_data/us_state_locations.tsv", sep='
 for index, row in us_state_location_df.iterrows():
 	state_code, lat, lng, state_name = row
 	if not pd.isna(lat):
-		state_locations['US', state_code] = (lat, lng)
-	state_codes['US', state_name.lower()] = state_code
-	state_names['US', state_code] = state_name
+		state_locations['US'+"_"+state_code] = (lat, lng)
+	state_codes['US'+"_"+state_name.lower()] = state_code
+	state_names['US'+"_"+state_code] = state_name
+
+# us_county_location_df = pd.read_csv("location_data/county_locations.txt", sep="|")
+# county_locations = {}
+# county_code_to_name = {}
+# county_name_to_code = {}
+# for index, row in us_county_location_df.iterrows():
+# 	COUNTRY_CODE = "US"
+# 	_, FEATURE_NAME, _, COUNTY_CODE, _, _, _, _, STATE_CODE, _, _, COUNTY_NAME, LAT, LONG, _, _ = row
+# 	COUNTY_CODE = str(COUNTY_CODE)
+# 	LAT = float(LAT)
+# 	LONG = float(LONG)
+# 	county_code_to_name[COUNTRY_CODE+"_"+STATE_CODE+"_"+COUNTY_CODE] = COUNTY_NAME
+# 	county_name_to_code[COUNTRY_CODE+"_"+STATE_CODE+"_"+FEATURE_NAME] = COUNTY_CODE
+# 	county_locations[COUNTRY_CODE+"_"+STATE_CODE+"_"+COUNTY_CODE] = LAT, LONG
+	
+# 	county_code_to_name[COUNTRY_CODE+"_"+STATE_CODE+"_"+COUNTY_CODE] = COUNTY_NAME
+# 	county_name_to_code[COUNTRY_CODE+"_"+STATE_CODE+"_"+FEATURE_NAME] = COUNTY_CODE
+# 	county_locations[COUNTRY_CODE+"_"+STATE_CODE+"_"+COUNTY_CODE] = LAT, LONG
+# json.dump({"county_locations": county_locations, "county_code_to_name": county_code_to_name, "county_name_to_code": county_name_to_code}, open("location_data/counties.json", 'w'))
+county_data = json.load(open("location_data/counties.json"))
+county_locations = county_data['county_locations']
+county_code_to_name = county_data['county_code_to_name']
+county_name_to_code = county_data['county_name_to_code']
+
+def get_county_location(country_name, state_name, county_name):
+	a0_code = get_country_code(country_name)
+	a1_code = get_state_code(country_name, state_name)
+	a2_code = get_county_code(country_name, state_name, county_name)
+	if a0_code is not None and a1_code is not None and a2_code is not None:
+		if (a0_code+"_"+a1_code+"_"+a2_code) in county_locations:
+			return county_locations[a0_code+"_"+a1_code+"_"+a2_code]
+
+def get_county_code(country_name, state_name, county_name):
+	a0_code = get_country_code(country_name)
+	a1_code = get_state_code(country_name, state_name)
+	if (a0_code+"_"+a1_code+"_"+county_name) in county_name_to_code:
+		return county_name_to_code[a0_code+"_"+a1_code+"_"+county_name]
 
 def get_country_location(country_name):
 	country_code = get_country_code(country_name)
@@ -51,44 +91,33 @@ def get_country_name(country_code):
 def get_state_location(country_name, state_name):
 	country_code = get_country_code(country_name)
 	state_code = get_state_code(country_name, state_name)
-	if (country_code, state_code) in state_locations:
-		return state_locations[country_code, state_code]
+	if state_code is not None and country_code is not None:
+		if (country_code+"_"+state_code) in state_locations:
+			return state_locations[country_code+"_"+state_code]
 
 def get_state_code(country_name, state_name):
 	country_code = get_country_code(country_name)
 	state_name = state_name.split(", ")[-1]
-	
-	if (country_code, state_name.lower()) in state_codes:
-		return state_codes[country_code, state_name.lower()]
-	elif state_name in state_codes.values():
-		return state_name
+	if country_code is not None:
+		if (country_code+"_"+state_name.lower()) in state_codes:
+			return state_codes[country_code+"_"+state_name.lower()]
+		elif state_name in state_codes.values():
+			return state_name
 
 def get_state_name(country_name, state_code):
 	country_code = get_country_code(country_name)
-	if (country_code, state_code) in state_names:
-		return state_names[country_code, state_code]
-	else:
-		return state_code
+	if country_code is not None:
+		if (country_code+"_"+state_code) in state_names:
+			return state_names[country_code+"_"+state_code]
+	return state_code
 
 def get_estimated_location(country_name, province_name='', admin2=''):
-	# we don't have any admin2 data
-	location_possibly_accurate = admin2 == ''
-
-	if province_name:
-		state_level_location = get_state_location(country_name, province_name)
-		if state_level_location:
-			return {"location": state_level_location, "accurate": True and location_possibly_accurate}
-
-	# if province_name is not empty, it means we failed to find its
-	# actual location at this point
-	is_accurate = not bool(province_name)
-	country_level_location = get_country_location(country_name)
-	
-	if country_level_location:
-		return {"location": country_level_location, "accurate": is_accurate and location_possibly_accurate}
-	else:
-		return {"location": None, "accurate": False and location_possibly_accurate}
-	
+	if admin2:
+		return get_county_location(country_name, province_name, admin2)
+	elif province_name:
+		return get_state_location(country_name, province_name)
+	elif country_name:
+		return get_country_location(country_name)
 
 fixes = {
 	"uk": "United Kingdom",
@@ -153,6 +182,10 @@ def normalize_name(country, province='', admin2=''):
 	if admin2 is None:
 		admin2 = ''
 
+	country = str(country)
+	province = str(province)
+	admin2 = str(admin2)
+
 	country = country.strip()
 	province = province.strip()
 	admin2 = admin2.strip()
@@ -198,13 +231,26 @@ def normalize_name(country, province='', admin2=''):
 		province = 'Virgin Islands'
 		country = 'United States'
 	
+	# # fix capitalization
+	# if province != province.upper():
+	# 	province = ' '.join([word.capitalize() if word not in ['and', 'of'] else word for word in province.split()])
+
+	# if admin2 != admin2.upper():
+	# 	admin2 = ' '.join([word.capitalize() if word not in ['and', 'of'] else word for word in admin2.split()])
+
 	country = get_country_name(country)
 	country = fix_country_name(country)
 	if ", " in province and admin2 == '':
 		admin2, province = get_admin2_province(country, province)
 
-	province = get_state_name(country, province)
+	province = get_state_name(country, province) or province
+
+	admin2 = remove_end(admin2, " census area")
+	admin2 = remove_end(admin2, " and borough")
+	admin2 = remove_end(admin2, " borough")
 	admin2 = remove_end(admin2, " county")
+	admin2 = remove_end(admin2, " municipality")
+
 	if "diamond princess" in province.lower():
 		province = "Diamond Princess"
 	if "wuhan" in province.lower() and "repatriated" in province.lower():
@@ -260,3 +306,4 @@ if __name__ == "__main__":
 	print("State code of Virginia, US: ", get_state_code("United States", "Virginia"))
 	print("Admin2/province of Chicago, IL: ", get_admin2_province("US", "Chicago, IL"))
 	print("GU state name: ", get_state_name("US", "GU"))
+	# print("Location of Fairfax, Virginia, US: ", get_estimated_location("United States", "Alabama", "Colbert"))

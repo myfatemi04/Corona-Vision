@@ -21,24 +21,12 @@ def fix_location_names():
 
         # update the names. if another is found, check which one has more confirmed cases, and delete that one.
         for update in updates:
-            actual = session.query(Datapoint).filter_by(country=new_country, province=new_province, admin2=admin2, entry_date=update.entry_date).first()
-            
             # update the name
             update.country = new_country
             update.province = new_province
             update.admin2 = new_admin2
-
-            # if another is found, check which has more confirmed cases
-            if actual:
-                # delete whichever one has less cases
-                if actual.confirmed >= update.confirmed:
-                    print("\rDeleting new", end='\r')
-                    session.delete(update)
-                else:
-                    print("\rDeleting old", end='\r')
-                    session.delete(actual)
-            else:
-                print("\rRenaming", end='\r')
+            
+            print("\rRenaming", end='\r')
 
     print("\rCommitting...")
     session.commit()
@@ -48,13 +36,16 @@ def remove_duplicates():
     print("Removing duplicates...")
     session = Session()
     seen = {}
-    rows = session.query(Datapoint)
+    rows = session.query(Datapoint).all()
     for row in rows:
-        primary = row.country, row.province, row.admin2, row.entry_date
+        primary = row.country.lower(), row.province.lower(), row.admin2.lower(), row.entry_date
         if primary in seen:
             # if it's been seen before, merge them together
             other = seen[primary]
             
+            # delete the one that wasn't original
+            session.delete(row)
+
             for label in ['confirmed', 'deaths', 'recovered', 'active', 'num_tests', 'serious']:
                 if getattr(row, label) > getattr(other, label):
                     setattr(other, label, getattr(row, label))
@@ -62,11 +53,8 @@ def remove_duplicates():
             for l in ['dconfirmed', 'ddeaths', 'drecovered', 'dactive', 'dserious']:
                 if not getattr(other, l) and getattr(row, l):
                     setattr(other, l, getattr(row, l))
-            
-            print("Updated", primary)
 
-            # delete the one that wasn't original
-            session.delete(row)
+            print("Updated", primary)
         else:
             seen[primary] = row
 

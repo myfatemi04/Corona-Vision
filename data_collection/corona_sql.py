@@ -30,14 +30,13 @@ class Datapoint(Base):
 	__tablename__ = "datapoints"
 
 	# columns about the date/time of the datapoint
-	data_id = Column(Integer, primary_key=True)
-	entry_date = Column(String(16))
+	entry_date = Column(String(16), primary_key=True)
 	update_time = Column(DateTime, default=datetime.utcnow())
 	
 	# columns about the nominal location
-	admin2 = Column(String(320), default='')
-	province = Column(String(320), default='')
-	country = Column(String(320), default='')
+	admin2 = Column(String(320), default='', primary_key=True)
+	province = Column(String(320), default='', primary_key=True)
+	country = Column(String(320), default='', primary_key=True)
 	group = Column(String(320), default='')
 	
 	# columns about the numeric location
@@ -77,11 +76,10 @@ class Datapoint(Base):
 		if not self.location_labelled():
 			# if the object's location is not accurate, however,
 			# we try to estimate its location
-			estimated_location_data = standards.get_estimated_location(self.country, self.province)
-			estimated_location = estimated_location_data['location']
-			estimate_accurate = estimated_location_data['accurate']
-			# if we could find its location...
-			if estimate_accurate:
+			estimated_location = standards.get_estimated_location(self.country, self.province, self.admin2)
+
+			# ^^^ returns none if no accurate data could be found
+			if estimated_location:
 				# update the old location
 				est_lat, est_lng = estimated_location
 				self.latitude = est_lat
@@ -190,7 +188,6 @@ def upload(rows, defaults={}, source_link='', recount=True):
 			is_updated = (len(delta) > 1) or 0 not in delta
 			existing.guess_location()
 		else:
-			# print(source_link, row)
 			delta = dfilter(row, stat_labels)
 			new_data = Datapoint(**row)
 			new_data.guess_location()
@@ -202,7 +199,7 @@ def upload(rows, defaults={}, source_link='', recount=True):
 
 		# now we recalculate the totals
 		if is_updated and recount:
-			# print("This row was updated!")
+		# print("This row was updated!")
 			if row['admin2']:
 				updated_provinces.add((row['country'], row['province'], row['entry_date']))
 			if row['province']:
@@ -242,8 +239,9 @@ def upload(rows, defaults={}, source_link='', recount=True):
 			day_obj = datetime.strptime(day, "%Y-%m-%d")
 			update_deltas(day_obj)
 
-	print("\rCommitting...                                               ", end='\r')
+	print("\rCommitting all...                                               ", end='\r')
 	session.commit()
+	print("\rDone committing         ", end='\r')
 
 def _is_nan(data):
 	return type(data) == float and np.isnan(data)
@@ -389,7 +387,7 @@ def update_deltas(day):
 				setattr(today_dp, 'd' + label, new_val)
 		i += 1
 
-	print("\rCommitting...                  ", end='\r')
+	print("\rCommitting deltas...                         ", end='\r')
 	sess.commit()
 
 def update_all_deltas():
