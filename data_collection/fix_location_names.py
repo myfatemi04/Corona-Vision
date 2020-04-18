@@ -3,12 +3,10 @@ from corona_sql import *
 def fix_location_names():
     print("Fixing location names...")
     session = Session()
-    all_countries = session.query(Datapoint.country, Datapoint.province, Datapoint.admin2).distinct()
+    all_countries = session.query(Datapoint)
     for row in all_countries:
-        country, province, admin2 = row
-
-        # find all places that need to be updated
-        updates = session.query(Datapoint).filter_by(country=country, province=province, admin2=admin2)
+        session = Session()
+        country, province, admin2, entry_date = row.country, row.province, row.admin2, row.entry_date
 
         # normalize the name
         new_country, new_province, new_admin2 = standards.normalize_name(country, province, admin2)
@@ -17,18 +15,30 @@ def fix_location_names():
         if new_country == country and new_province == province and new_admin2 == admin2:
             continue
         else:
-            print(country, province, admin2, "-->", new_country, new_province, new_admin2)
+            print(country, province, admin2, entry_date, "-->", new_country, new_province, new_admin2)
 
-        # update the names. if another is found, check which one has more confirmed cases, and delete that one.
-        for update in updates:
-            # update the name
-            update.country = new_country
-            update.province = new_province
-            update.admin2 = new_admin2
+        # check if an entry with the fixed name already exists
+        real_name = session.query(Datapoint).filter_by(country=new_country, province=new_province, admin2=new_admin2, entry_date=entry_date).first()
+        old_name = row
+
+        if real_name:
+            print("Found a duplicate")
+            # update the row that has the real name, and remove the row with the fake name
+            for label in ['confirmed', 'deaths', 'recovered', 'active', 'num_tests', 'serious']:
+                if getattr(old_name, label) > getattr(real_name, label):
+                    setattr(real_name, label, getattr(old_name, label))
             
-            print("\rRenaming", end='\r')
-
-    print("\rCommitting...")
+            for l in ['dconfirmed', 'ddeaths', 'drecovered', 'dactive', 'dserious', 'latitude', 'longitude', 'source_confirmed', 'source_deaths', 'source_recovered', 'source_num_tests', 'source_serious']:
+                if not getattr(real_name, l) and getattr(old_name, l):
+                    setattr(real_name, l, getattr(old_name, l))
+            session.delete(old_name)
+        else:
+            print("Found no duplicates")
+            # update the row with the fake name to have the correct name
+            old_name.country = new_country
+            old_name.province = new_province
+            old_name.admin2 = new_admin2
+            
     session.commit()
 
 # this is like a CS lab
@@ -62,7 +72,7 @@ def remove_duplicates():
     session.commit()
 
 fix_location_names()
-remove_duplicates()
+# remove_duplicates()
 
 # country_overall = calc_overall_country("China", "2020-04-16", session)
 # print(country_overall)

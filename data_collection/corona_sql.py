@@ -211,16 +211,20 @@ def upload(rows, defaults={}, source_link='', recount=True):
 	for province_dp in updated_provinces:
 		i += 1
 		print(f"\rRecounting provinces--{i}/{len(updated_provinces)}                       ", end='\r')
+		
 		province_overall = calc_overall_province(*province_dp, session)
-		update_overall(session, *province_overall)
+		if province_overall:
+			update_overall(session, *province_overall)
 		# print("Overall:", country, province, row['entry_date'], confirmed, deaths, recovered)
 	
 	i = 0
 	for country_dp in updated_countries:
 		i += 1
 		print(f"\rRecounting countries--{i}/{len(updated_countries)}                       ", end='\r')
+		
 		country_overall = calc_overall_country(*country_dp, session)
-		update_overall(session, *country_overall)
+		if country_overall:
+			update_overall(session, *country_overall)
 		# print("Overall:", country, confirmed, row['entry_date'], deaths, recovered)
 
 	i = 0
@@ -229,7 +233,8 @@ def upload(rows, defaults={}, source_link='', recount=True):
 		print(f"\rRecounting worlds--{i}/{len(updated_world)}                    ", end='\r')
 		
 		world_overall = calc_overall(*world_date, session)
-		update_overall(session, *world_overall)
+		if world_overall:
+			update_overall(session, *world_overall)
 		# print("Overall:", row['entry_date'], confirmed, deaths, recovered)
 
 	for day in unique_days:
@@ -271,34 +276,16 @@ sum_labels = ['confirmed', 'deaths', 'recovered', 'dconfirmed', 'ddeaths', 'drec
 def calc_overall_province(country, province, entry_date, session):
 	overall_province = session.query(Datapoint.country, Datapoint.province, *sums)\
 			.filter(Datapoint.country == country, Datapoint.province == province, Datapoint.admin2 != '', Datapoint.entry_date == entry_date)\
-			.group_by(Datapoint.country, Datapoint.province)\
 			.first()
 	if overall_province:
-		return tuple([entry_date, country, province, '', *overall_province[2:]])
-	else:
-		fallback = session.query(Datapoint.country, Datapoint.province, *sums)\
-			.filter_by(country=country, province=province, admin2='', entry_date=entry_date)\
-			.first()
-		if fallback:
-			return tuple([entry_date, country, province, '', *fallback[2:]])
-		else:
-			return entry_date, country, province, '', 0, 0, 0, 0, 0, 0, 0
+		return (entry_date, country, province, '', *overall_province)
 
 def calc_overall_country(country, entry_date, session):
-	overall_country = session.query(Datapoint.country, *sums)\
+	overall_country = session.query(*sums)\
 		.filter(Datapoint.country == country, Datapoint.province != '', Datapoint.admin2 == '', Datapoint.entry_date == entry_date)\
-		.group_by(Datapoint.country)\
 		.first()
 	if overall_country:
-		return tuple([entry_date, country, '', '', *overall_country[1:]])
-	else:
-		fallback = session.query(Datapoint.country, *sums)\
-			.filter_by(country=country, province='', admin2='', entry_date=entry_date)\
-			.first()
-		if fallback:
-			return tuple([entry_date, fallback[0], '', '', *fallback[1:]])
-		else:
-			return entry_date, country, '', '', 0, 0, 0, 0, 0, 0, 0
+		return (entry_date, country, '', '', *overall_country)
 
 def calc_overall(entry_date, session):
 	overall = session.query(*sums)\
@@ -306,7 +293,6 @@ def calc_overall(entry_date, session):
 		.first()
 	if overall:
 		return tuple([entry_date, '', '', '', *overall])
-	return entry_date, '', '', '', 0, 0, 0, 0, 0, 0, 0
 
 def update_overall(session, entry_date, country, province, admin2, confirmed, deaths, recovered, dconfirmed, ddeaths, drecovered, num_tests):
 	# find an overall datapoint

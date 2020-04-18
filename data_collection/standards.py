@@ -239,11 +239,11 @@ def normalize_name(country, province='', admin2=''):
 		country = 'United States'
 	
 	# # fix capitalization
-	# if province != province.upper():
-	# 	province = ' '.join([word.capitalize() if word not in ['and', 'of'] else word for word in province.split()])
+	if province != province.upper():
+		province = ' '.join([word.lower() if word.lower() in ['and', 'of'] else word for word in province.split()])
 
-	# if admin2 != admin2.upper():
-	# 	admin2 = ' '.join([word.capitalize() if word not in ['and', 'of'] else word for word in admin2.split()])
+	if admin2 != admin2.upper():
+		admin2 = ' '.join([word.lower() if word.lower() in ['and', 'of'] else word for word in admin2.split()])
 
 	country = get_country_name(country)
 	country = fix_country_name(country)
@@ -251,6 +251,8 @@ def normalize_name(country, province='', admin2=''):
 		admin2, province = get_admin2_province(country, province)
 
 	province = get_state_name(country, province) or province
+	if country == 'United States' and province.lower() == "district of columbia":
+		admin2 = ''
 
 	admin2 = remove_end(admin2, " census area")
 	admin2 = remove_end(admin2, " and borough")
