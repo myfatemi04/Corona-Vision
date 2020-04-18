@@ -58,6 +58,12 @@ county_code_to_name = county_data['county_code_to_name']
 county_name_to_code = county_data['county_name_to_code']
 
 def get_county_location(country_name, state_name, county_name):
+	if country_name is None:
+		country_name = ''
+	if state_name is None:
+		state_name = ''
+	if county_name is None:
+		county_name = ''
 	a0_code = get_country_code(country_name)
 	a1_code = get_state_code(country_name, state_name)
 	a2_code = get_county_code(country_name, state_name, county_name)

@@ -373,6 +373,8 @@ def update_deltas(day):
 	for location in today_dict:
 		print("\r", compare_day_str, "-->", day_str, f"{i}/{total}           ", end='\r')
 		today_dp = today_dict[location]
+		if today_dp.active != (today_dp.confirmed - today_dp.deaths - today_dp.recovered):
+			today_dp.active = today_dp.confirmed - today_dp.deaths - today_dp.recovered
 		if location in yesterday_dict:
 			yesterday_dp = yesterday_dict[location]
 		else:

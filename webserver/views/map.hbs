@@ -149,6 +149,10 @@
 					update_feature();
 				});
 
+				$("select#fpsChange").change(function() {
+					fps = $("select#fpsChange").val();
+				});
+
 				init_dates();
 			}
 
@@ -162,6 +166,40 @@
 						}
 					}
 				)
+			}
+
+			let do_animation = false;
+			let fps = 1;
+
+			function set_start_date() {
+				let select = $("select[name=map-date]")[0];
+				select.selectedIndex = select.options.length-1;
+			}
+
+			function start_animation() {
+				do_animation = true;
+				set_start_date();
+				animate();
+			}
+
+			/* recursive function to animate */
+			function animate() {
+				if (!do_animation) return;
+				let select = $("select[name=map-date]")[0];
+				if (select.selectedIndex > 0) {
+					select.selectedIndex--;
+					$("select[name=map-date]").trigger("change");
+					setTimeout(
+						() => {
+							animate();
+						},
+						1000/fps
+					);
+				}
+			}
+
+			function stop_animation() {
+				do_animation = false;
 			}
 		</script>
 	</head>
@@ -182,6 +220,24 @@
 				</select>
 				<select name="map-date" class="custom-input-color form-control my-2" id="date" >
 				</select>
+				<div class="column-container">
+					<button style="flex: 1;" class="btn custom-button-color mx-1 my-1" id="animate" onclick="animate()">
+						Start animation from selected date to today
+					</button>
+					<button style="flex: 1;" class="btn custom-button-color mx-1 my-1" id="animate" onclick="start_animation()">
+						Start animation from first day to today
+					</button>
+					<button style="flex: 1;" class="btn custom-button-color mx-1 my-1" id="stopAnimate" onclick="stop_animation()">
+						Stop animation
+					</button>
+					<select style="flex: 1;" class="custom-input-color form-control my-1" id="fpsChange">
+						<option value="4">4x Speed</option>
+						<option value="2">2x Speed</option>
+						<option value="1" selected>1x Speed</option>
+						<option value="0.5">0.5x Speed</option>
+						<option value="0.25">0.25x Speed</option>
+					</select>
+				</div>
 			</div>
 			<div id="map" class="map my-2"></div>
 		</div>
