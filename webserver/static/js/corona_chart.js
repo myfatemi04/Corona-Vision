@@ -1,5 +1,5 @@
 let index = {
-	confirmed: 0,
+	total: 0,
 	deaths: 1,
 	recovered: 2,
 	predicted: 3
@@ -89,7 +89,7 @@ function new_chart(canvas_id) {
 		labels: [],
 		datasets: [
 			{
-				label: 'Confirmed cases',
+				label: 'Total cases',
 				backgroundColor: 'yellow',
 				borderColor: 'yellow',
 				fill: false,
@@ -186,7 +186,7 @@ function reset_chart() {
 	chart.update();
 }
 
-// ADD: confirmed cases (predicted)
+// ADD: total cases (predicted)
 // ADD: mortality rate (predicted)
 // ADD: time to recover (predicted)
 
@@ -199,10 +199,10 @@ function fix_data(data, extra_days) {
 	// let paired = {};
 	// for (let i = 0; i < data.entry_date.length; i++) {
 	// 	paired[data.entry_date[i]] = {
-	// 		confirmed: data.confirmed[i],
+	// 		total: data.total[i],
 	// 		recovered: data.recovered[i],
 	// 		deaths: data.deaths[i],
-	// 		dconfirmed: data.dconfirmed[i],
+	// 		dtotal: data.dtotal[i],
 	// 		drecovered: data.drecovered[i],
 	// 		ddeaths: data.ddeaths[i]
 	// 	};
@@ -216,7 +216,7 @@ function fix_data(data, extra_days) {
 	// 	new_days = date_range(data.entry_date[0], num_days);
 	
 	// let new_data = {};
-	// let props = ['confirmed', 'deaths', 'recovered', 'dconfirmed', 'ddeaths', 'drecovered'];
+	// let props = ['total', 'deaths', 'recovered', 'dtotal', 'ddeaths', 'drecovered'];
 	// for (let day_n in new_days) {
 	// 	let day = new_days[day_n];
 	// 	for (let prop of props) {
@@ -275,7 +275,7 @@ function reset_chart_data() {
 }
 
 function redraw_chart() {
-	set_chart_data({...last_added_data.data, entry_date: last_added_data.days.slice(0, last_added_data.data.confirmed.length)});
+	set_chart_data({...last_added_data.data, entry_date: last_added_data.days.slice(0, last_added_data.data.total.length)});
 }
 
 function set_chart_data(data) {
@@ -289,9 +289,9 @@ function set_chart_data(data) {
 
 	chart.data.labels = fixed.days;
 
-	let props = ['confirmed', 'deaths', 'recovered'];
+	let props = ['total', 'deaths', 'recovered'];
 	if (chart_type == "daily-change") {
-		props = ['dconfirmed', 'ddeaths', 'drecovered'];
+		props = ['dtotal', 'ddeaths', 'drecovered'];
 	}
 
 	if (predictor_type == "log") {
@@ -301,8 +301,8 @@ function set_chart_data(data) {
 			//"//localhost:5050/predict/log",
 			//"//coronavision-ml.herokuapp.com/predict/log",
 			{
-				X: fixed.days.slice(fixed.data.confirmed.length).join(" "),
-				Y: fixed.data.confirmed.join(" ")
+				X: fixed.days.slice(fixed.data.total.length).join(" "),
+				Y: fixed.data.total.join(" ")
 			},
 			(log_predictor_json) => {
 				// make sure they didn't change the settings
@@ -321,8 +321,8 @@ function set_chart_data(data) {
 			// "//localhost:5050/predict/lstm",
 			//"//coronavision-ml.herokuapp.com/predict/lstm",
 			{
-				X: fixed.days.slice(fixed.data.confirmed.length).join(" "),
-				Y: fixed.data.confirmed.join(" ")
+				X: fixed.days.slice(fixed.data.total.length).join(" "),
+				Y: fixed.data.total.join(" ")
 			},
 			(lstm_predictor_json) => {
 				// make sure they didn't change the settings

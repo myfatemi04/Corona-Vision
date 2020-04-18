@@ -91,8 +91,8 @@ def import_worldometers():
 	response = requests.get("http://www.worldometers.info/coronavirus")
 	soup = BeautifulSoup(response.text, "html.parser")
 	main_countries = soup.find(id="main_table_countries_today")
-	labels = ['country', 'confirmed', 'dconfirmed', 'deaths', 'ddeaths', 'recovered', 'active', 'serious', '', '', 'num_tests', '']
-	number_labels = {'confirmed', 'dconfirmed', 'deaths', 'ddeaths', 'recovered', 'active', 'serious', 'num_tests'}
+	labels = ['country', 'total', 'dtotal', 'deaths', 'ddeaths', 'recovered', 'active', 'serious', '', '', 'num_tests', '']
+	number_labels = {'total', 'dtotal', 'deaths', 'ddeaths', 'recovered', 'active', 'serious', 'num_tests'}
 	
 	data = []
 	for row in main_countries.find("tbody").findAll("tr"):
@@ -116,11 +116,11 @@ def import_worldometers():
 	
 	return data
 
-def import_google_sheets(url, labels=['province', 'confirmed', 'dconfirmed', 'deaths', 'ddeaths', '', 'serious', 'recovered', '']):
+def import_google_sheets(url, labels=['province', 'total', 'dtotal', 'deaths', 'ddeaths', '', 'serious', 'recovered', '']):
 	response = requests.get(url)
 	soup = BeautifulSoup(response.text, "html.parser")
 	rows = soup.findAll('tr')
-	number_labels = {"confirmed", "dconfirmed", "deaths", "ddeaths", "serious", "recovered"}
+	number_labels = {"total", "dtotal", "deaths", "ddeaths", "serious", "recovered"}
 	data = []
 
 	mode = ""
@@ -319,7 +319,7 @@ def hello():
 	return redirect("https://www.coronavision.us/")
 
 if __name__ == "__main__":
-
+	exit()
 	use_server = True
 
 	# DEBUG MARKER

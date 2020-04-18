@@ -5,7 +5,7 @@
                 "url": "http://www.vdh.virginia.gov/content/uploads/sites/182/2020/03/VDH-COVID-19-PublicUseDataset-Cases.csv",
                 "labels": {
                     "admin2": "Locality",
-                    "confirmed": "Total Cases"
+                    "total": "Total Cases"
                 }
             },
             "defaults": {
@@ -21,7 +21,7 @@
                 "url": "https://services7.arcgis.com/4RQmZZ0yaZkGR1zy/arcgis/rest/services/COV19_Public_Dashboard_ReadOnly/FeatureServer/0/query?where=1%3D1&outFields=*&returnGeometry=false&f=pjson",
                 "labels": {
                     "admin2": ["attributes", "CNTYNAME"],
-                    "confirmed": ["attributes", "CONFIRMED"],
+                    "total": ["attributes", "CONFIRMED"],
                     "deaths": ["attributes", "DIED"]
                 },
                 "namespace": ["features"]
@@ -39,7 +39,7 @@
                 "url": "https://opendata.arcgis.com/datasets/11b9eba44ba24e5a9cd365467e25da15_0/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json",
                 "labels": {
                     "admin2": ["attributes", "Borough_Census_Area"],
-                    "confirmed": ["attributes", "All_Cases"]
+                    "total": ["attributes", "All_Cases"]
                 },
                 "namespace": ["features"],
                 "allow": [

@@ -11,8 +11,8 @@
 		<script>
 			let isTouchDevice = 'ontouchstart' in document.documentElement;
 			let circle_colors = {
-				confirmed: {
-					property: 'confirmed',
+				total: {
+					property: 'total',
 					type: 'exponential',
 					stops: [
 						[1e0, '#ffff00'],
@@ -21,8 +21,8 @@
 						[1e9, '#ff0000'],
 					]
 				},
-				dconfirmed: {
-					property: 'dconfirmed',
+				dtotal: {
+					property: 'dtotal',
 					type: 'exponential',
 					stops: [
 						[1e0, '#ffff00'],
@@ -55,7 +55,7 @@
 
 			let options = {
 				date: "live",
-				feature: "confirmed"
+				feature: "total"
 			};
 
 			let map = null;
@@ -66,20 +66,20 @@
 
 			function update_feature() {
 				let feature = options.feature;
-				map.setPaintProperty('confirmed-layer', 'circle-color', circle_colors[feature]);
-				map.setPaintProperty('confirmed-layer', 'circle-radius', ['*', 2, ['log10', ['get', feature]]]);
+				map.setPaintProperty('cases-layer', 'circle-color', circle_colors[feature]);
+				map.setPaintProperty('cases-layer', 'circle-radius', ['*', 2, ['log10', ['get', feature]]]);
 			}
 
 			function update_date() {
 				let date = options.date;
-				map.getSource('confirmed').setData(`/geojson?date=${date}`);
+				map.getSource('total').setData(`/geojson?date=${date}`);
 			}
 
 			function popup_html(data) {
 				let formatted = `
 				<div class="lato infowindow">
 					<code><b>${data.name}</b></code><br/>
-					<code><b>Confirmed:</b> ${data.confirmed} (+${data.dconfirmed})</code><br/>
+					<code><b>total:</b> ${data.total} (+${data.dtotal})</code><br/>
 					<code><b>Active:</b> ${data.active} (+${data.dactive})</code><br/>
 					<code><b>Deaths:</b> ${data.deaths} (+${data.ddeaths})</code><br/>
 					<code><b>Recoveries:</b> ${data.recovered} (+${data.drecovered})</code><br/>
@@ -100,23 +100,23 @@
 				})
 				
 				map.on('load', () => {
-					map.addSource('confirmed', {
+					map.addSource('cases', {
 						type: 'geojson',
 						data: '/geojson'
 					});
 					map.addLayer({
-						'id': 'confirmed-layer',
+						'id': 'cases-layer',
 						'type': 'circle',
-						'source': 'confirmed',
+						'source': 'cases',
 						'paint': {
-							'circle-color': circle_colors.confirmed,
-							'circle-radius': ['*', 2, ['log10', ['get', 'confirmed']]],
+							'circle-color': circle_colors.total,
+							'circle-radius': ['*', 2, ['log10', ['get', 'total']]],
 							'circle-opacity': 0.8
 						}
 					});
 				});
 
-				map.on('mouseenter', 'confirmed-layer', (e) => {
+				map.on('mouseenter', 'cases-layer', (e) => {
 					map.getCanvas().style.cursor = 'pointer';
 					let feature = e.features[0];
 					popup
@@ -125,12 +125,12 @@
 						.addTo(map);
 				});
 
-				map.on('mouseleave', 'confirmed-layer', (e) => {
+				map.on('mouseleave', 'cases-layer', (e) => {
 					map.getCanvas().style.cursor = '';
 					popup.remove();
 				});
 
-				map.on('click', 'confirmed-layer', (e) => {
+				map.on('click', 'cases-layer', (e) => {
 					map.getCanvas().style.cursor = 'pointer';
 					let feature = e.features[0];
 					popup
@@ -213,10 +213,10 @@
 					This website requires JavaScript to run.
 				</noscript>
 				<select name="map-feature" class="custom-input-color form-control my-2">
-					<option value="confirmed">Confirmed cases</option>
+					<option value="total">Total cases</option>
 					<option value="recovered">Recovered cases</option>
 					<option value="deaths">Deaths</option>
-					<option value="dconfirmed">24H Change in confirmed cases</option>
+					<option value="dtotal">24H Change in total cases</option>
 				</select>
 				<select name="map-date" class="custom-input-color form-control my-2" id="date" >
 				</select>

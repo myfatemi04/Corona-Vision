@@ -36,7 +36,7 @@ def import_csv_data(csv_text, entry_date):
 	# define the columns
 	lat_col = lng_col = ""
 	country_col = province_col = admin2_col = ""
-	confirmed_col = death_col = recovered_col = ""
+	total_col = death_col = recovered_col = ""
 	
 	# future-proofing
 	for col in df.columns:
@@ -47,7 +47,7 @@ def import_csv_data(csv_text, entry_date):
 		elif 'admin2' in col.lower(): admin2_col = col
 		elif "death" in col.lower(): death_col = col
 		elif "dead" in col.lower(): death_col = col
-		elif "confirm" in col.lower(): confirmed_col = col
+		elif "confirm" in col.lower(): total_col = col
 		elif "recover" in col.lower(): recovered_col = col
 	
 	data_points = {}
@@ -91,15 +91,15 @@ def import_csv_data(csv_text, entry_date):
 		primary.add((country, province, admin2))
 		
 		# STEP 2 #
-		confirmed = row[confirmed_col]
+		total = row[total_col]
 		deaths = row[death_col]
 		recovered = row[recovered_col]
 
-		if np.isnan(confirmed): confirmed = 0
+		if np.isnan(total): total = 0
 		if np.isnan(deaths): deaths = 0
 		if np.isnan(recovered): recovered = 0
 
-		active = confirmed - deaths - recovered
+		active = total - deaths - recovered
 
 		region = country, province, admin2
 
@@ -110,10 +110,10 @@ def import_csv_data(csv_text, entry_date):
 				if lat != 0 or lng != 0:
 					location_data[region] = lat, lng, True
 		
-		data_points = add_to_dict(data_points, country, province, admin2, (confirmed, deaths, recovered, active))
+		data_points = add_to_dict(data_points, country, province, admin2, (total, deaths, recovered, active))
 
 		# if countries are repeated, then this will fix it
-		data_points[country, province, admin2] = (confirmed, deaths, recovered, active)
+		data_points[country, province, admin2] = (total, deaths, recovered, active)
 
 	session = Session() # for looking at yesterday's data
 	yesterday = entry_date + timedelta(days=-1)
@@ -123,9 +123,9 @@ def import_csv_data(csv_text, entry_date):
 	for region, stats in data_points.items():
 		country, province, admin2 = region
 
-		confirmed, deaths, recovered, active = stats
+		total, deaths, recovered, active = stats
 
-		active = confirmed - recovered - deaths
+		active = total - recovered - deaths
 
 		if region in location_data:
 			lat, lng, _ = location_data[region]
@@ -137,7 +137,7 @@ def import_csv_data(csv_text, entry_date):
 
 		# See if we have data from yesterday to compare to
 
-		dconfirmed = confirmed
+		dtotal = total
 		drecovered = recovered
 		ddeaths = deaths
 		dactive = active
@@ -146,7 +146,7 @@ def import_csv_data(csv_text, entry_date):
 			yesterday_data = yesterday_map[region]
 			is_first_day = False
 
-			dconfirmed -= yesterday_data.confirmed
+			dtotal -= yesterday_data.total
 			drecovered -= yesterday_data.recovered
 			ddeaths -= yesterday_data.deaths
 			dactive -= yesterday_data.active
@@ -156,8 +156,8 @@ def import_csv_data(csv_text, entry_date):
 		data_row = {
 			"admin2": admin2, "province": province, "country": country,
 			"latitude": lat, "longitude": lng, "is_first_day": is_first_day,
-			"confirmed": confirmed, "deaths": deaths, "recovered": recovered, "active": active,
-			"dconfirmed": dconfirmed, "ddeaths": ddeaths, "drecovered": drecovered, "dactive": dactive,
+			"total": total, "deaths": deaths, "recovered": recovered, "active": active,
+			"dtotal": dtotal, "ddeaths": ddeaths, "drecovered": drecovered, "dactive": dactive,
 			"entry_date": entry_date.isoformat()
 		}
 
@@ -167,7 +167,7 @@ def import_csv_data(csv_text, entry_date):
 
 def download_data_for_date(entry_date):
 	date_formatted = entry_date.strftime("%m-%d-%Y")
-	print("\rAttempting to download " + date_formatted + '...', end='')
+	print("\rAttempting to download " + date_formatted + '...', end='\r')
 	
 	# download from Github
 	github_raw_url = f"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/{date_formatted}.csv"

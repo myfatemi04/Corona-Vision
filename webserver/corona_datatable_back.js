@@ -4,7 +4,7 @@ let country_list = [];
 let province_list = {};
 
 let COLORS = {
-    confirmed: "#fcba03",
+    total: "#fcba03",
     recovered: "#34eb4f",
     deaths: "#eb3d34",
     active: "#eb8c34",
@@ -134,7 +134,7 @@ module.exports = {
         // if all are specified, we are listing a single entry
         else { label_prop = ''; label_default = admin2; }
 
-        data.sort((a, b) => (a.confirmed > b.confirmed) ? -1 : 1)
+        data.sort((a, b) => (a.total > b.total) ? -1 : 1)
 
         let i = 0;
 
@@ -179,8 +179,8 @@ module.exports = {
                 {number: i, flex: 1, color: "#f5f5f5"},
                 {number: format_update_time(datapoint.update_time)},
                 {number: label_link, flex: 4},
-                {number: datapoint.confirmed + " (+" + datapoint.dconfirmed + ")", source: datapoint.source_confirmed, color: COLORS.confirmed, flex: 4},
-                //{number: datapoint.dconfirmed, color: COLORS.confirmed},
+                {number: datapoint.total + " (+" + datapoint.dtotal + ")", source: datapoint.source_total, color: COLORS.total, flex: 4},
+                //{number: datapoint.dtotal, color: COLORS.total},
                 {number: datapoint.recovered, color: COLORS.recovered, source: datapoint.source_recovered},
                 {number: datapoint.deaths, color: COLORS.deaths, source: datapoint.source_deaths},
                 //{number: datapoint.ddeaths, denom: datapoint.deaths, color: COLORS.deaths},

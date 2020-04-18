@@ -23,8 +23,8 @@ Session = scoped_session(sessionmaker(bind=engine, autocommit=False))
 # Class used to make tables
 Base = declarative_base()
 
-stat_labels = {'confirmed', 'dconfirmed', 'deaths', 'ddeaths', 'serious', 'dserious', 'recovered', 'drecovered', 'active', 'dactive', 'num_tests'}
-increase_labels = {"confirmed", "deaths", "recovered", "num_tests"}
+stat_labels = {'total', 'dtotal', 'deaths', 'ddeaths', 'serious', 'dserious', 'recovered', 'drecovered', 'active', 'dactive', 'num_tests'}
+increase_labels = {"total", "deaths", "recovered", "num_tests"}
 
 class Datapoint(Base):
 	__tablename__ = "datapoints"
@@ -47,13 +47,13 @@ class Datapoint(Base):
 	is_first_day = Column(Boolean, default=False)
 	
 	# COVID-19 stats about this datapoint
-	confirmed = Column(Integer, default=0)
+	total = Column(Integer, default=0)
 	recovered = Column(Integer, default=0)
 	deaths = Column(Integer, default=0)
 	active = Column(Integer, default=0)
 	serious = Column(Integer, default=0)
 	
-	dconfirmed = Column(Integer, default=0)
+	dtotal = Column(Integer, default=0)
 	drecovered = Column(Integer, default=0)
 	ddeaths = Column(Integer, default=0)
 	dactive = Column(Integer, default=0)
@@ -62,7 +62,7 @@ class Datapoint(Base):
 	num_tests = Column(Integer, default=0)
 
 	# used mostly for provincial data
-	source_confirmed = Column(String())
+	source_total = Column(String())
 	source_recovered = Column(String())
 	source_deaths = Column(String())
 	source_serious = Column(String())
@@ -118,7 +118,7 @@ class Datapoint(Base):
 
 	def update_sources(self, delta, source_link):
 		# record the sources for each piece of data
-		for label in ['confirmed', 'recovered', 'deaths', 'serious', 'num_tests']:
+		for label in ['total', 'recovered', 'deaths', 'serious', 'num_tests']:
 			if label in delta and delta[label] != 0:
 				self.update_time = datetime.utcnow()
 				setattr(self, "source_" + label, source_link)
@@ -215,7 +215,7 @@ def upload(rows, defaults={}, source_link='', recount=True):
 		province_overall = calc_overall_province(*province_dp, session)
 		if province_overall:
 			update_overall(session, *province_overall)
-		# print("Overall:", country, province, row['entry_date'], confirmed, deaths, recovered)
+		# print("Overall:", country, province, row['entry_date'], total, deaths, recovered)
 	
 	i = 0
 	for country_dp in updated_countries:
@@ -225,7 +225,7 @@ def upload(rows, defaults={}, source_link='', recount=True):
 		country_overall = calc_overall_country(*country_dp, session)
 		if country_overall:
 			update_overall(session, *country_overall)
-		# print("Overall:", country, confirmed, row['entry_date'], deaths, recovered)
+		# print("Overall:", country, total, row['entry_date'], deaths, recovered)
 
 	i = 0
 	for world_date in updated_world:
@@ -235,7 +235,7 @@ def upload(rows, defaults={}, source_link='', recount=True):
 		world_overall = calc_overall(*world_date, session)
 		if world_overall:
 			update_overall(session, *world_overall)
-		# print("Overall:", row['entry_date'], confirmed, deaths, recovered)
+		# print("Overall:", row['entry_date'], total, deaths, recovered)
 
 	for day in unique_days:
 		if type(day) == date:
@@ -270,8 +270,8 @@ def _fill_defaults(data, defaults):
 
 	return data
 
-sums = (func.sum(Datapoint.confirmed), func.sum(Datapoint.deaths), func.sum(Datapoint.recovered), func.sum(Datapoint.dconfirmed), func.sum(Datapoint.ddeaths), func.sum(Datapoint.drecovered), func.sum(Datapoint.num_tests))
-sum_labels = ['confirmed', 'deaths', 'recovered', 'dconfirmed', 'ddeaths', 'drecovered', 'num_tests']
+sums = (func.sum(Datapoint.total), func.sum(Datapoint.deaths), func.sum(Datapoint.recovered), func.sum(Datapoint.dtotal), func.sum(Datapoint.ddeaths), func.sum(Datapoint.drecovered), func.sum(Datapoint.num_tests))
+sum_labels = ['total', 'deaths', 'recovered', 'dtotal', 'ddeaths', 'drecovered', 'num_tests']
 
 def calc_overall_province(country, province, entry_date, session):
 	overall_province = session.query(*sums)\
@@ -294,21 +294,21 @@ def calc_overall(entry_date, session):
 	if overall:
 		return (entry_date, '', '', '', *overall)
 
-def update_overall(session, entry_date, country, province, admin2, confirmed, deaths, recovered, dconfirmed, ddeaths, drecovered, num_tests):
+def update_overall(session, entry_date, country, province, admin2, total, deaths, recovered, dtotal, ddeaths, drecovered, num_tests):
 	# find an overall datapoint
 	overall_dp = session.query(Datapoint).filter_by(country=country, province=province, admin2=admin2, entry_date=entry_date).first()
 
 	# if it doesn't exist, we create it
 	if not overall_dp:
-		overall_dp = Datapoint(country=country, province=province, admin2=admin2, entry_date=entry_date, confirmed=0, deaths=0, recovered=0, num_tests=0)
+		overall_dp = Datapoint(country=country, province=province, admin2=admin2, entry_date=entry_date, total=0, deaths=0, recovered=0, num_tests=0)
 		overall_dp.guess_location()
 		session.add(overall_dp)
 
 	updated = False
 	if not force_refresh:
-		if confirmed > overall_dp.confirmed:
-			overall_dp.confirmed = confirmed
-			overall_dp.source_confirmed = "calculated"
+		if total > overall_dp.total:
+			overall_dp.total = total
+			overall_dp.source_total = "calculated"
 			updated = True
 		if deaths > overall_dp.deaths:
 			overall_dp.deaths = deaths
@@ -323,8 +323,8 @@ def update_overall(session, entry_date, country, province, admin2, confirmed, de
 			overall_dp.source_num_tests = "calculated"
 			updated = True
 	else:
-		overall_dp.confirmed = confirmed
-		overall_dp.source_confirmed = "calculated"
+		overall_dp.total = total
+		overall_dp.source_total = "calculated"
 
 		overall_dp.deaths = deaths
 		overall_dp.source_deaths = "calculated"
@@ -359,13 +359,13 @@ def update_deltas(day):
 	for location in today_dict:
 		print("\r", compare_day_str, "-->", day_str, f"{i}/{total}           ", end='\r')
 		today_dp = today_dict[location]
-		if today_dp.active != (today_dp.confirmed - today_dp.deaths - today_dp.recovered):
-			today_dp.active = today_dp.confirmed - today_dp.deaths - today_dp.recovered
+		if today_dp.active != (today_dp.total - today_dp.deaths - today_dp.recovered):
+			today_dp.active = today_dp.total - today_dp.deaths - today_dp.recovered
 		if location in yesterday_dict:
 			yesterday_dp = yesterday_dict[location]
 		else:
 			yesterday_dp = None
-		for label in ['active', 'confirmed', 'deaths', 'recovered']:
+		for label in ['active', 'total', 'deaths', 'recovered']:
 			current_val = getattr(today_dp, 'd' + label)
 			if yesterday_dp:
 				new_val = getattr(today_dp, label) - getattr(yesterday_dp, label)

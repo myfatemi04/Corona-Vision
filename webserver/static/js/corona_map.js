@@ -85,10 +85,10 @@ let dark_mode_style = [
 ];
 
 let infowindow = null;
-let feature_display = "confirmed"; // can be either: confirmed, deaths, recovered, or dconfirmed
+let feature_display = "total"; // can be either: total, deaths, recovered, or dtotal
 let circle_colors = {
-	confirmed: "#de7c21",
-	dconfirmed: "#de7c21",
+	total: "#de7c21",
+	dtotal: "#de7c21",
 	deaths: "#f54842",
 	recovered: "#39e639"
 }
@@ -99,11 +99,11 @@ let is_api_ready = false;
 
 let zoomins = {
 	active: 1,
-	confirmed: 1,
+	total: 1,
 	recovered: 1,
 	deaths: 1,
 	dactive: 1,
-	dconfirmed: 1,
+	dtotal: 1,
 	drecovered: 1,
 	ddeaths: 1
 }
@@ -166,7 +166,7 @@ function format_infowindow_data(label, data) {
 	let formatted = `
 	<div class="lato" style="background-color: #212121;">
 		<code><b>${label}</b></code><br/>
-		<code><b>Confirmed:</b> ${data.confirmed} (+${data.dconfirmed})</code><br/>
+		<code><b>Confirmed:</b> ${data.total} (+${data.dtotal})</code><br/>
 		<code><b>Active:</b> ${data.active} (+${data.dactive})</code><br/>
 		<code><b>Deaths:</b> ${data.deaths} (+${data.ddeaths})</code><br/>
 		<code><b>Recoveries:</b> ${data.recovered} (+${data.drecovered})</code><br/>
@@ -200,14 +200,14 @@ function calibrate_zoomins(entry_date) {
 		(data) => {
 			if (data) {
 				data = data[0];
-				zoomins.confirmed = data.confirmed/data.confirmed;
-				zoomins.active = data.confirmed/data.active;
-				zoomins.deaths = data.confirmed/data.deaths;
-				zoomins.recovered = data.confirmed/data.recovered;
-				zoomins.dconfirmed = data.confirmed/data.dconfirmed;
-				zoomins.dactive = data.confirmed/data.dactive;
-				zoomins.ddeaths = data.confirmed/data.ddeaths;
-				zoomins.drecovered = data.confirmed/data.drecovered;
+				zoomins.total = data.total/data.total;
+				zoomins.active = data.total/data.active;
+				zoomins.deaths = data.total/data.deaths;
+				zoomins.recovered = data.total/data.recovered;
+				zoomins.dtotal = data.total/data.dtotal;
+				zoomins.dactive = data.total/data.dactive;
+				zoomins.ddeaths = data.total/data.ddeaths;
+				zoomins.drecovered = data.total/data.drecovered;
 			}
 		}
 	);

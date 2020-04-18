@@ -26,7 +26,7 @@
 			"args": {
 				"url": "http://www.salute.gov.it/portale/nuovocoronavirus/dettaglioContenutiNuovoCoronavirus.jsp?lingua=english&id=5367&area=nuovoCoronavirus&menu=vuoto",
 				"labels": {
-					"confirmed": [".col-lg-4.col-md-12.col-sm-12", 0, "div", 1, "::text", "::number"],
+					"total": [".col-lg-4.col-md-12.col-sm-12", 0, "div", 1, "::text", "::number"],
 					"deaths": [".col-lg-4.col-md-12.col-sm-12", 1, "div", 1, "::text", "::number"],
 					"recovered": [".col-lg-4.col-md-12.col-sm-12", 2, "div", 1, "::text", "::number"],
 					"serious": ["div.col-md-8", 0, "ul", 1, "li", 2, "b", 0, "::text", "::number"]
@@ -43,10 +43,10 @@
 			"args": {
 				"url": "https://covid19.isciii.es/resources/data.csv",
 				"labels": {
-					"confirmed": "Casos",
+					"total": "Casos",
 					"deaths": "Defunciones",
 					"recovered": "Recuperados",
-					"dconfirmed": "Casos24h"
+					"dtotal": "Casos24h"
 				}
 			},
 			"method": "csv",
@@ -61,8 +61,8 @@
 				"url": "https://covid19.isciii.es/resources/ccaa.csv",
 				"labels": {
 					"province": "CCAA",
-					"confirmed": "Casos",
-					"dconfirmed": "Ultimas 24h"
+					"total": "Casos",
+					"dtotal": "Ultimas 24h"
 				}
 			},
 			"method": "csv",
@@ -79,7 +79,7 @@
 					"province": ["attributes", "denominazione_regione"],
 					"latitude": ["attributes", "latitudine"],
 					"longitude": ["attributes", "longitudine"],
-					"confirmed": ["attributes", "totale_casi"],
+					"total": ["attributes", "totale_casi"],
 					"deaths": ["attributes", "deceduti"]
 				},
 				"namespace": ["features"]
@@ -99,7 +99,7 @@
 					"admin2": ["attributes", "denominazione_provincia"],
 					"latitude": ["attributes", "latitudine"],
 					"longitude": ["attributes", "longitudine"],
-					"confirmed": ["attributes", "totale_casi"]
+					"total": ["attributes", "totale_casi"]
 				},
 				"namespace": ["features"]
 			},
@@ -115,7 +115,7 @@
 				"url": "https://services.arcgis.com/CCZiGSEQbAxxFVh3/ArcGIS/rest/services/COVID19_Concelhos_V/FeatureServer/0/query?where=1%3D1&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&resultType=standard&distance=0.0&units=esriSRUnit_Meter&returnGeodetic=false&outFields=*&returnGeometry=false&returnCentroid=false&featureEncoding=esriDefault&multipatchOption=xyFootprint&maxAllowableOffset=&geometryPrecision=&outSR=&datumTransformation=&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=Distrito&outStatistics=%5B%7B%22statisticType%22%3A+%22sum%22%2C+%22onStatisticField%22%3A+%22ConfirmadosAcumulado_Conc%22%2C+%22outStatisticField%22%3A+%22Confirmed%22%7D%5D&having=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&returnExceededLimitFeatures=true&quantizationParameters=&sqlFormat=none&f=pjson&token=",
 				"labels": {
 					"province": ["attributes", "Distrito", "::cap"],
-					"confirmed": ["attributes", "SUM_ConfirmadosAcumulado_Conc"]
+					"total": ["attributes", "SUM_ConfirmadosAcumulado_Conc"]
 				},
 				"namespace": ["features"]
 			},
@@ -132,7 +132,7 @@
 				"labels": {
 					"province": ["attributes", "Distrito", "::cap"],
 					"admin2": ["attributes", "Concelho", "::cap"],
-					"confirmed": ["attributes", "ConfirmadosAcumulado_Conc"]
+					"total": ["attributes", "ConfirmadosAcumulado_Conc"]
 				},
 				"namespace": ["features"]
 			},
@@ -147,7 +147,7 @@
 			"args": {
 				"url": "https://services2.arcgis.com/RiHDI9SnFmD3Itzs/arcgis/rest/services/%EC%8B%9C%EB%8F%84%EB%B3%84_%EC%BD%94%EB%A1%9C%EB%82%98/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=%EB%B0%9C%EC%83%9D%EC%9E%90%EC%88%98%20desc&resultOffset=0",
 				"labels": {
-					"confirmed": ["attributes", "발생자수"],
+					"total": ["attributes", "발생자수"],
 					"deaths": ["attributes", "사망자수"],
 					"province": ["attributes", "CTP_ENG_NM"]
 				},
@@ -165,7 +165,7 @@
 				"url": "https://data.covid19japan.com/summary/latest.json",
 				"labels": {
 					"province": ["name"],
-					"confirmed": ["confirmed"],
+					"total": ["confirmed"],
 					"deaths": ["deaths"],
 					"recovered": ["recovered"]	
 				},
@@ -193,7 +193,7 @@
 				"url": "https://services7.arcgis.com/mOBPykOjAyBO2ZKk/arcgis/rest/services/Coronaf%C3%A4lle_in_den_Bundesl%C3%A4ndern/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Fallzahl%20desc&resultOffset=0",
 				"labels": {
 					"province": ["attributes", "LAN_ew_GEN"],
-					"confirmed": ["attributes", "Fallzahl"],
+					"total": ["attributes", "Fallzahl"],
 					"deaths": ["attributes", "Death"]
 				},
 				"namespace": ["features"]
@@ -226,7 +226,7 @@
 				"url": "https://services9.arcgis.com/pJENMVYPQqZZe20v/arcgis/rest/services/Join_Features_to_Enriched_Population_Case_Data_By_Province_Polygon/FeatureServer/0/query?f=json&where=Case_Total%3E0&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Case_Total%20desc&resultOffset=0",
 				"labels": {
 					"province": ["attributes", "NAME"],
-					"confirmed": ["attributes", "Case_Total"],
+					"total": ["attributes", "Case_Total"],
 					"deaths": ["attributes", "Deaths"],
 					"active": ["attributes", "ActiveCases"],
 					"num_tests": ["attributes", "Tests"],
@@ -247,7 +247,7 @@
 				"url": "https://www.worldometers.info/coronavirus/country/us/",
 				"labels": {
 					"province": "USA  State",
-					"confirmed": ["Total  Cases", "::number"],
+					"total": ["Total  Cases", "::number"],
 					"deaths": ["Total  Deaths", "::number"],
 					"active": ["Active  Cases", "::number"]
 				},
@@ -290,7 +290,7 @@
 				"labels": {
 					"entry_date": ["data", "::date_t"],
 					"serious": ["terapia_intensiva"],
-					"confirmed": ["totale_casi"],
+					"total": ["totale_casi"],
 					"recovered": ["dimessi_guariti"],
 					"deaths": ["deceduti"],
 					"num_tests": ["tamponi"]
@@ -311,7 +311,7 @@
 					"entry_date": ["data", "::date_t"],
 					"province": ["denominazione_regione"],
 					"serious": ["terapia_intensiva"],
-					"confirmed": ["totale_casi"],
+					"total": ["totale_casi"],
 					"recovered": ["dimessi_guariti"],
 					"deaths": ["deceduti"],
 					"num_tests": ["tamponi"],
@@ -334,7 +334,7 @@
 					"entry_date": ["data", "::date_t"],
 					"province": ["denominazione_regione"],
 					"admin2": ["denominazione_provincia"],
-					"confirmed": ["totale_casi"]
+					"total": ["totale_casi"]
 				},
 				"namespace": []
 			},
@@ -362,7 +362,7 @@
 					"admin2": "Admin2",
 					"latitude": "Lat",
 					"longitude": "Long",
-					"confirmed": "Case"
+					"total": "Case"
 				}
 			},
 			"method": "csv",
@@ -379,7 +379,7 @@
 					"province": "Province/State",
 					"latitude": "Lat",
 					"longitude": "Long",
-					"confirmed": "Confirmed",
+					"total": "Confirmed",
 					"recovered": "Recovered",
 					"deaths": "Deaths"
 				}
