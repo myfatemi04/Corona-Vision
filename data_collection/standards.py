@@ -161,6 +161,12 @@ def normalize_name(country, province='', admin2=''):
 	province = province.replace("U.S.", "US")
 	admin2 = admin2.replace("U.S.", "US")
 
+	if province.lower() == 'us military':
+		province = "US Military"
+
+	if "grand princess" in province.lower():
+		province = "Grand Princess"
+
 	# country = string.capwords(country)
 	# province = string.capwords(province)
 	# admin2 = string.capwords(admin2)
