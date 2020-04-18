@@ -74,8 +74,9 @@ def get_county_location(country_name, state_name, county_name):
 def get_county_code(country_name, state_name, county_name):
 	a0_code = get_country_code(country_name)
 	a1_code = get_state_code(country_name, state_name)
-	if (a0_code+"_"+a1_code+"_"+county_name) in county_name_to_code:
-		return county_name_to_code[a0_code+"_"+a1_code+"_"+county_name]
+	if a0_code is not None and a1_code is not None:
+		if (a0_code+"_"+a1_code+"_"+county_name) in county_name_to_code:
+			return county_name_to_code[a0_code+"_"+a1_code+"_"+county_name]
 
 def get_country_location(country_name):
 	country_code = get_country_code(country_name)
