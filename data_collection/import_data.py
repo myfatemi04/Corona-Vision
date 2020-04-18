@@ -257,6 +257,10 @@ methods = {
 	"update_all_deltas": update_all_deltas
 }
 
+bno_countries = [
+	'China', 'Canada', 'Australia'
+]
+
 app = Flask(__name__)
 
 @app.route("/")
@@ -264,11 +268,11 @@ def hello():
 	return redirect("https://www.coronavision.us/")
 
 if __name__ == "__main__":	
-	if len(sys.argv) < 2:
-		downloader = Thread(target=data_download, name="Data downloader", daemon=True)
+	if len(sys.argv) == 1:
+		downloader = Thread(target=data_download, name="Data downloader", daemon=False)
 		downloader.start()
 	elif sys.argv[1] == 'historical':
-		downloader = Thread(target=update_historical_data, name="Data downloader", daemon=True)
+		downloader = Thread(target=update_historical_data, name="Data downloader", daemon=False)
 		downloader.start()
 	elif sys.argv[1].startswith('jhu'):
 		d = sys.argv[1][3:]
@@ -278,7 +282,8 @@ if __name__ == "__main__":
 		d = int(d)
 		import_jhu.download_data_for_date(date(y, m, d))
 
-	PORT = 6060
-	if "PORT" in os.environ:
-		PORT = os.environ['PORT']
-	app.run("0.0.0.0", port=PORT)
+	# DEBUG MARKER
+	# PORT = 6060
+	# if "PORT" in os.environ:
+	# 	PORT = os.environ['PORT']
+	# app.run("0.0.0.0", port=PORT)

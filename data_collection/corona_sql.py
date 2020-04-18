@@ -43,15 +43,7 @@ class Datapoint(Base):
 	# columns about the numeric location
 	latitude = Column(Float(10, 6))
 	longitude = Column(Float(10, 6))
-
-	# DEPRECATED. replaced with having latitude=0 or longitude=0
-	# used to determine whether the location is defined or not
-	# location_labelled = Column(Boolean, default=False)
-	# location_accurate = Column(Boolean, default=False)
-
-	# determines if the data is from JHU
-	is_primary = Column(Boolean, default=False)
-
+	
 	# determines if this is the first time that that region has been seen
 	is_first_day = Column(Boolean, default=False)
 	
@@ -118,9 +110,6 @@ class Datapoint(Base):
 					if data[label] != getattr(self, label) or force_refresh:
 						delta[label] = data[label] - getattr(self, label)
 						setattr(self, label, data[label])
-
-		if 'is_primary' in data:
-			self.is_primary = True
 
 		self.update_sources(delta, source_link)
 

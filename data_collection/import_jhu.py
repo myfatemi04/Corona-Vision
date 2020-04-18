@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import io
 from corona_sql import Session, Datapoint, upload, generate_location_map
+from import_data import bno_countries
 from datetime import timedelta, date
 import standards
 import requests
@@ -27,7 +28,7 @@ def add_to_dict(dct, country, province, admin2, value_list):
 
 	return dct
 
-def import_data(csv_text, entry_date):
+def import_csv_data(csv_text, entry_date):
 	# load the CSV data
 	string_io = io.StringIO(csv_text)
 	df = pd.read_csv(string_io)
@@ -63,6 +64,13 @@ def import_data(csv_text, entry_date):
 
 		# STEP 1 #
 		country = standards.fix_country_name(row[country_col].strip())
+
+		# DEBUG MARKER
+		# THIS IS ONLY BECAUSE WE HAVE BNO NEWS
+		# if country in bno_countries:
+		# 	print("\rSkipping data from " + country, end='\r')
+		# 	continue
+	
 		province = '' if pd.isnull(row[province_col]) else row[province_col]
 		admin2 = ''
 		
@@ -116,7 +124,6 @@ def import_data(csv_text, entry_date):
 		country, province, admin2 = region
 
 		confirmed, deaths, recovered, active = stats
-		is_primary = region in primary
 
 		active = confirmed - recovered - deaths
 
@@ -148,8 +155,7 @@ def import_data(csv_text, entry_date):
 
 		data_row = {
 			"admin2": admin2, "province": province, "country": country,
-			"latitude": lat, "longitude": lng,
-			"is_first_day": is_first_day, "is_primary": is_primary,
+			"latitude": lat, "longitude": lng, "is_first_day": is_first_day,
 			"confirmed": confirmed, "deaths": deaths, "recovered": recovered, "active": active,
 			"dconfirmed": dconfirmed, "ddeaths": ddeaths, "drecovered": drecovered, "dactive": dactive,
 			"entry_date": entry_date.isoformat()
@@ -159,22 +165,22 @@ def import_data(csv_text, entry_date):
 	
 	print("\rUploading", end='\r')
 	upload(DATA_ROWS, {"entry_date": entry_date.isoformat()}, source_link="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports")
-	print(f"\rImported data for date {entry_date}")
+	print(f"\rImported data for date {entry_date}", end='\r')
 
 def download_data_for_date(entry_date):
 	session = Session()
 
-	existing_data = session.query(Datapoint).filter_by(
-		entry_date=entry_date.isoformat(),
-		is_primary=True).first() # first() has a limit of one result, so it's efficient
+	# existing_data = session.query(Datapoint).filter_by(
+	# 	entry_date=entry_date.isoformat(),
+	# 	is_primary=True).first() # first() has a limit of one result, so it's efficient
+	# # don't do it again
+	# if existing_data:
+	# 	print("data already exists", end='')
+	# 	return -1
 
 	date_formatted = entry_date.strftime("%m-%d-%Y")
 	print("\rAttempting to download " + date_formatted + '...', end='')
 	
-	# don't do it again
-	if existing_data:
-		print("data already exists", end='')
-		return -1
 
 	# download from Github
 	github_raw_url = f"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/{date_formatted}.csv"
@@ -185,7 +191,7 @@ def download_data_for_date(entry_date):
 		return 404
 
 	csv_text = response.text
-	import_data(csv_text, entry_date)
+	import_csv_data(csv_text, entry_date)
 	return 200
 
 def add_date_range(date_1, date_2):
