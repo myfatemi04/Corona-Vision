@@ -146,7 +146,13 @@ def upload(rows, defaults={}, source_link='', recount=True):
 	for row in rows:
 		i += 1
 		print(f"\rFinding changes--{i}/{len(rows)}               ", end='\r')
-		row = _fill_defaults(row)
+		row = _fill_defaults(row, defaults)
+
+		row_link = None
+		if 'source_link' in row:
+			row_link = row['source_link']
+			del row['source_link']
+		
 		location = select(row, ['country', 'province', 'admin2'])
 
 		# skip empty datapoints
@@ -173,9 +179,9 @@ def upload(rows, defaults={}, source_link='', recount=True):
 		
 		# actually update the data
 		delta = {}
-		
+				
 		if existing:
-			delta = existing.update(row, source_link, session)
+			delta = existing.update(row, row_link if row_link else source_link, session)
 			is_updated = (len(delta) > 1) or 0 not in delta
 			existing.guess_location()
 		else:
@@ -183,7 +189,7 @@ def upload(rows, defaults={}, source_link='', recount=True):
 			delta = dfilter(row, stat_labels)
 			new_data = Datapoint(**row)
 			new_data.guess_location()
-			new_data.update_sources(delta, source_link)
+			new_data.update_sources(delta, row_link if row_link else source_link)
 			session.add(new_data)
 			is_updated = True
 		
@@ -237,8 +243,8 @@ def upload(rows, defaults={}, source_link='', recount=True):
 def _is_nan(data):
 	return type(data) == float and np.isnan(data)
 
-def _fill_defaults(data):
-	default_data = { 'entry_date':date.today().isoformat(), 'group': '', 'country': '', 'province': '', 'admin2': '' }
+def _fill_defaults(data, defaults):
+	default_data = { 'entry_date': datetime.utcnow().strftime("%Y-%m-%d"), 'group': '', 'country': '', 'province': '', 'admin2': '', **defaults }
 
 	# add default values if not found
 	for label in default_data:
@@ -383,7 +389,7 @@ def update_deltas(day):
 
 def update_all_deltas():
 	start_date = date(2020, 1, 22)
-	end_date = date.today()
+	end_date = datetime.utcnow().date()
 	while start_date <= end_date:
 		next_day = start_date + timedelta(days=1)
 		update_deltas(start_date)

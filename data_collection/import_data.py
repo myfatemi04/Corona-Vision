@@ -34,30 +34,39 @@ def data_download():
 			print("ERROR DURING DATA COLLECTION: ", e)
 
 def update_live_data():
-	# DEBUG MARKER
 	for datasource in data_sources['live']:
-		try:
-			print("Loading live data from", datasource['label'])
-			args = datasource['args']
-			method = methods[datasource['method']]
-			method(**args)
-		except Exception as e:
-			print("Error during live data update: ", e, ". Data source: ", datasource['label'])
-			traceback.print_tb(sys.exc_info()[2])
-			
+		print("Loading live data from", datasource['label'])
+		upload_datasource(datasource)
 
 def update_historical_data():
 	for datasource in data_sources['historical']:
-		try:
-			print("Loading historical data from", datasource['label'])
-			args = datasource['args']
-			method = methods[datasource['method']]
-			method(**args)
-		except Exception as e:
-			print("Error during historical data update: ", e, ". Data source: ", datasource['label'])
-			traceback.print_tb(sys.exc_info()[2])
+		print("Loading historical data from", datasource['label'])
+		upload_datasource(datasource)
+
+def dict_match(source, search):
+	for col in search:
+		if col in source and source[col] == search[col]:
+			return True
+	return False
+
+def upload_datasource(datasource):
+	try:
+		args = datasource['args']
+		method = methods[datasource['method']]
+		results = method(**args)
+		if results:
+			if "disallow" in datasource:
+				# for each result, go through all the filters and see if they match. if not any of them match, then they're ok.
+				results = [result for result in results if not any([dict_match(result, rule) for rule in datasource['disallow']])]
+
+			upload(results, defaults=datasource['defaults'], source_link=datasource['source_link'])
+	except Exception as e:
+		print("Error during update: ", e, ". Data source: ", datasource['label'])
+		traceback.print_tb(sys.exc_info()[2])
 
 def number(string):
+	if type(string) == float or type(string) == int:
+		return string
 	string = string.strip()
 	if not string:
 		return 0
@@ -95,9 +104,9 @@ def import_worldometers():
 		
 		data.append(new_data)
 	
-	upload(data, source_link="http://www.worldometers.info/coronavirus")
+	return data
 
-def import_google_sheets(url, defaults, labels=['province', 'confirmed', 'dconfirmed', 'deaths', 'ddeaths', '', 'serious', 'recovered', '']):
+def import_google_sheets(url, labels=['province', 'confirmed', 'dconfirmed', 'deaths', 'ddeaths', '', 'serious', 'recovered', '']):
 	response = requests.get(url)
 	soup = BeautifulSoup(response.text, "html.parser")
 	rows = soup.findAll('tr')
@@ -111,7 +120,7 @@ def import_google_sheets(url, defaults, labels=['province', 'confirmed', 'dconfi
 			mode = "rows"
 		elif mode == "rows":
 			tds = row.findAll('td')
-			new_data = {**defaults}
+			new_data = {}
 
 			for label, td in zip(labels, tds):
 				if label in number_labels:
@@ -124,12 +133,13 @@ def import_google_sheets(url, defaults, labels=['province', 'confirmed', 'dconfi
 
 			if 'province' in new_data:
 				if 'total' in new_data['province'].lower(): new_data['province'] = ''
-			if 'total' in new_data['country'].lower(): new_data['country'] = ''
+			if 'country' in new_data:
+				if 'total' in new_data['country'].lower(): new_data['country'] = ''
 			data.append(new_data)
 
-	upload(data, defaults, source_link=url)
+	return data
 
-def import_selector(url, source_link, defaults, labels):
+def import_selector(url, labels):
 	try:
 		response = requests.get(url)
 		soup = BeautifulSoup(response.text, "html.parser")
@@ -138,7 +148,7 @@ def import_selector(url, source_link, defaults, labels):
 		return
 	
 	try:
-		data = {**defaults}
+		data = {}
 		for label, selectors in labels.items():
 			field = get_elem(soup, selectors)
 			data[label] = field
@@ -146,7 +156,7 @@ def import_selector(url, source_link, defaults, labels):
 		print("Error during selector!", e, url)
 		return
 	
-	upload([data], source_link=source_link)
+	return [data]
 
 def get_elem(soup, selector_chain):
 	elem = soup
@@ -161,41 +171,60 @@ def get_elem(soup, selector_chain):
 	
 	return elem
 
-def import_csv(url, defaults, source_link, labels, row='all'):
+def import_csv(url, labels, row='all'):
 	response = requests.get(url)
 	df = pd.read_csv(io.StringIO(response.text))
-	
+	return import_df(df, labels, row)
+
+def import_table(url, table_selector, labels, row='all'):
+	response = requests.get(url)
+	soup = BeautifulSoup(response.text, "html.parser")
+	table = get_elem(soup, table_selector)
+	df = pd.read_html(table.prettify())[0]
+	return import_df(df, labels, row)
+
+def import_df(df, labels, row):
 	all_data = []
 	if row == 'all':
 		for _, row in df.iterrows():
-			data = {**defaults}
+			data = {}
 			for label in labels:
-				data[label] = row[labels[label]]
+				label_selector = labels[label]
+				if type(label_selector) == list:
+					head = row
+					for sel in label_selector:
+						if sel.startswith("::"):
+							head = json_methods[sel](head)
+						else:
+							head = head[sel]
+					data[label] = head
+				elif type(label_selector) == str:
+					data[label] = row[label_selector]
 				
 			all_data.append(data)
 	else:
-		data = {**defaults}
+		data = {}
 		row = df.iloc[row]
 		for label in labels:
 			data[label] = row[labels[label]]
 		all_data.append(data)
 		
-	upload(all_data, defaults, source_link=source_link)
+	return all_data
 
-def import_json(url, defaults, source_link, labels, namespace):
+def import_json(url, labels, namespace):
 	resp = requests.get(url)
 	content = find_json(resp.json(), namespace)
 	data = []
 	if type(content) == list:
 		for row in content:
-			data.append(extract_json_data(row, defaults, labels))
+			data.append(extract_json_data(row, labels))
 	else:
-		data.append(extract_json_data(content, defaults, labels))
+		data.append(extract_json_data(content, labels))
 	
-	upload(data, defaults, source_link=source_link)
+	return data
 		
-def extract_json_data(row, defaults, labels):
-	result = {**defaults}
+def extract_json_data(row, labels):
+	result = {}
 	for label in labels:
 		try:
 			j = find_json(row, labels[label])
@@ -227,15 +256,14 @@ def date_t(s):
 	return datetime.strptime(s, "%Y-%m-%dT%H:%M:%S").strftime("%Y-%m-%d")
 
 def import_jhu_runner():
-	import_jhu.download_data_for_date(date.today())
-	print()
+	return import_jhu.download_data_for_date(date.today())
 
 def import_jhu_historical():
-	import_jhu.add_date_range(date_1=date(2020, 1, 22), date_2=date.today())
+	return import_jhu.add_date_range(date_1=date(2020, 1, 22), date_2=date.today())
 
 json_methods = {
 	"::unixtime": lambda x: datetime.utcfromtimestamp(x//1000).strftime("%Y-%m-%d"),
-	"::number": lambda x: number(x.text),
+	"::number": lambda x: number(x),
 	"::text": lambda x: x.text,
 	"::strip": lambda x: x.strip(),
 	"::cap": lambda x: x.capitalize(),
@@ -254,7 +282,8 @@ methods = {
 	"json": import_json,
 	"jhu": import_jhu_runner,
 	"jhu_range": import_jhu_historical,
-	"update_all_deltas": update_all_deltas
+	"update_all_deltas": update_all_deltas,
+	"table": import_table
 }
 
 bno_countries = [
@@ -267,12 +296,16 @@ app = Flask(__name__)
 def hello():
 	return redirect("https://www.coronavision.us/")
 
-if __name__ == "__main__":	
+if __name__ == "__main__":
+	# DEBUG MARKER
+	# data_download()
+	# upload_datasource(data_sources['live'][-1])
+	# exit()
 	if len(sys.argv) == 1:
-		downloader = Thread(target=data_download, name="Data downloader", daemon=False)
+		downloader = Thread(target=data_download, name="Data downloader", daemon=True)
 		downloader.start()
 	elif sys.argv[1] == 'historical':
-		downloader = Thread(target=update_historical_data, name="Data downloader", daemon=False)
+		downloader = Thread(target=update_historical_data, name="Data downloader", daemon=True)
 		downloader.start()
 	elif sys.argv[1].startswith('jhu'):
 		d = sys.argv[1][3:]
@@ -283,7 +316,8 @@ if __name__ == "__main__":
 		import_jhu.download_data_for_date(date(y, m, d))
 
 	# DEBUG MARKER
-	# PORT = 6060
-	# if "PORT" in os.environ:
-	# 	PORT = os.environ['PORT']
-	# app.run("0.0.0.0", port=PORT)
+	PORT = 6060
+	if "PORT" in os.environ:
+		PORT = os.environ['PORT']
+	app.run("0.0.0.0", port=PORT)
+	input()

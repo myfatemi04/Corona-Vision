@@ -162,42 +162,31 @@ def import_csv_data(csv_text, entry_date):
 		}
 
 		DATA_ROWS.append(data_row)
-	
-	print("\rUploading", end='\r')
-	upload(DATA_ROWS, {"entry_date": entry_date.isoformat()}, source_link="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports")
-	print(f"\rImported data for date {entry_date}", end='\r')
+		
+	return DATA_ROWS
 
 def download_data_for_date(entry_date):
-	session = Session()
-
-	# existing_data = session.query(Datapoint).filter_by(
-	# 	entry_date=entry_date.isoformat(),
-	# 	is_primary=True).first() # first() has a limit of one result, so it's efficient
-	# # don't do it again
-	# if existing_data:
-	# 	print("data already exists", end='')
-	# 	return -1
-
 	date_formatted = entry_date.strftime("%m-%d-%Y")
 	print("\rAttempting to download " + date_formatted + '...', end='')
 	
-
 	# download from Github
 	github_raw_url = f"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/{date_formatted}.csv"
 	response = requests.get(github_raw_url)
 	
 	if response.status_code != 200:
-		print("date not found	   ", end='')
-		return 404
+		return None
 
 	csv_text = response.text
-	import_csv_data(csv_text, entry_date)
-	return 200
+	return import_csv_data(csv_text, entry_date)
 
 def add_date_range(date_1, date_2):
 	next_date = timedelta(days=1)
 	current_date = date_1
+	acc = []
 	while current_date <= date_2:
-		if download_data_for_date(current_date) == 404:
+		result = download_data_for_date(current_date)
+		if not result:
 			return
+		acc += result
 		current_date += next_date
+	return acc

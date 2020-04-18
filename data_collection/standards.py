@@ -114,7 +114,7 @@ def remove_start(string, start):
 	return string
 
 def remove_end(string, end):
-	if string.lower().endswith(end):
+	if string.lower().endswith(end.lower()):
 		return string[:-len(end)]
 	return string
 
@@ -142,6 +142,22 @@ def fix_country_name(country):
 		country = ''
 
 	return country
+
+def normalize_name(country, province='', admin2=''):
+	if country is None:
+		country = ''
+	if province is None:
+		province = ''
+	if admin2 is None:
+		admin2 = ''
+	country = get_country_name(country)
+	country = fix_country_name(country)
+	if ", " in province and admin2 == '':
+		admin2, province = get_admin2_province(country, province)
+
+	province = get_state_name(country, province)
+	admin2 = remove_end(admin2, " county")
+
 
 def get_admin2_province(country, province):
 	comma_index = province.rfind(", ")
