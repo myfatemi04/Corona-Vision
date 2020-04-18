@@ -319,7 +319,8 @@ def hello():
 	return redirect("https://www.coronavision.us/")
 
 if __name__ == "__main__":
-	exit()
+	# exit()
+	# use_server = False
 	use_server = True
 
 	# DEBUG MARKER
