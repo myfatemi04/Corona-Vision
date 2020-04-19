@@ -18,7 +18,7 @@ function update_stats() {
                 data = data_[0];
                 $("#stats-info").show()
                 $("#stats-label")[0].innerHTML = generate_name(admin0, admin1, admin2)
-                for (let prop of ['total', 'recovered', 'deaths', 'dtotal', 'serious', 'num_tests']) {
+                for (let prop of ['total', 'recovered', 'deaths', 'dtotal', 'serious', 'tests']) {
                     if (("source_" + prop) in data && data["source_" + prop]) {
                         if (data["source_" + prop] == "calculated") {
                             data["source_" + prop] = "javascript:alert('This data is aggregated from more specific sources, e.g. adding up individual state totals');";

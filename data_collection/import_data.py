@@ -321,7 +321,7 @@ def hello():
 if __name__ == "__main__":
 	# exit()
 	# use_server = False
-	use_server = False
+	use_server = True
 
 	# DEBUG MARKER
 	if len(sys.argv) == 1:
