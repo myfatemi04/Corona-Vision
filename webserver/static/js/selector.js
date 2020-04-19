@@ -64,7 +64,7 @@ function init_selectors(after_change, need_child) {
 
                 if (!CORONA_GLOBALS.admin1_list.hasOwnProperty(admin0)) {
                     $.getJSON(
-                        "/list/admin1s",
+                        "/list/provinces",
                         {
                             admin0: admin0,
                             date: $("#date")[0].value,

@@ -173,9 +173,11 @@ app.get("/cases/totals_sequence", (req, res) => {
             for (let label of labels) {
                 resp[label] = [];
             }
-
+            
+            /* !!! This strongly relies on the date format !!! */
             let day = new Date(content[0].entry_date);
             let last_day = new Date(content[content.length - 1].entry_date);
+
             let i = 0;
             // <, NOT <=, because the most recent day's data is incomplete
             while (day < last_day) {
@@ -187,7 +189,8 @@ app.get("/cases/totals_sequence", (req, res) => {
                 // we don't increment the data index if the next date isn't found
                 day.setUTCDate(day.getUTCDate() + 1);
                 if (i + 1 < content.length) {
-                    if (utc_iso(day) == content[i + 1].entry_date) i += 1;
+                    let content_iso = utc_iso(new Date(content[i + 1].entry_date));
+                    if (utc_iso(day) == content_iso) i += 1;
                 }
             }
             

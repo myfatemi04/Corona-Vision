@@ -366,7 +366,7 @@ def update_overall(admin0, admin1, entry_date, session):
 		for label in stat_labels:
 			setattr(overall_dp, label, 0)
 	
-	print(labelled, admin0, admin1, entry_date)
+	# prt(labelled, admin0, admin1, entry_date)
 	overall_dp.update_data(labelled, "calculated", session)
 
 def update_deltas(day):
