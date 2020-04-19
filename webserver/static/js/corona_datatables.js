@@ -1,4 +1,4 @@
-let by_country = {};
+let by_admin0 = {};
 let by_us_state = {};
 
 function filter_table() {
@@ -16,13 +16,13 @@ function filter_table() {
     }
 }
 
-function set_country(country) {
-    $("#country-selector").val(country);
-    $("#country-selector").trigger("change");
+function set_admin0(admin0) {
+    $("#admin0-selector").val(admin0);
+    $("#admin0-selector").trigger("change");
 }
-function set_province(province) {
-    $("#province-selector").val(province);
-    $("#province-selector").trigger("change");
+function set_admin1(admin1) {
+    $("#admin1-selector").val(admin1);
+    $("#admin1-selector").trigger("change");
 }
 
 function set_admin2(admin2) {
@@ -33,17 +33,17 @@ function set_admin2(admin2) {
 function reload_data() {
     let entry_date = $("#date")[0].value;
     let params = {
-        country: CORONA_GLOBALS.country,
-        province: CORONA_GLOBALS.province,
+        admin0: CORONA_GLOBALS.admin0,
+        admin1: CORONA_GLOBALS.admin1,
         admin2: CORONA_GLOBALS.admin2,
         date: entry_date
     };
 
     // if any are unspecified, set to all (highest level only, so else if)
-    if (params.country == '') {
-        params.country = 'all';
-    } else if (params.province == '' && params.country != '') {
-        params.province = 'all';
+    if (params.admin0 == '') {
+        params.admin0 = 'all';
+    } else if (params.admin1 == '' && params.admin0 != '') {
+        params.admin1 = 'all';
     } else if (params.admin2 == '') {
         params.admin2 = 'all';
     }
@@ -52,7 +52,7 @@ function reload_data() {
         params,
         function(result) {
             $("#tablebody")[0].innerHTML = result;
-            //by_country[entry_date] = result;
+            //by_admin0[entry_date] = result;
             //show_data(result, level, def);
         }
     );

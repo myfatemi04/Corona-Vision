@@ -52,7 +52,8 @@
 					{},
 					(data) => {
 						for (let result of data) {
-							$("#date")[0].innerHTML += `<option value="${result.entry_date}">${result.entry_date == "live" ? "Live data" : result.entry_date}</option>`;
+							let datestr = result.entry_date.substring(0, 10);
+							$("#date")[0].innerHTML += `<option value="${datestr}">${datestr}</option>`;
 						}
 						
 						$("#date-label")[0].innerHTML = $("#date option:selected")[0].innerHTML;

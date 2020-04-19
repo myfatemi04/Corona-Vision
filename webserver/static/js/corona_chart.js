@@ -393,15 +393,15 @@ function smooth_data(array, smoothing) {
 function reload_chart() {
 	reset_chart();
 	
-	let country = CORONA_GLOBALS.country;
-	let province = CORONA_GLOBALS.province;
+	let admin0 = CORONA_GLOBALS.admin0;
+	let admin1 = CORONA_GLOBALS.admin1;
 	let admin2 = CORONA_GLOBALS.admin2;
 	
-	let label = generate_name(country, province, admin2);
+	let label = generate_name(admin0, admin1, admin2);
 
 	let params = {
-		country: country,
-		province: province,
+		admin0: admin0,
+		admin1: admin1,
 		admin2: admin2,
 		world: "World"
 	}

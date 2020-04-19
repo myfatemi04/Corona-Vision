@@ -1,7 +1,7 @@
 const sql = require('./corona_sql');
 
-let country_list = [];
-let province_list = {};
+let admin0_list = [];
+let admin1_list = {};
 
 let COLORS = {
     total: "#fcba03",
@@ -70,12 +70,12 @@ function table_col(options) {
 
 let ico = ""; // <i class="fas fa-angle-right"></i>
 
-function set_country_link(label) {
-    return `<a style="color: #3657ff;" href='javascript:set_country("${label}")';>${label} ${ico}</a>`;
+function set_admin0_link(label) {
+    return `<a style="color: #3657ff;" href='javascript:set_admin0("${label}")';>${label} ${ico}</a>`;
 }
 
-function set_province_link(label) {
-    return `<a style="color: #3657ff;" href='javascript:set_province("${label}")';>${label} ${ico}</a>`;
+function set_admin1_link(label) {
+    return `<a style="color: #3657ff;" href='javascript:set_admin1("${label}")';>${label} ${ico}</a>`;
 }
 
 function set_admin2_link(label) {
@@ -100,36 +100,36 @@ function format_update_time(update_time) {
     return Math.round(d) + "d ago";
 }
 
-let deselect_country_link = `<a href="javascript:set_country('');"><i class="fas fa-angle-double-left"></i> Go back</a>`;
-let deselect_province_link = `<a href="javascript:set_province('');"><i class="fas fa-angle-double-left"></i> Go back</a>`;
+let deselect_admin0_link = `<a href="javascript:set_admin0('');"><i class="fas fa-angle-double-left"></i> Go back</a>`;
+let deselect_admin1_link = `<a href="javascript:set_admin1('');"><i class="fas fa-angle-double-left"></i> Go back</a>`;
 let deselect_admin2_link = `<a href="javascript:set_admin2('');"><i class="fas fa-angle-double-left"></i> Go back</a>`;
 
 module.exports = {
-    // load_country_list: () => {
-    //     sql.sql.query("select distinct country from datapoints where entry_date='live' and province != '';", (err, results) => {
+    // load_admin0_list: () => {
+    //     sql.sql.query("select distinct admin0 from datapoints where entry_date='live' and admin1 != '';", (err, results) => {
     //         for (let row of results) {
-    //             let country = row.country;
-    //             country_list.push(country);
-    //             province_list[country] = [];
-    //             sql.sql.query("select distinct province from datapoints where entry_date='live' and country = '" + country + "' and admin2 != ''", (err, results) => {
-    //                 for (let province_row of results) {
-    //                     let province = province_row.province;
-    //                     province_list[country].push(province);
+    //             let admin0 = row.admin0;
+    //             admin0_list.push(admin0);
+    //             admin1_list[admin0] = [];
+    //             sql.sql.query("select distinct admin1 from datapoints where entry_date='live' and admin0 = '" + admin0 + "' and admin2 != ''", (err, results) => {
+    //                 for (let admin1_row of results) {
+    //                     let admin1 = admin1_row.admin1;
+    //                     admin1_list[admin0].push(admin1);
     //                 }
     //             });
     //         }
     //     });
     // },
     format_update_time: format_update_time,
-    make_rows: (data, country, province, admin2) => {
-        // if the country isn't specified, we are listing countries
-        if (country == 'all' || country == '') { label_prop = 'country'; label_default = 'World'; }
+    make_rows: (data, admin0, admin1, admin2) => {
+        // if the admin0 isn't specified, we are listing countries
+        if (admin0 == 'all' || admin0 == '') { label_prop = 'admin0'; label_default = 'World'; }
 
-        // if the province isn't specified, we are listing provinces
-        else if (province == 'all' || province == '') { label_prop = 'province'; label_default = country; }
+        // if the admin1 isn't specified, we are listing admin1s
+        else if (admin1 == 'all' || admin1 == '') { label_prop = 'admin1'; label_default = admin0; }
 
         // if the admin2 isn't specified, we are listing admin2
-        else if (admin2 == 'all' || admin2 == '') { label_prop = 'admin2'; label_default = province; }
+        else if (admin2 == 'all' || admin2 == '') { label_prop = 'admin2'; label_default = admin1; }
 
         // if all are specified, we are listing a single entry
         else { label_prop = ''; label_default = admin2; }
@@ -139,12 +139,12 @@ module.exports = {
         let i = 0;
 
         let html = "";
-        if (country != '' && country != 'all') {
+        if (admin0 != '' && admin0 != 'all') {
             html = `
             <tr>
                 <td class="mx-1" style="flex: 1;"></td>
                 <td class="mx-1" style="flex: 2;">
-                    ${(province == '' || province == 'all' ? deselect_country_link : (admin2 == '' || admin2 == 'all' ? deselect_province_link : deselect_admin2_link))}
+                    ${(admin1 == '' || admin1 == 'all' ? deselect_admin0_link : (admin2 == '' || admin2 == 'all' ? deselect_admin1_link : deselect_admin2_link))}
                 </td>
             </tr>`;
         }
@@ -155,16 +155,16 @@ module.exports = {
             let label_link = label;
             if (label) {
                 let label = datapoint[label_prop];
-                if (label_prop == 'country') {
-                    // if (country_list.includes(label)) {
-                    //     label_link = set_country_link(label);
+                if (label_prop == 'admin0') {
+                    // if (admin0_list.includes(label)) {
+                    //     label_link = set_admin0_link(label);
                     // }
-                    label_link = set_country_link(label);
-                } else if (label_prop == 'province') {
-                    // if (country in province_list && province_list[country].includes(label)) {
-                    //     label_link = set_province_link(label);
+                    label_link = set_admin0_link(label);
+                } else if (label_prop == 'admin1') {
+                    // if (admin0 in admin1_list && admin1_list[admin0].includes(label)) {
+                    //     label_link = set_admin1_link(label);
                     // }
-                    label_link = set_province_link(label);
+                    label_link = set_admin1_link(label);
                 } else if (label_prop == 'admin2') {
                     label_link = set_admin2_link(label);
                 } else {

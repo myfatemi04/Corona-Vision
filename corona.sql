@@ -5,9 +5,9 @@ create table datapoints (
 	entry_date varchar(16),
 	update_time datetime not null default CURRENT_TIMESTAMP,
 	
+	admin0 varchar(320) default '',
+	admin1 varchar(320) default '',
 	admin2 varchar(320) default '',
-	province varchar(320) default '',
-	country varchar(320) default '',
 	`group` varchar(320) default '',
 	
 	latitude float(10, 6),

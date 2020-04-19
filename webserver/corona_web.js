@@ -75,8 +75,8 @@ app.get("/cases/totals_table", (req, res) => {
     let params = req.query;
 
     // get location and date
-    let country = get(params, "country") || "";
-    let province = get(params, "province") || "";
+    let admin0 = get(params, "admin0") || "";
+    let admin1 = get(params, "admin1") || "";
     let admin2 = get(params, "admin2") || "";
     let entry_date = get(params, "date") || "live";
 
@@ -84,8 +84,8 @@ app.get("/cases/totals_table", (req, res) => {
     
     // dont filter if the field = 'all'
     let where_conds = [];
-    if (country != 'all') where_conds.push("country = " + sqlstring.escape(country));
-    if (province != 'all') where_conds.push("province = " + sqlstring.escape(province));
+    if (admin0 != 'all') where_conds.push("admin0 = " + sqlstring.escape(admin0));
+    if (admin1 != 'all') where_conds.push("admin1 = " + sqlstring.escape(admin1));
     if (admin2 != 'all') where_conds.push("admin2 = " + sqlstring.escape(admin2));
 
     if (where_conds.length > 0) {
@@ -96,19 +96,19 @@ app.get("/cases/totals_table", (req, res) => {
 
     get_sql(query, key="table_" + query).then(
         content => {
-            res.send(datatables.make_rows(content, country, province, admin2));
+            res.send(datatables.make_rows(content, admin0, admin1, admin2));
         }
     );
 });
 
 /* Totals API
- * This provides results for a given country, province, or county */
+ * This provides results for a given admin0, admin1, or admin2 */
 app.get("/cases/totals", (req, res) => {
     let params = req.query;
 
     // get location and date
-    let country = get(params, "country") || "";
-    let province = get(params, "province") || "";
+    let admin0 = get(params, "admin0") || "";
+    let admin1 = get(params, "admin1") || "";
     let admin2 = get(params, "admin2") || "";
     let entry_date = get(params, "date") || "live";
 
@@ -116,8 +116,8 @@ app.get("/cases/totals", (req, res) => {
     
     // dont filter if the field = 'all'
     let where_conds = [];
-    if (country != 'all') where_conds.push("country = " + sqlstring.escape(country));
-    if (province != 'all') where_conds.push("province = " + sqlstring.escape(province));
+    if (admin0 != 'all') where_conds.push("admin0 = " + sqlstring.escape(admin0));
+    if (admin1 != 'all') where_conds.push("admin1 = " + sqlstring.escape(admin1));
     if (admin2 != 'all') where_conds.push("admin2 = " + sqlstring.escape(admin2));
 
     if (where_conds.length > 0) {
@@ -146,23 +146,23 @@ app.get("/cases/totals_sequence", (req, res) => {
     let params = req.query;
 
     // get location and date
-    let country = get(params, "country") || "";
-    let province = get(params, "province") || "";
+    let admin0 = get(params, "admin0") || "";
+    let admin1 = get(params, "admin1") || "";
     let admin2 = get(params, "admin2") || "";
 
     let query = "select * from datapoints";
     
     // dont filter if the field = 'all'
     let where_conds = [];
-    if (country != 'all') where_conds.push("country = " + sqlstring.escape(country));
-    if (province != 'all') where_conds.push("province = " + sqlstring.escape(province));
+    if (admin0 != 'all') where_conds.push("admin0 = " + sqlstring.escape(admin0));
+    if (admin1 != 'all') where_conds.push("admin1 = " + sqlstring.escape(admin1));
     if (admin2 != 'all') where_conds.push("admin2 = " + sqlstring.escape(admin2));
 
     if (where_conds.length > 0) {
         query += " where " + where_conds.join(" and ");
     }
 
-    query += " and entry_date != 'live' order by entry_date";
+    query += " order by entry_date";
 
     get_sql(query).then(
         (content) => {
@@ -215,13 +215,13 @@ app.get("/list/countries", (req, res) => {
     let entry_date = get(params, "date") || "live";
 
     // base query
-    let query = "select distinct country from datapoints where country != '' and entry_date = " + sqlstring.escape(entry_date);
+    let query = "select distinct admin0 from datapoints where admin0 != '' and entry_date = " + sqlstring.escape(entry_date);
 
-    // require a province if necessary
-    if ("need_province" in params && params.need_province == 1) { query += " and province != ''"; }
+    // require a admin1 if necessary
+    if ("need_admin1" in params && params.need_admin1 == 1) { query += " and admin1 != ''"; }
 
     // alphabetical order
-    query += " order by country";
+    query += " order by admin0";
 
     get_sql(query).then(
         content => {
@@ -230,36 +230,36 @@ app.get("/list/countries", (req, res) => {
     );
 });
 
-/* Provinces API - gives a list of provinces for a given country and date */
+/* Provinces API - gives a list of admin1s for a given admin0 and date */
 app.get("/list/provinces", (req, res) => {
     let params = req.query;
 
-    // require the country
-    if (!("country" in params)) res.end();
+    // require the admin0
+    if (!("admin0" in params)) res.end();
 
     // base query
-    let query = sqlstring.format("select distinct province from datapoints where country = ? and province != ''" , params.country);
+    let query = sqlstring.format("select distinct admin1 from datapoints where admin0 = ? and admin1 != ''" , params.admin0);
 
-    // require a county if necessary
+    // require a admin2 if necessary
     if ("need_admin2" in params && params.need_admin2 == 1) { query += " and admin2 != ''"; }
     
     // alphabetical order
-    query += " order by province";
+    query += " order by admin1";
 
     get_sql(query).then(
         content => res.json(content)
     );
 });
 
-/* County API - gives a list of counties for a given country, province, and date */
+/* County API - gives a list of counties for a given admin0, admin1, and date */
 app.get("/list/admin2", (req, res) => {
     let params = req.query;
 
-    // require the country and province
-    if (!("country" in params) || !("province" in params)) res.end();
+    // require the admin0 and admin1
+    if (!("admin0" in params) || !("admin1" in params)) res.end();
 
     // base query
-    let query = sqlstring.format("select distinct admin2 from datapoints where country = ? and province = ? and admin2 != '' order by admin2", [params.country, params.province]);
+    let query = sqlstring.format("select distinct admin2 from datapoints where admin0 = ? and admin1 = ? and admin2 != '' order by admin2", [params.admin0, params.admin1]);
     
     get_sql(query).then(
         content => res.json(content)
@@ -275,7 +275,7 @@ app.get("/list/dates", (req, res) => {
     );
 });
 
-/* First Days API - returns the stats for each country on the first day of infection */
+/* First Days API - returns the stats for each admin0 on the first day of infection */
 app.get("/cases/first_days", (req, res) => {
     let query = sqlstring.format("select * from datapoints where is_first_day = true order by entry_date;");
     get_sql(query).then(
@@ -286,7 +286,7 @@ app.get("/cases/first_days", (req, res) => {
 /* Cases-by-date API - returns all cases (with a labelled location) for a given date. Used by the map */
 app.get("/cases/date", (req, res) => {
     let entry_date = get(req.query, "date") || "live";
-    let query = sqlstring.format("select * from datapoints where entry_date = ? and latitude != 0 and longitude != 0 and admin2 = '' and country != ''", entry_date);
+    let query = sqlstring.format("select * from datapoints where entry_date = ? and latitude != 0 and longitude != 0 and admin2 = '' and admin0 != ''", entry_date);
     get_sql(query).then( 
         content => res.json(content)
     );
@@ -296,7 +296,7 @@ geojson_cache = {};
 geojson_max_age = 1000 * 60 * 15; // 15-minute caching
 app.get("/geojson", (req, res) => {
     let entry_date = req.query['date'] || new Date().toISOString().substring(0, 10);
-    let query = sqlstring.format("select * from datapoints where entry_date = ? and latitude is not null and longitude is not null and admin2 = '' and country != '' and total > 10", entry_date);
+    let query = sqlstring.format("select * from datapoints where entry_date = ? and latitude is not null and longitude is not null and admin2 = '' and admin0 != '' and total > 10", entry_date);
     if (query in geojson_cache) {
         let {data, update_time} = geojson_cache[query];
         if (Date.now() - update_time < geojson_max_age) {
@@ -317,8 +317,8 @@ app.get("/geojson", (req, res) => {
 function geojson(content) {
     let feature_list = [];
     for (let datapoint of content) {
-        let name = datapoint.country || "World";
-        if (datapoint.province) name = datapoint.province + ", " + name;
+        let name = datapoint.admin0 || "World";
+        if (datapoint.admin1) name = datapoint.admin1 + ", " + name;
         if (datapoint.admin2) name = datapoint.admin2 + ", " + name;
         feature_list.push({
             id: name,

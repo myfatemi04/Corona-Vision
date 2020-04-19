@@ -3,33 +3,67 @@ drop table if exists locations;
 
 create table locations (
 	location_id int auto_increment primary key,
+	/* Administrative division location */
 	admin0 varchar(256) default '',
 	admin1 varchar(256) default '',
 	admin2 varchar(256) default '',
+
+	/* Administrative division ISO codes */
 	admin0_code varchar(2) default '',
 	admin1_code varchar(2) default '',
+	admin2_code varchar(10) default '',
+
+	/* Specificity of location */
+	admin_level enum("world", "admin0", "admin1", "admin2"),
+
+	/* Geographic location */
 	latitude float(10, 6),
 	longitude float(10, 6),
+
+	/* Demographics */
 	population float,
-	area float,
-	population_density float generated always as (population / area) stored,
-	location_labelled boolean generated always as (latitude is not null and longitude is not null) stored
+	population_density float,
+	
+	/* Weather
+	   Relative humidity, temperature in C */
+	humidity float,
+	temperature float,
+
+	/* Virus lockdown info */
+	start_cases date,
+	start_socdist date,
+	start_lockdown date
+
 ) collate utf8_bin;
 
 create table test (
 	entry_date date,
-	location_id int,
+	update_time datetime default current_timestamp,
+
+	admin0 varchar(256),
+	admin1 varchar(256),
+	admin2 varchar(256),
 	
-	total int default 0,
-	deaths int default 0,
-	recoveries int default 0,
-	active int generated always as (total - deaths - recoveries) stored,
+	total int,
+	deaths int,
+	recoveries int,
+	tests int,
+	serious int,
+	hospitalized int,
 	
-	total_new int default 0,
-	deaths_new int default 0,
-	recoveries_new int default 0,
-	active_new int generated always as (total_new - deaths_new - recoveries_new) stored,
+	total_new int,
+	deaths_new int,
+	recoveries_new int,
+	tests_new int,
+	serious_new int,
+	hospitalized_new int,
+
+	source_total text,
+	source_deaths text,
+	source_recoveries text,
+	source_tests text,
+	source_serious text,
+	source_hospitalized text,
 	
-	primary key(entry_date, location_id),
-	foreign key(location_id) references locations(location_id) on delete cascade
+	primary key(entry_date, admin0, admin1, admin2)
 );

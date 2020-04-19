@@ -91,8 +91,8 @@ def import_worldometers():
 	response = requests.get("http://www.worldometers.info/coronavirus")
 	soup = BeautifulSoup(response.text, "html.parser")
 	main_countries = soup.find(id="main_table_countries_today")
-	labels = ['country', 'total', 'dtotal', 'deaths', 'ddeaths', 'recovered', 'active', 'serious', '', '', 'num_tests', '']
-	number_labels = {'total', 'dtotal', 'deaths', 'ddeaths', 'recovered', 'active', 'serious', 'num_tests'}
+	labels = ['admin0', 'total', '', 'deaths', '', 'recovered', '', 'serious', '', '', 'tests', '']
+	number_labels = {'total', 'deaths', 'recovered', 'serious', 'tests'}
 	
 	data = []
 	for row in main_countries.find("tbody").findAll("tr"):
@@ -107,8 +107,8 @@ def import_worldometers():
 			if label:
 				if label in number_labels:
 					new_data[label] = number(text)
-				elif label == 'country':
-					new_data[label] = standards.fix_country_name(text)
+				elif label == 'admin0':
+					new_data[label] = standards.fix_admin0_name(text)
 				else:
 					new_data[label] = text
 		
@@ -116,11 +116,11 @@ def import_worldometers():
 	
 	return data
 
-def import_google_sheets(url, labels=['province', 'total', 'dtotal', 'deaths', 'ddeaths', '', 'serious', 'recovered', '']):
+def import_google_sheets(url, labels=['admin1', 'total', '', 'deaths', '', '', 'serious', 'recovered', '']):
 	response = requests.get(url)
 	soup = BeautifulSoup(response.text, "html.parser")
 	rows = soup.findAll('tr')
-	number_labels = {"total", "dtotal", "deaths", "ddeaths", "serious", "recovered"}
+	number_labels = {"total", "deaths", "serious", "recovered"}
 	data = []
 
 	mode = ""
@@ -292,7 +292,7 @@ json_methods = {
 	"::dmy": lambda x: datetime.strptime(x, "%d%m%Y").strftime("%Y-%m-%d"),
 	"::ymd": lambda x: datetime.strptime(x, "%Y%m%d").strftime("%Y-%m-%d"),
 	"::date_t": date_t,
-	"::us_state_code": lambda x: standards.get_state_name("United States", x),
+	"::us_state_code": lambda x: standards.get_admin1_name("United States", x),
 	"::str": lambda x: str(x)
 }
 
@@ -321,7 +321,7 @@ def hello():
 if __name__ == "__main__":
 	# exit()
 	# use_server = False
-	use_server = True
+	use_server = False
 
 	# DEBUG MARKER
 	if len(sys.argv) == 1:
@@ -339,7 +339,7 @@ if __name__ == "__main__":
 		y = int(y)
 		m = int(m)
 		d = int(d)
-		import_jhu.download_data_for_date(date(y, m, d))
+		upload(import_jhu.download_data_for_date(date(y, m, d)), defaults={'entry_date': date(y, m, d)}, source_link="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports")
 
 	if use_server:
 		# DEBUG MARKER

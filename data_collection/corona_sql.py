@@ -1,5 +1,5 @@
 from sqlalchemy import and_, between, not_
-from sqlalchemy import create_engine, Column, Integer, Float, Boolean, String, DateTime
+from sqlalchemy import create_engine, Column, Integer, Float, Boolean, String, DateTime, Enum, Date
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.sql import func
@@ -10,6 +10,7 @@ import json
 import numpy as np
 
 import standards
+import location_data
 
 # Keep the actual SQL URL private
 sql_uri = os.environ['DATABASE_URL']
@@ -23,8 +24,75 @@ Session = scoped_session(sessionmaker(bind=engine, autocommit=False))
 # Class used to make tables
 Base = declarative_base()
 
-stat_labels = {'total', 'dtotal', 'deaths', 'ddeaths', 'serious', 'dserious', 'recovered', 'drecovered', 'active', 'dactive', 'num_tests'}
-increase_labels = {"total", "deaths", "recovered", "num_tests"}
+stat_labels = ['total', 'deaths', 'recovered', 'serious', 'tests', 'hospitalized']
+increase_labels = {'total', 'deaths', 'recovered', 'tests'}
+
+class Location(Base):
+	__tablename__ = "locations"
+
+	def __init__(self, **kwargs):
+		super().__init__(**kwargs)
+		self.admin_level = location_data.get_admin_level(self.admin0, self.admin1, self.admin2)
+		
+		new_admin0_code, new_admin1_code, new_admin2_code = location_data.get_codes(self.admin0, self.admin1, self.admin2)
+
+		if not self.admin0_code: self.admin0_code = new_admin0_code
+		if not self.admin1_code: self.admin1_code = new_admin1_code
+		if not self.admin2_code: self.admin2_code = new_admin2_code
+
+		location_data.store_codes(self.admin0, self.admin1, self.admin2, self.admin0_code, self.admin1_code, self.admin2_code)
+	
+	location_id = Column(Integer, primary_key=True)
+
+	admin0 = Column(String(256))
+	admin1 = Column(String(256))
+	admin2 = Column(String(256))
+	admin0_code = Column(String(2))
+	admin1_code = Column(String(2))
+	admin2_code = Column(String(10))
+	admin_level = Column(Enum('world', 'admin0', 'admin1', 'admin2'))
+
+	latitude = Column(Float(10, 6))
+	longitude = Column(Float(10, 6))
+
+	population = Column(Float)
+	population_density = Column(Float)
+	
+	humidity = Column(Float)
+	temperature = Column(Float)
+
+	start_cases = Column(Date)
+	start_socdist = Column(Date)
+	start_lockdown = Column(Date)
+
+	@property
+	def location_labelled(self):
+		return self.latitude is not None and self.longitude is not None
+
+	@property
+	def combined_key(self):
+		if self.admin0 == '':
+			return "World"
+		else:
+			combined = self.admin0
+			if self.admin1: combined = self.admin1 + ", " + combined
+			if self.admin2: combined = self.admin2 + ", " + combined
+			return combined
+
+	@property
+	def t(self):
+		return self.admin0, self.admin1, self.admin2
+
+	#### Generated keys are commented out and replaced with functions ####
+
+	def __str__(self):
+		return self.__repr__()
+
+	def __repr__(self):
+		if self.latitude and self.longitude:
+			return f"<Location {self.combined_key} @{self.latitude:.02f} {self.longitude:.02f}>"
+		else:
+			return f"<Location {self.combined_key}>"
 
 class Datapoint(Base):
 	__tablename__ = "datapoints"
@@ -35,8 +103,8 @@ class Datapoint(Base):
 	
 	# columns about the nominal location
 	admin2 = Column(String(320), default='', primary_key=True)
-	province = Column(String(320), default='', primary_key=True)
-	country = Column(String(320), default='', primary_key=True)
+	admin1 = Column(String(320), default='', primary_key=True)
+	admin0 = Column(String(320), default='', primary_key=True)
 	group = Column(String(320), default='')
 	
 	# columns about the numeric location
@@ -52,21 +120,24 @@ class Datapoint(Base):
 	deaths = Column(Integer, default=0)
 	active = Column(Integer, default=0)
 	serious = Column(Integer, default=0)
+	tests = Column(Integer, default=0)
+	hospitalized = Column(Integer, default=0)
 	
 	dtotal = Column(Integer, default=0)
 	drecovered = Column(Integer, default=0)
 	ddeaths = Column(Integer, default=0)
 	dactive = Column(Integer, default=0)
 	dserious = Column(Integer, default=0)
-
-	num_tests = Column(Integer, default=0)
+	dtests = Column(Integer, default=0)
+	dhospitalized = Column(Integer, default=0)
 
 	# used mostly for provincial data
 	source_total = Column(String())
 	source_recovered = Column(String())
 	source_deaths = Column(String())
 	source_serious = Column(String())
-	source_num_tests = Column(String())
+	source_tests = Column(String())
+	source_hospitalized = Column(String())
 
 	def location_labelled(self):
 		return self.latitude != None and self.longitude != None
@@ -76,7 +147,7 @@ class Datapoint(Base):
 		if not self.location_labelled():
 			# if the object's location is not accurate, however,
 			# we try to estimate its location
-			estimated_location = standards.get_estimated_location(self.country, self.province, self.admin2)
+			estimated_location = standards.get_estimated_location(self.admin0, self.admin1, self.admin2)
 
 			# ^^^ returns none if no accurate data could be found
 			if estimated_location:
@@ -85,174 +156,170 @@ class Datapoint(Base):
 				self.latitude = est_lat
 				self.longitude = est_lng
 
-	@staticmethod
-	def less_detail(country, province, admin2):
-		if admin2:
-			return country, province, ''
-		if province:
-			return country, '', ''
-		if country:
-			return '', '', ''
-		return None
-
-	def update(self, data, source_link, session):
-		delta = {label: 0 for label in stat_labels}
-
+	def update_data(self, data, source_link, session):
+		change = False
 		for label in stat_labels:
-			if label in data:
-				if label in increase_labels:
-					if data[label] > getattr(self, label) or force_refresh:
-						delta[label] = data[label] - getattr(self, label)
-						setattr(self, label, data[label])
-				else:
-					if data[label] != getattr(self, label) or force_refresh:
-						delta[label] = data[label] - getattr(self, label)
-						setattr(self, label, data[label])
+			if label not in data:
+				continue
+			if label in increase_labels:
+				if data[label] > getattr(self, label) or force_refresh:
+					setattr(self, label, data[label])
+					if label in stat_labels:
+						setattr(self, "source_" + label, source_link)
+					change = True
+			else:
+				if data[label] != getattr(self, label) or force_refresh:
+					setattr(self, label, data[label])
+					if label in stat_labels:
+						setattr(self, "source_" + label, source_link)
+					change = True
+		if change:
+			self.update_time = datetime.utcnow()
+		return change
+	
+	def update_differences(self, prev_row):
+		for label in stat_labels:
+			original_value = getattr(self, "d" + label)
+			if prev_row is not None:
+				calculated_value = getattr(self, label) - getattr(prev_row, label)
+			else:
+				calculated_value = getattr(self, label)
 
-		self.update_sources(delta, source_link)
-
-		return delta
+			if calculated_value != original_value:
+				setattr(self, "d" + label, calculated_value)
+				self.update_time = datetime.utcnow()
 
 	def location_tuple(self):
-		return (self.country, self.province, self.admin2)
+		return (self.admin0, self.admin1, self.admin2)
 
-	def update_sources(self, delta, source_link):
-		# record the sources for each piece of data
-		for label in ['total', 'recovered', 'deaths', 'serious', 'num_tests']:
-			if label in delta and delta[label] != 0:
-				self.update_time = datetime.utcnow()
-				setattr(self, "source_" + label, source_link)
+def add_location_data(new_data, session, add_new=True):
+	admin0 = new_data['admin0'] if 'admin0' in new_data else ''
+	admin1 = new_data['admin1'] if 'admin1' in new_data else ''
+	admin2 = new_data['admin2'] if 'admin2' in new_data else ''
 
-def select(d, cols):
-	return tuple(d[col] for col in cols)
+	location = session.query(Location).filter_by(admin0=admin0, admin1=admin1, admin2=admin2).first()
+	if not location:
+		if add_new:
+			location = Location(admin0=admin0, admin1=admin1, admin2=admin2)
+			session.add(location)
+		else:
+			return None
+	for key in new_data:
+		setattr(location, key, new_data[key])
+	return location
 
-def dfilter(d, cols):
-	return dict({col: d[col] for col in d if col in cols})
+def get_cache(rows, session):
+	if not rows:
+		return {}
 
-def upload(rows, defaults={}, source_link='', recount=True):
-	session = Session()
+	# returns locations filtered by the min entry-date, max entry-date
+	admin0_seen = set()
+	admin1_seen = set()
+	admin2_seen = set()
 
-	location_maps = {}
-	i = 0
-
-	# so we don't have to recount things hella times
-	updated_provinces = set()
-	updated_countries = set()
-	updated_world = set()
-	unique_days = set()
+	min_entry_date = None
+	max_entry_date = None
 
 	for row in rows:
-		i += 1
-		print(f"\rFinding changes--{i}/{len(rows)}               ", end='\r')
-		row = _fill_defaults(row, defaults)
+		if 'admin0' not in row: row['admin0'] = ''
+		if 'admin1' not in row: row['admin1'] = ''
+		if 'admin2' not in row: row['admin2'] = ''
 
-		row_link = None
+		admin0_seen.add(row['admin0'])
+		admin1_seen.add(row['admin1'])
+		admin2_seen.add(row['admin2'])
+
+		entry_date = row['entry_date']
+
+		if not min_entry_date or entry_date < min_entry_date:
+			min_entry_date = entry_date
+		if not max_entry_date or entry_date > max_entry_date:
+			max_entry_date = entry_date
+	
+	datapoints = session.query(Datapoint).filter(Datapoint.entry_date.between(min_entry_date, max_entry_date))
+
+	if len(admin0_seen) == 1:
+		admin0 = admin0_seen.pop()
+		datapoints = datapoints.filter_by(admin0=admin0)
+	if len(admin1_seen) == 1:
+		admin1 = admin1_seen.pop()
+		datapoints = datapoints.filter_by(admin1=admin1)
+	if len(admin2_seen) == 1:
+		admin2 = admin2_seen.pop()
+		datapoints = datapoints.filter_by(admin2=admin2)
+	
+	return {(datapoint.location_tuple(), datapoint.entry_date): datapoint for datapoint in datapoints}
+
+def upload(rows, defaults={}, source_link=''):
+	session = Session()
+	rows = [_fill_defaults(row, defaults) for row in rows]
+	cache = get_cache(rows, session)
+
+	# so we don't have to recount things hella times
+	updated = set()
+	unique_days = set()
+
+	i = 0
+	for row in rows:
+		i += 1
+		print(f"\rFinding changes--{i}/{len(rows)}			   ", end='\r')
+
+		row_link = source_link
 		if 'source_link' in row:
 			row_link = row['source_link']
 			del row['source_link']
 		
 		# fix the location's name
-		location = select(row, ['country', 'province', 'admin2'])
-		location = standards.normalize_name(*location)
-		row['country'] = location[0]
-		row['province'] = location[1]
-		row['admin2'] = location[2]
+		row['admin0'], row['admin1'], row['admin2'] = location = standards.normalize_name(row['admin0'], row['admin1'], row['admin2'])
 
 		# skip empty datapoints
 		has_data = False
 		for label in stat_labels:
 			if label in row and row[label]:
 				has_data = True
-
 		if not has_data:
 			continue
-
-		# load the cache so we don't have to query a lot
-		if row['entry_date'] not in location_maps:
-			new_defaults = {**dfilter(defaults, ['country', 'province', 'admin2']), 'entry_date': row['entry_date']}
-			locations = session.query(Datapoint).filter_by(**new_defaults)
-			mapped = {loc.location_tuple(): loc for loc in locations}
-			location_maps[row['entry_date']] = mapped
-
+		
+		was_updated = False
 		# find the already-existing data
-		if location in location_maps[row['entry_date']]:
-			existing = location_maps[row['entry_date']][location]
+		if (location, row['entry_date']) in cache:
+			existing = cache[location, row['entry_date']]
+			was_updated = existing.update_data(row, row_link, session)
 		else:
-			existing = None
-		
-		# actually update the data
-		delta = {}
-				
-		if existing:
-			delta = existing.update(row, row_link if row_link else source_link, session)
-			is_updated = (len(delta) > 1) or 0 not in delta
-			existing.guess_location()
-		else:
-			delta = dfilter(row, stat_labels)
-			new_data = Datapoint(**row)
-			new_data.guess_location()
-			new_data.update_sources(delta, row_link if row_link else source_link)
-			session.add(new_data)
-			is_updated = True
-		
-		unique_days.add(row['entry_date'])
+			existing = Datapoint(**row)
+			session.add(existing)
+			for label in stat_labels:
+				if getattr(existing, label):
+					setattr(existing, "source_" + label, row_link)
+			was_updated = True
+
+		existing.guess_location()
 
 		# now we recalculate the totals
-		if is_updated and recount:
-		# print("This row was updated!")
-			if row['admin2']:
-				updated_provinces.add((row['country'], row['province'], row['entry_date']))
-			if row['province']:
-				updated_countries.add((row['country'], row['entry_date']))
-			if row['country']:
-				updated_world.add((row['entry_date'],))
+		if was_updated:
+			unique_days.add(row['entry_date'])
+			if row['admin2']: updated.add((row['admin0'], row['admin1'], row['entry_date']))
+			if row['admin1']: updated.add((row['admin0'], '', row['entry_date']))
+			if row['admin0']: updated.add(('', '', row['entry_date']))
 		
 	i = 0
-	for province_dp in updated_provinces:
+	for admin0, admin1, entry_date in sorted(updated, reverse=True):
 		i += 1
-		print(f"\rRecounting provinces--{i}/{len(updated_provinces)}                       ", end='\r')
-		
-		province_overall = calc_overall_province(*province_dp, session)
-		if province_overall:
-			update_overall(session, *province_overall)
-		# print("Overall:", country, province, row['entry_date'], total, deaths, recovered)
-	
-	i = 0
-	for country_dp in updated_countries:
-		i += 1
-		print(f"\rRecounting countries--{i}/{len(updated_countries)}                       ", end='\r')
-		
-		country_overall = calc_overall_country(*country_dp, session)
-		if country_overall:
-			update_overall(session, *country_overall)
-		# print("Overall:", country, total, row['entry_date'], deaths, recovered)
-
-	i = 0
-	for world_date in updated_world:
-		i += 1
-		print(f"\rRecounting worlds--{i}/{len(updated_world)}                    ", end='\r')
-		
-		world_overall = calc_overall(*world_date, session)
-		if world_overall:
-			update_overall(session, *world_overall)
-		# print("Overall:", row['entry_date'], total, deaths, recovered)
+		print(f"Recounting {i}/{len(updated)}...       ", end='\r')
+		update_overall(admin0, admin1, entry_date, session)
 
 	for day in unique_days:
-		if type(day) == date:
-			update_deltas(day)
-		elif type(day) == str:
-			day_obj = datetime.strptime(day, "%Y-%m-%d")
-			update_deltas(day_obj)
+		update_deltas(day)
 
-	print("\rCommitting all...                                               ", end='\r')
+	print("\rCommitting all...											   ", end='\r')
 	session.commit()
-	print("\rDone committing         ", end='\r')
+	print("\rDone committing		 ", end='\r')
 
 def _is_nan(data):
 	return type(data) == float and np.isnan(data)
 
 def _fill_defaults(data, defaults):
-	default_data = { 'entry_date': datetime.utcnow().strftime("%Y-%m-%d"), 'group': '', 'country': '', 'province': '', 'admin2': '', **defaults }
+	default_data = { 'entry_date': datetime.utcnow().date(), 'group': '', 'admin0': '', 'admin1': '', 'admin2': '', **defaults }
 
 	# add default values if not found
 	for label in default_data:
@@ -265,117 +332,71 @@ def _fill_defaults(data, defaults):
 			if _is_nan(data[label]):
 				del data[label]
 
-	data['country'] = standards.fix_country_name(data['country'])
-	data['group'] = standards.get_continent(data['country'])
+	data['admin0'] = standards.fix_admin0_name(data['admin0'])
+	data['group'] = standards.get_continent(data['admin0'])
 
 	return data
 
-sums = (func.sum(Datapoint.total), func.sum(Datapoint.deaths), func.sum(Datapoint.recovered), func.sum(Datapoint.dtotal), func.sum(Datapoint.ddeaths), func.sum(Datapoint.drecovered), func.sum(Datapoint.num_tests))
-sum_labels = ['total', 'deaths', 'recovered', 'dtotal', 'ddeaths', 'drecovered', 'num_tests']
+sums = tuple(func.sum(getattr(Datapoint, label)) for label in stat_labels)
 
-def calc_overall_province(country, province, entry_date, session):
-	overall_province = session.query(*sums)\
-			.filter(Datapoint.country == country, Datapoint.province == province, Datapoint.admin2 != '', Datapoint.entry_date == entry_date)\
-			.first()
-	if overall_province:
-		return (entry_date, country, province, '', *overall_province)
+def filter_children(results, admin0, admin1):
+	if not admin0: # sum entire world
+		results = results.filter(Datapoint.admin0 != '', Datapoint.admin1 == '', Datapoint.admin2 == '')
+	elif not admin1: # sum entire country
+		results = results.filter(Datapoint.admin0 == admin0, Datapoint.admin1 != '', Datapoint.admin2 == '')
+	else: # sum entire state
+		results = results.filter(Datapoint.admin0 == admin0, Datapoint.admin1 == admin1, Datapoint.admin2 != '')
+	return results
 
-def calc_overall_country(country, entry_date, session):
-	overall_country = session.query(*sums)\
-		.filter(Datapoint.country == country, Datapoint.province != '', Datapoint.admin2 == '', Datapoint.entry_date == entry_date)\
-		.first()
-	if overall_country:
-		return (entry_date, country, '', '', *overall_country)
+def update_overall(admin0, admin1, entry_date, session):
+	results = session.query(*sums).filter_by(entry_date=entry_date)
+	results = filter_children(results, admin0, admin1)
+	result = results.first()
+	if not result or not any(result):
+		return
+	
+	labelled = {x[0]: x[1] for x in zip(stat_labels, result)}
+	
+	overall_dp = session.query(Datapoint).filter_by(entry_date=entry_date, admin0=admin0, admin1=admin1, admin2='').first()
 
-def calc_overall(entry_date, session):
-	overall = session.query(*sums)\
-		.filter(Datapoint.country != '', Datapoint.province == '', Datapoint.admin2 == '', Datapoint.entry_date == entry_date)\
-		.first()
-	if overall:
-		return (entry_date, '', '', '', *overall)
-
-def update_overall(session, entry_date, country, province, admin2, total, deaths, recovered, dtotal, ddeaths, drecovered, num_tests):
-	# find an overall datapoint
-	overall_dp = session.query(Datapoint).filter_by(country=country, province=province, admin2=admin2, entry_date=entry_date).first()
-
-	# if it doesn't exist, we create it
 	if not overall_dp:
-		overall_dp = Datapoint(country=country, province=province, admin2=admin2, entry_date=entry_date, total=0, deaths=0, recovered=0, num_tests=0)
-		overall_dp.guess_location()
+		overall_dp = Datapoint(admin0=admin0, admin1=admin1, admin2='', entry_date=entry_date)
 		session.add(overall_dp)
-
-	updated = False
-	if not force_refresh:
-		if total > overall_dp.total:
-			overall_dp.total = total
-			overall_dp.source_total = "calculated"
-			updated = True
-		if deaths > overall_dp.deaths:
-			overall_dp.deaths = deaths
-			overall_dp.source_deaths = "calculated"
-			updated = True
-		if recovered > overall_dp.recovered:
-			overall_dp.recovered = recovered
-			overall_dp.source_recovered = "calculated"
-			updated = True
-		if num_tests > overall_dp.num_tests:
-			overall_dp.num_tests = num_tests
-			overall_dp.source_num_tests = "calculated"
-			updated = True
-	else:
-		overall_dp.total = total
-		overall_dp.source_total = "calculated"
-
-		overall_dp.deaths = deaths
-		overall_dp.source_deaths = "calculated"
-
-		overall_dp.recovered = recovered
-		overall_dp.source_recovered = "calculated"
-
-		overall_dp.num_tests = num_tests
-		overall_dp.source_num_tests = "calculated"
-		updated = True
-
-	if updated:
-		print("Updated an overall:", country, province, admin2)
-		overall_dp.update_time = datetime.utcnow()
-
+		# fill in defaults
+		for label in stat_labels:
+			setattr(overall_dp, label, 0)
+	
+	print(labelled, admin0, admin1, entry_date)
+	overall_dp.update_data(labelled, "calculated", session)
 
 def update_deltas(day):
 	compare_day = day + timedelta(days=-1)
-
-	day_str = day.strftime("%Y-%m-%d")
-	compare_day_str = compare_day.strftime("%Y-%m-%d")
-
 	sess = Session()
-	today_datapoints = sess.query(Datapoint).filter_by(entry_date=day_str)
-	yesterday_datapoints = sess.query(Datapoint).filter_by(entry_date=compare_day_str)
-	today_dict = {(d.country, d.province, d.admin2): d for d in today_datapoints}
-	yesterday_dict = {(d.country, d.province, d.admin2): d for d in yesterday_datapoints}
+	today_datapoints = sess.query(Datapoint).filter_by(entry_date=day)
+	yesterday_datapoints = sess.query(Datapoint).filter_by(entry_date=compare_day)
+
+	today_dict = {d.location_tuple(): d for d in today_datapoints}
+	yesterday_dict = {d.location_tuple(): d for d in yesterday_datapoints}
 
 	total = len(today_dict)
 	i = 1
 
 	for location in today_dict:
-		print("\r", compare_day_str, "-->", day_str, f"{i}/{total}           ", end='\r')
+		print("\r", compare_day, "-->", day, f"{i}/{total}		   ", end='\r')
 		today_dp = today_dict[location]
 		if today_dp.active != (today_dp.total - today_dp.deaths - today_dp.recovered):
 			today_dp.active = today_dp.total - today_dp.deaths - today_dp.recovered
+
 		if location in yesterday_dict:
 			yesterday_dp = yesterday_dict[location]
 		else:
 			yesterday_dp = None
-		for label in ['active', 'total', 'deaths', 'recovered']:
-			current_val = getattr(today_dp, 'd' + label)
-			if yesterday_dp:
-				new_val = getattr(today_dp, label) - getattr(yesterday_dp, label)
-			else:
-				new_val = getattr(today_dp, 'd' + label)
-			if new_val != current_val:
-				setattr(today_dp, 'd' + label, new_val)
+		
+		today_dp.update_differences(yesterday_dp)
+
 		i += 1
 
-	print("\rCommitting deltas...                         ", end='\r')
+	print("\rCommitting deltas...						 ", end='\r')
 	sess.commit()
 
 def update_all_deltas():
@@ -386,14 +407,6 @@ def update_all_deltas():
 		update_deltas(start_date)
 		start_date = next_day
 
-def generate_location_map(entry_date):
-	sess = Session()
-	results = sess.query(Datapoint).filter_by(entry_date=entry_date)
-	return {result.location_tuple(): result for result in results}
-
 if __name__ == "__main__":
 	print("Past overhead")
 	sess = Session()
-	print(calc_overall_province("United States", "New York", date.today().isoformat(), sess))
-	print(calc_overall_country("United States", date.today().isoformat(), sess))
-	print(calc_overall(date.today().isoformat(), sess))

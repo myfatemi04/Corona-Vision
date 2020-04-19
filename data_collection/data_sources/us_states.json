@@ -9,8 +9,8 @@
                 }
             },
             "defaults": {
-                "country": "United States",
-                "province": "Virginia"
+                "admin0": "United States",
+                "admin1": "Virginia"
             },
             "source_link": "http://www.vdh.virginia.gov/coronavirus/",
             "method": "csv",
@@ -27,8 +27,8 @@
                 "namespace": ["features"]
             },
             "defaults": {
-                "country": "United States",
-                "province": "Alabama"
+                "admin0": "United States",
+                "admin1": "Alabama"
             },
             "source_link": "https://alabamapublichealth.gov/infectiousdiseases/2019-coronavirus.html",
             "method": "json",
@@ -47,8 +47,8 @@
                 ]
             },
             "defaults": {
-                "country": "United States",
-                "province": "Alaska"
+                "admin0": "United States",
+                "admin1": "Alaska"
             },
             "source_link": "https://coronavirus-response-alaska-dhss.hub.arcgis.com/datasets/daily-cases-hospitalizations-and-deaths-1?page=2&selectedAttribute=Local_Cases_Cumulative",
             "method": "json",
