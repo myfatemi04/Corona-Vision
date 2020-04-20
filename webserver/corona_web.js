@@ -94,7 +94,7 @@ const data_table_page = async (req, res) => {
     location_datapoint = await get_sql(query2)
 
     res.render("data_table", {
-        table_rows: datatables.make_rows(data, admin0, admin1, admin2),
+        ...datatables.make_rows(data, admin0, admin1, admin2, entry_date),
         last_update: datatables.format_update_time(last_update),
         admin0: admin0,
         admin1: admin1,
@@ -107,6 +107,10 @@ const data_table_page = async (req, res) => {
         entry_date: entry_date
     });
 }
+
+app.get("/calculated", (req, res) => {
+    res.render("calculated");
+});
 
 app.get("/", data_table_page);
 app.get("/data", data_table_page);
@@ -155,7 +159,7 @@ app.get("/cases/totals_table", (req, res) => {
 
     get_sql(query, key="table_" + query).then(
         content => {
-            res.send(datatables.make_rows(content, admin0, admin1, admin2));
+            res.send(datatables.make_rows(content, admin0, admin1, admin2, entry_date).table_rows);
         }
     );
 });

@@ -16,6 +16,7 @@
 				chart = new_chart("chart");
 				init_chart_options();
 				load_chart("{{admin0}}", "{{admin1}}", "{{admin2}}");
+				$("#date").val("{{entry_date}}");
 			}
 
 			function update_nochart() {
@@ -38,6 +39,10 @@
 			.stats-label {
 				text-align: right;
 			}
+			.stats-row a {
+				color: inherit;
+				text-decoration: underline;
+			}
 		</style>
 	</head>
 	<body onload="init()">
@@ -45,49 +50,81 @@
 		<div class="d-flex flex-column">
 			<div class="column-container">
 				<div class="box" style="flex: 1;">
-					<div id="stats-info" class="lato" style="display: flex; flex-direction: column; font-size: 1.5rem;">
+					<div id="stats-info" class="lato" style="display: flex; flex-direction: column; font-size: 2rem;">
 						<span id="stats-label" style="text-align: center;">{{label}}</span>
-						<a class="small" href="/sources" style="text-align: center;">Sources</a>
+						<div style="text-align: center; font-size: 0.5em;"><a href="/sources">Sources</a></div>
+						<div style="text-align: center; font-size: 0.5em; display: flex; align-items: center;">
+							<div style="flex: 2; text-align: right;">
+								{{{ prev_day_link }}}
+							</div>
+							<div style="flex: 1;" id="date-label">
+								<select class="custom-input-color my-2" id="date" onchange="update_nochart()" style="border-radius: 0.25rem;">
+									{{#each entry_dates}}
+										<option value="{{this}}">{{this}}</option>
+									{{/each}}
+								</select>
+							</div>
+							<div style="flex: 2; text-align: left;">
+								{{{ next_day_link }}}
+							</div>
+						</div>
+						{{#if go_back_link}}
+							<div style="text-align: center; font-size: 0.5em;">{{{go_back_link}}}</div>
+						{{/if}}
 						{{#with location_datapoint}}
 							<div class="stats-row">
 								<span class="stats-label">Total</span>
 								<i class="fas fa-lungs-virus"></i>
-								<span id="stats-total" class="font-weight-bold" style="color: #f3a513">{{total}}</span>
+								<span id="stats-total" class="font-weight-bold" style="color: #f3a513">
+									<a href="{{source_total}}">{{total}}</a>
+								</span>
 							</div>
 							
 							<div class="stats-row">
 								<span class="stats-label">New</span>
 								<i class="fas fa-clock"></i>
-								<span id="stats-dtotal" class="font-weight-bold" style="color: #f3a513">{{dtotal}}</span>
+								<span id="stats-dtotal" class="font-weight-bold" style="color: #f3a513">
+									{{dtotal}}
+								</span>
 							</div>
 
 							<div class="stats-row">
 								<span class="stats-label">Active</span>
 								<i class="fas fa-head-side-cough"></i>
-								<span id="stats-active" class="font-weight-bold" style="color: #f58020">{{active}}</span>
+								<span id="stats-active" class="font-weight-bold" style="color: #f58020">
+									{{active}}
+								</span>
 							</div>
 
 							<div class="stats-row">
 								<span class="stats-label">Severe</span>
 								<i class="fas fa-hospital-user"></i>
-								<span id="stats-serious" class="font-weight-bold" style="color: #f75027">{{serious}}</span>
+								<span id="stats-serious" class="font-weight-bold" style="color: #f75027">
+									<a href="{{source_serious}}">{{serious}}</a>
+								</span>
 							</div>
 
 							<div class="stats-row">
 								<span class="stats-label">Deaths</span>
 								<i></i>
-								<span id="stats-deaths" class="font-weight-bold" style="color: #f83e3e">{{deaths}}</span>
+								<span id="stats-deaths" class="font-weight-bold" style="color: #f83e3e">
+									<a href="{{source_deaths}}">{{deaths}}</a>
+								</span>
 							</div>
 
 							<div class="stats-row">
 								<span class="stats-label">Recoveries</span>
 								<i class="far fa-smile"></i>
-								<span id="stats-recovered" class="font-weight-bold" style="color: #3dff7a">{{recovered}}</span>
+								<span id="stats-recovered" class="font-weight-bold" style="color: #3dff7a">
+									<a href="{{source_recovered}}">{{recovered}}</a>
+								</span>
 							</div>
 							<div class="stats-row">
 								<span class="stats-label">Tests</span>
 								<i class="fas fa-vials"></i>
-								<span id="stats-tests" class="font-weight-bold" style="color: #3d87ff">{{tests}}</span>
+								<span id="stats-tests" class="font-weight-bold" style="color: #3d87ff">
+									<a href="{{source_tests}}">{{tests}}</a>
+								</span>
 							</div>
 							<div class="stats-row">
 								<span class="stats-label">Tests Today</span>
@@ -125,20 +162,7 @@
 						</tr>
 						<tr class="d-flex py-2" style="display: flex; align-items: center; text-align: center;">
 							<th style="flex: 2;">
-								<input type="text" onkeyup="filter_table()" class="custom-input-color small-input" placeholder="Search for location" id="locationSearch">
-							</th>
-							<th style="flex: 1;">
-								{{{ prev_day_link }}}
-							</th>
-							<th style="flex: 1;" id="date-label">
-								<select class="custom-input-color form-control my-2" id="date" onchange="update_nochart()" style="border-radius: 0.25rem;">
-									{{#each entry_dates}}
-										<option value="{{this}}" {{#ifeq this entry_date}}selected{{/ifeq}}>{{this}}</option>
-									{{/each}}
-								</select>
-							</th>
-							<th style="flex: 1;">
-								{{{ next_day_link }}}
+								<input type="text" onkeyup="filter_table()" class="custom-input-color form-control" placeholder="Search for location" id="locationSearch">
 							</th>
 						</tr>
 						<tr class="d-flex py-2" style="font-size: 0.9rem;">

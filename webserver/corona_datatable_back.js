@@ -70,17 +70,17 @@ function table_col(options) {
 
 let ico = ""; // <i class="fas fa-angle-right"></i>
 
-function set_admin0_link(admin0) {
-    return `<a style="color: #3657ff;" href='?country=${admin0}'>${admin0} ${ico}</a>`;
+function set_admin0_link(entry_date, admin0) {
+    return `<a style="color: #3657ff;" href='?date=${entry_date}&country=${admin0}'>${admin0} ${ico}</a>`;
     // return `<a style="color: #3657ff;" href='javascript:set_admin0("${label}")';>${label} ${ico}</a>`;
 }
 
-function set_admin1_link(admin0, admin1) {
-    return `<a style="color: #3657ff;" href='?country=${admin0}&province=${admin1}'>${admin1} ${ico}</a>`;
+function set_admin1_link(entry_date, admin0, admin1) {
+    return `<a style="color: #3657ff;" href='?date=${entry_date}&country=${admin0}&province=${admin1}'>${admin1} ${ico}</a>`;
 }
 
-function set_admin2_link(admin0, admin1, admin2) {
-    return `<a style="color: #3657ff;" href='?country=${admin0}&province=${admin1}&admin2=${admin2}';>${admin2} ${ico}</a>`
+function set_admin2_link(entry_date, admin0, admin1, admin2) {
+    return `<a style="color: #3657ff;" href='?date=${entry_date}&country=${admin0}&province=${admin1}&admin2=${admin2}';>${admin2} ${ico}</a>`
 }
 
 function format_update_time(update_time) {
@@ -101,28 +101,9 @@ function format_update_time(update_time) {
     return Math.round(d) + "d ago";
 }
 
-// let deselect_admin0_link = `<a href="javascript:set_admin0('');"><i class="fas fa-angle-double-left"></i> Go back</a>`;
-// let deselect_admin1_link = `<a href="javascript:set_admin1('');"><i class="fas fa-angle-double-left"></i> Go back</a>`;
-// let deselect_admin2_link = `<a href="javascript:set_admin2('');"><i class="fas fa-angle-double-left"></i> Go back</a>`;
-
 module.exports = {
-    // load_admin0_list: () => {
-    //     sql.sql.query("select distinct admin0 from datapoints where entry_date='live' and admin1 != '';", (err, results) => {
-    //         for (let row of results) {
-    //             let admin0 = row.admin0;
-    //             admin0_list.push(admin0);
-    //             admin1_list[admin0] = [];
-    //             sql.sql.query("select distinct admin1 from datapoints where entry_date='live' and admin0 = '" + admin0 + "' and admin2 != ''", (err, results) => {
-    //                 for (let admin1_row of results) {
-    //                     let admin1 = admin1_row.admin1;
-    //                     admin1_list[admin0].push(admin1);
-    //                 }
-    //             });
-    //         }
-    //     });
-    // },
     format_update_time: format_update_time,
-    make_rows: (data, admin0, admin1, admin2) => {
+    make_rows: (data, admin0, admin1, admin2, entry_date) => {
         // if the admin0 isn't specified, we are listing countries
         if (admin0 == 'all' || admin0 == '') { label_prop = 'admin0'; label_default = 'World'; }
 
@@ -138,16 +119,22 @@ module.exports = {
         data.sort((a, b) => (a.total > b.total) ? -1 : 1)
 
         let i = 0;
+        
+        let deselect_admin0_link = `<a href="?date=${entry_date}"><i class="fas fa-angle-double-left"></i> Go back</a>`;
+        let deselect_admin1_link = `<a href="?date=${entry_date}&country=${admin0}"><i class="fas fa-angle-double-left"></i> Go back</a>`;
+        let deselect_admin2_link = `<a href="?date=${entry_date}^country=${admin0}&province=${admin1}"><i class="fas fa-angle-double-left"></i> Go back</a>`;
 
         let html = "";
+        let go_back_link = '';
         if (admin0 != '' && admin0 != 'all') {
-            // html = `
-            // <tr>
-            //     <td class="mx-1" style="flex: 1;"></td>
-            //     <td class="mx-1" style="flex: 2;">
-            //         ${(admin1 == '' || admin1 == 'all' ? deselect_admin0_link : (admin2 == '' || admin2 == 'all' ? deselect_admin1_link : deselect_admin2_link))}
-            //     </td>
-            // </tr>`;
+            go_back_link = `${(admin1 == '' || admin1 == 'all' ? deselect_admin0_link : (admin2 == '' || admin2 == 'all' ? deselect_admin1_link : deselect_admin2_link))}`;
+            html = `
+            <tr>
+                <td class="mx-1" style="flex: 1;"></td>
+                <td class="mx-1" style="flex: 2;">
+                    ${go_back_link}
+                </td>
+            </tr>`;
         }
 
         for (let datapoint of data) {
@@ -157,11 +144,11 @@ module.exports = {
             if (label) {
                 let label = datapoint[label_prop];
                 if (label_prop == 'admin0') {
-                    label_link = set_admin0_link(datapoint.admin0);
+                    label_link = set_admin0_link(entry_date, datapoint.admin0);
                 } else if (label_prop == 'admin1') {
-                    label_link = set_admin1_link(datapoint.admin0, datapoint.admin1);
+                    label_link = set_admin1_link(entry_date, datapoint.admin0, datapoint.admin1);
                 } else if (label_prop == 'admin2') {
-                    label_link = set_admin2_link(datapoint.admin0, datapoint.admin1, datapoint.admin2);
+                    label_link = set_admin2_link(entry_date, datapoint.admin0, datapoint.admin1, datapoint.admin2);
                 } else {
                     label_link = label;
                 }
@@ -194,6 +181,6 @@ module.exports = {
             
             html += tr;
         }
-        return html;
+        return {table_rows: html, go_back_link: go_back_link};
     }
 }
