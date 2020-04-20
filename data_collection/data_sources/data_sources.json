@@ -8,23 +8,6 @@
 			"source_link": "https://www.worldometers.info/coronavirus/"
 		},
 		{
-			"source_link": "http://www.salute.gov.it/portale/nuovocoronavirus/dettaglioContenutiNuovoCoronavirus.jsp?lingua=english&id=5367&area=nuovoCoronavirus&menu=vuoto",
-			"defaults": {
-				"admin0": "Italy"
-			},
-			"args": {
-				"url": "http://www.salute.gov.it/portale/nuovocoronavirus/dettaglioContenutiNuovoCoronavirus.jsp?lingua=english&id=5367&area=nuovoCoronavirus&menu=vuoto",
-				"labels": {
-					"total": [".col-lg-4.col-md-12.col-sm-12", 0, "div", 1, "::text", "::number"],
-					"deaths": [".col-lg-4.col-md-12.col-sm-12", 1, "div", 1, "::text", "::number"],
-					"recovered": [".col-lg-4.col-md-12.col-sm-12", 2, "div", 1, "::text", "::number"],
-					"serious": ["div.col-md-8", 0, "ul", 1, "li", 2, "b", 0, "::text", "::number"]
-				}
-			},
-			"method": "selector",
-			"label": "Italy"
-		},
-		{
 			"source_link": "https://covid19.isciii.es/",
 			"defaults": {
 				"admin0": "Spain"
@@ -164,16 +147,6 @@
 			"label": "Japan provinces"
 		},
 		{
-			"args": {},
-			"method": "jhu",
-			"defaults": {},
-			"source_link": "https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports",
-			"label": "Johns Hopkins University",
-			"disallow": [
-				{"admin1": "Recovered"}
-			]
-		},
-		{
 			"source_link": "https://npgeo-de.maps.arcgis.com/apps/opsdashboard/index.html#/2694322fc7894bf5886647f652f093ca",
 			"defaults": {
 				"admin0": "Germany"
@@ -248,6 +221,140 @@
 				{"admin1": "USA Total"},
 				{"admin1": "Total:"}
 			]
+		},
+		{
+            "args": {
+                "url": "http://www.vdh.virginia.gov/content/uploads/sites/182/2020/03/VDH-COVID-19-PublicUseDataset-Cases.csv",
+                "labels": {
+                    "admin2": "Locality",
+                    "total": "Total Cases"
+                }
+            },
+            "defaults": {
+                "admin0": "United States",
+                "admin1": "Virginia"
+            },
+            "source_link": "http://www.vdh.virginia.gov/coronavirus/",
+            "method": "csv",
+            "label": "Virginia Counties"
+        },
+        {
+            "args": {
+                "url": "https://services7.arcgis.com/4RQmZZ0yaZkGR1zy/arcgis/rest/services/COV19_Public_Dashboard_ReadOnly/FeatureServer/0/query?where=1%3D1&outFields=*&returnGeometry=false&f=pjson",
+                "labels": {
+                    "admin2": ["attributes", "CNTYNAME"],
+                    "total": ["attributes", "CONFIRMED"],
+                    "deaths": ["attributes", "DIED"]
+                },
+                "namespace": ["features"]
+            },
+            "defaults": {
+                "admin0": "United States",
+                "admin1": "Alabama"
+            },
+            "source_link": "https://alabamapublichealth.gov/infectiousdiseases/2019-coronavirus.html",
+            "method": "json",
+            "label": "Alabama Counties"
+        },
+        {
+            "args": {
+                "url": "https://opendata.arcgis.com/datasets/11b9eba44ba24e5a9cd365467e25da15_0/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json",
+                "labels": {
+                    "admin2": ["attributes", "Borough_Census_Area"],
+                    "total": ["attributes", "All_Cases"]
+                },
+                "namespace": ["features"],
+                "allow": [
+                    [["attributes", "Community"], "Total", "=="]
+                ]
+            },
+            "defaults": {
+                "admin0": "United States",
+                "admin1": "Alaska"
+            },
+            "source_link": "https://coronavirus-response-alaska-dhss.hub.arcgis.com/datasets/daily-cases-hospitalizations-and-deaths-1?page=2&selectedAttribute=Local_Cases_Cumulative",
+            "method": "json",
+            "label": "Alaska Counties"
+        },
+		{
+			"source_link": "https://nlcovid-19-esrinl-content.hub.arcgis.com/",
+			"args": {
+				"url": "https://services.arcgis.com/nSZVuSZjHpEZZbRo/arcgis/rest/services/Coronavirus_RIVM_vlakken_actueel/FeatureServer/0//query?where=1%3D1&geometryType=esriGeometryEnvelope&outFields=*&returnGeometry=false&returnCentroid=true&outSR=4326&datumTransformation=&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&returnExceededLimitFeatures=true&quantizationParameters=&sqlFormat=none&f=pjson&token=",
+				"labels": {
+					"admin1": ["attributes", "Provincie"],
+					"admin2": ["attributes", "Gemeentenaam"],
+					"hospitalized": ["attributes", "Ziekenhuisopnamen"],
+					"deaths": ["attributes", "Overleden"],
+					"total": ["attributes", "Meldingen"],
+					"population": ["attributes", "Bevolkingsaantal"],
+					"latitude": ["centroid", "x"],
+					"longitude": ["centroid", "y"]
+				},
+				"namespace": ["features"]
+			},
+			"method": "json",
+			"defaults": {
+				"admin0": "Netherlands"
+			},
+			"label": "Netherlands county data"
+		},
+		{
+			"source_link": "https://coronavirus-resources.esri.com/datasets/628578697fb24d8ea4c32fa0c5ae1843_0?geometry=112.752%2C22.406%2C19.764%2C64.233&showData=true",
+			"args": {
+				"url": "https://opendata.arcgis.com/datasets/628578697fb24d8ea4c32fa0c5ae1843_0.geojson",
+				"labels": {
+					"admin1": ["properties", "Province_State"],
+					"admin0": ["properties", "Country_Region"],
+					"admin2": ["properties", "Admin2"],
+					"latitude": ["properties", "Lat"],
+					"longitude": ["properties", "Long_"],
+					"total": ["properties", "Confirmed"],
+					"deaths": ["properties", "Deaths"],
+					"recovered": ["properties", "Recovered"]
+				},
+				"namespace": ["features"]
+			},
+			"method": "json",
+			"defaults": {
+				"admin0": "United States"
+			},
+			"label": "US County data"
+		},
+		{
+			"source_link": "",
+			"defaults": {
+				"admin0": "China"
+			},
+			"args": {
+				"url": "http://49.4.25.117/JKZX/yq_%Y%m%d.json",
+				"labels": {
+					"admin1": ["properties", "省份"],
+					"total": ["properties", "累计确诊"],
+					"deaths": ["properties", "累计死亡"]
+				},
+				"namespace": ["features"],
+				"use_datestr": true
+			},
+			"method": "json",
+			"label": "China Province Data"
+		},
+		{
+			"source_link": "https://www.esri.in/en-in/programs/disaster-response/corona-impact-2020/overview",
+			"defaults": {
+				"admin0": "India"
+			},
+			"args": {
+				"url": "https://utility.arcgis.com/usrsvcs/servers/83b36886c90942ab9f67e7a212e515c8/rest/services/Corona/DailyCasesMoHUA/MapServer/0/query?f=pjson&where=1%3D1&returnGeometry=false&returnCentroid=true&spatialRel=esriSpatialRelIntersects&geometryType=esriGeometryEnvelope&inSR=102100&outFields=*&outSR=4326",
+				"labels": {
+					"admin1": ["attributes", "state_name"],
+					"admin1_code": ["attributes", "state_char_code"],
+					"total": ["attributes", "confirmedcases"],
+					"recovered": ["attributes", "cured_discharged_migrated"],
+					"deaths": ["attributes", "deaths"]
+				}
+			},
+			"method": "json",
+			"label": "India Province Data"
 		}
 	],
 "historical":

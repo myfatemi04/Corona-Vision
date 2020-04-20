@@ -138,6 +138,8 @@ class Datapoint(Base):
 	source_tests = Column(String())
 	source_hospitalized = Column(String())
 
+	population = Column(Integer)
+
 	def location_labelled(self):
 		return self.latitude != None and self.longitude != None
 
@@ -197,20 +199,43 @@ class Datapoint(Base):
 	def location_tuple(self):
 		return (self.admin0, self.admin1, self.admin2)
 
-def add_location_data(new_data, session, add_new=True):
+class Hospital(Base):
+	__tablename__ = "hospitals"
+	hospital_id = Column(Integer, primary_key=True)
+	hospital_name = Column(String(256))
+	hospital_type = Column(String(256))
+	address1 = Column(String(256))
+	address2 = Column(String(256))
+	admin0 = Column(String(256))
+	admin1 = Column(String(256))
+	admin2 = Column(String(256))
+	licensed_beds = Column(Integer, default=0)
+	staffed_beds = Column(Integer, default=0)
+	icu_beds = Column(Integer, default=0)
+	adult_icu_beds = Column(Integer, default=0)
+	pediatric_icu_beds = Column(Integer, default=0)
+	potential_beds_increase = Column(Integer, default=0)
+	average_ventilator_usage = Column(Integer, default=0)
+
+def add_location_data(new_data, cache, session, add_new=True):
 	admin0 = new_data['admin0'] if 'admin0' in new_data else ''
 	admin1 = new_data['admin1'] if 'admin1' in new_data else ''
 	admin2 = new_data['admin2'] if 'admin2' in new_data else ''
 
-	location = session.query(Location).filter_by(admin0=admin0, admin1=admin1, admin2=admin2).first()
-	if not location:
+	location_tuple = (admin0, admin1, admin2)
+	if location_tuple not in cache['locations']:
 		if add_new:
 			location = Location(admin0=admin0, admin1=admin1, admin2=admin2)
 			session.add(location)
+			cache['locations'][location_tuple] = location
 		else:
 			return None
+	else:
+		location = cache['locations'][location_tuple]
+
 	for key in new_data:
-		setattr(location, key, new_data[key])
+		if getattr(location, key) != new_data[key]:
+			setattr(location, key, new_data[key])
 	return location
 
 def get_cache(rows, session):
@@ -243,19 +268,28 @@ def get_cache(rows, session):
 	
 	# we add a timedelta here to the lower bound so we can reuse this to find daily change
 	datapoints = session.query(Datapoint).filter(Datapoint.entry_date.between(min_entry_date - timedelta(days=1), max_entry_date))
+	locations = session.query(Location)
 
 	if len(admin0_seen) == 1:
 		admin0 = admin0_seen.pop()
 		datapoints = datapoints.filter_by(admin0=admin0)
+		locations = locations.filter_by(admin0=admin0)
 	if len(admin1_seen) == 1:
 		admin1 = admin1_seen.pop()
 		datapoints = datapoints.filter_by(admin1=admin1)
+		locations = locations.filter_by(admin0=admin1)
 	if len(admin2_seen) == 1:
 		admin2 = admin2_seen.pop()
 		datapoints = datapoints.filter_by(admin2=admin2)
+		locations = locations.filter_by(admin0=admin2)
 
-	return {(datapoint.location_tuple(), datapoint.entry_date): datapoint for datapoint in datapoints}
+	cache = {}
+	cache['datapoints'] = {(datapoint.location_tuple(), datapoint.entry_date): datapoint for datapoint in datapoints}
+	cache['locations'] = {(location.admin0, location.admin1, location.admin2): location for location in locations}
+	return cache
 
+location_labels = ['admin0', 'admin1', 'admin2', 'admin0_code', 'admin1_code', 'admin2_code', 'latitude', 'longitude', 'population']
+location_only_labels = ['admin0_code', 'admin1_code', 'admin2_code']
 def upload(rows, defaults={}, source_link=''):
 	session = Session()
 	rows = [_fill_defaults(row, defaults) for row in rows]
@@ -282,6 +316,12 @@ def upload(rows, defaults={}, source_link=''):
 		else:
 			seen.add((location, row['entry_date']))
 
+		row_location_data = {col: row[col] for col in location_labels if col in row}
+		add_location_data(row_location_data, cache, session)
+		
+		# some data is location-specific only
+		row = {col: row[col] for col in row if col not in location_only_labels}
+
 		# skip empty datapoints
 		has_data = False
 		for label in stat_labels:
@@ -290,11 +330,10 @@ def upload(rows, defaults={}, source_link=''):
 		if not has_data:
 			continue
 		
-		was_updated = False
 		# find the already-existing data
-		if (location, row['entry_date']) in cache:
-			existing = cache[location, row['entry_date']]
-			was_updated = existing.update_data(row, row_link, session)
+		if (location, row['entry_date']) in cache['datapoints']:
+			existing = cache['datapoints'][location, row['entry_date']]
+			existing.update_data(row, row_link, session)
 		else:
 			# print("adding new", row['admin0'], row['admin1'], row['admin2'], row['entry_date'])
 			existing = Datapoint(**row)
@@ -302,7 +341,6 @@ def upload(rows, defaults={}, source_link=''):
 			for label in stat_labels:
 				if getattr(existing, label):
 					setattr(existing, "source_" + label, row_link)
-			was_updated = True
 
 		existing.guess_location()
 
@@ -455,8 +493,9 @@ def update_deltas(day, updated=None):
 			print(compare_day, "-->", day, f"{i}/{total}		   ", end='\r')
 
 		today_dp = today_dict[location]
-		if today_dp.active != (today_dp.total - today_dp.deaths - today_dp.recovered):
-			today_dp.active = today_dp.total - today_dp.deaths - today_dp.recovered
+		active = (float(today_dp.total) - float(today_dp.deaths) - float(today_dp.recovered))
+		if today_dp.active != active:
+			today_dp.active = active
 
 		if location in yesterday_dict:
 			yesterday_dp = yesterday_dict[location]

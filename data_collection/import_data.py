@@ -116,58 +116,6 @@ def import_worldometers():
 	
 	return data
 
-def import_google_sheets(url, labels=['admin1', 'total', '', 'deaths', '', '', 'serious', 'recovered', '']):
-	response = requests.get(url)
-	soup = BeautifulSoup(response.text, "html.parser")
-	rows = soup.findAll('tr')
-	number_labels = {"total", "deaths", "serious", "recovered"}
-	data = []
-
-	mode = ""
-
-	for row in rows:
-		if "links" in row.text.lower() or "mainland china" in row.text.lower():
-			mode = "rows"
-		elif mode == "rows":
-			tds = row.findAll('td')
-			new_data = {}
-
-			for label, td in zip(labels, tds):
-				if label in number_labels:
-					new_data[label] = number(td.text.replace(",", ""))
-				else:
-					if label:
-						new_data[label] = td.text
-						if label == 'province' and td.text:
-							new_data[label] = td.text.split("province")[0].strip()
-
-			if 'province' in new_data:
-				if 'total' in new_data['province'].lower(): new_data['province'] = ''
-			if 'country' in new_data:
-				if 'total' in new_data['country'].lower(): new_data['country'] = ''
-			data.append(new_data)
-
-	return data
-
-def import_selector(url, labels):
-	try:
-		response = requests.get(url)
-		soup = BeautifulSoup(response.text, "html.parser")
-	except Exception as e:
-		print("Error during selector:", e, url)
-		return
-	
-	try:
-		data = {}
-		for label, selectors in labels.items():
-			field = get_elem(soup, selectors)
-			data[label] = field
-	except Exception as e:
-		print("Error during selector!", e, url)
-		return
-	
-	return [data]
-
 def get_elem(soup, selector_chain):
 	elem = soup
 	for selector in selector_chain:
@@ -221,8 +169,14 @@ def import_df(df, labels, row):
 		
 	return all_data
 
-def import_json(url, labels, namespace, allow=[]):
+import chardet
+def import_json(url, labels, namespace=['features'], allow=[], use_datestr=False):
+	if use_datestr:
+		url = date.today().strftime(url)
+	# url = date(2020, 4, 19).strftime(url)
 	resp = requests.get(url)
+	# encoding = chardet.detect(resp.content)['encoding']
+	# json_content = json.loads(resp.content, encoding=encoding)
 	content = find_json(resp.json(), namespace)
 	data = []
 	if type(content) == list:
@@ -297,9 +251,7 @@ json_methods = {
 }
 
 methods = {
-	"google_sheets": import_google_sheets,
 	"worldometers": import_worldometers,
-	"selector": import_selector,
 	"csv": import_csv,
 	"json": import_json,
 	"jhu": import_jhu_runner,
