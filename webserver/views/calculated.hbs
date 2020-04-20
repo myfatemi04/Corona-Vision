@@ -3,17 +3,18 @@
 	<head>
 		<title>Corona Vision</title>
         {{>styles}}
+        <script>
+            function back() {
+                window.history.back();
+            }
+        </script>
 	</head>
 	<body>
 		{{>navbar}}
 		<div class="container box mx-auto d-flex flex-column align-items-center">
-            <h1>Meanings behind the numbers</h1>
-            <div class="box mx-auto">
-                <h3>Calculated stats</h3>
-                <p>That just means that we calculated the number by adding several sources together. For example, adding individual state data to get the overall number of tests in a country.</p>
-                <h3>If a number is 0</h3>
-                <p>That may also mean it hasn't been updated yet. We update as frequently as possible, from several government websites.</p>
-            </div>
+            <h1>This number has no single source.</h1>
+            We compiled it from other sources, such as state governments or country governments.
+            <a href="javascript:back()">Go back</a>
         </div>
 	</body>
 </html>

@@ -74,12 +74,10 @@ const data_table_page = async (req, res) => {
     loc_where += " and admin2=" + sqlstring.escape(admin2);
     query2 += loc_where;
 
-    if (last_update == null || (Date.now() - last_update > 60000)) {
-        max_update_time = await get_sql("select MAX(update_time) as update_time from datapoints;");
-        last_update = max_update_time[0]['update_time'];
-    }
+    last_update_result = await get_sql("select MAX(update_time) as update_time from datapoints where entry_date=" + sqlstring.escape(entry_date) + ";");
+    last_update = last_update_result[0]['update_time'];
 
-    let entry_dates_result = await get_sql("select distinct entry_date from datapoints where" + loc_where + " order by entry_date");
+    let entry_dates_result = await get_sql("select distinct entry_date from datapoints where" + loc_where + " order by entry_date desc");
     let entry_dates = entry_dates_result.map(x => utc_iso(x['entry_date']));
 
     let first_available_day = entry_dates[0];

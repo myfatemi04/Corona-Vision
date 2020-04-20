@@ -19,9 +19,16 @@
 				$("#date").val("{{entry_date}}");
 			}
 
-			function update_nochart() {
-				reload_data();
-				update_stats();
+			function update_date() {
+				let win_loc = "?country={{admin0}}";
+				{{#if admin1}}
+					win_loc += "&province={{admin1}}";
+				{{/if}}
+				{{#if admin2}}
+					win_loc += "&admin2={{admin2}}";
+				{{/if}}
+				win_loc += "&date=" + $("#date").val();
+				window.location = win_loc;
 			}
 		</script>
 		<style type="text/css">
@@ -58,7 +65,7 @@
 								{{{ prev_day_link }}}
 							</div>
 							<div style="flex: 1;" id="date-label">
-								<select class="custom-input-color my-2" id="date" onchange="update_nochart()" style="border-radius: 0.25rem;">
+								<select class="custom-input-color my-2" id="date" onchange="update_date()" style="border-radius: 0.25rem;">
 									{{#each entry_dates}}
 										<option value="{{this}}">{{this}}</option>
 									{{/each}}
@@ -72,14 +79,17 @@
 							<div style="text-align: center; font-size: 0.5em;">{{{go_back_link}}}</div>
 						{{/if}}
 						{{#with location_datapoint}}
+							{{#if total}}
 							<div class="stats-row">
 								<span class="stats-label">Total</span>
-								<i class="fas fa-lungs-virus"></i>
+								<i class="fas fa-viruses"></i>
 								<span id="stats-total" class="font-weight-bold" style="color: #f3a513">
 									<a href="{{source_total}}">{{total}}</a>
 								</span>
 							</div>
+							{{/if}}
 							
+							{{#if dtotal}}
 							<div class="stats-row">
 								<span class="stats-label">New</span>
 								<i class="fas fa-clock"></i>
@@ -87,7 +97,9 @@
 									{{dtotal}}
 								</span>
 							</div>
+							{{/if}}
 
+							{{#if active}}
 							<div class="stats-row">
 								<span class="stats-label">Active</span>
 								<i class="fas fa-head-side-cough"></i>
@@ -95,7 +107,9 @@
 									{{active}}
 								</span>
 							</div>
+							{{/if}}
 
+							{{#if serious}}
 							<div class="stats-row">
 								<span class="stats-label">Severe</span>
 								<i class="fas fa-hospital-user"></i>
@@ -103,7 +117,9 @@
 									<a href="{{source_serious}}">{{serious}}</a>
 								</span>
 							</div>
+							{{/if}}
 
+							{{#if deaths}}
 							<div class="stats-row">
 								<span class="stats-label">Deaths</span>
 								<i></i>
@@ -111,7 +127,9 @@
 									<a href="{{source_deaths}}">{{deaths}}</a>
 								</span>
 							</div>
+							{{/if}}
 
+							{{#if recovered}}
 							<div class="stats-row">
 								<span class="stats-label">Recoveries</span>
 								<i class="far fa-smile"></i>
@@ -119,6 +137,9 @@
 									<a href="{{source_recovered}}">{{recovered}}</a>
 								</span>
 							</div>
+							{{/if}}
+
+							{{#if tests}}
 							<div class="stats-row">
 								<span class="stats-label">Tests</span>
 								<i class="fas fa-vials"></i>
@@ -126,11 +147,15 @@
 									<a href="{{source_tests}}">{{tests}}</a>
 								</span>
 							</div>
+							{{/if}}
+
+							{{#if dtests}}
 							<div class="stats-row">
 								<span class="stats-label">Tests Today</span>
 								<i class="fas fa-clock"></i>
 								<span id="stats-dtests" class="font-weight-bold" style="color: #3d87ff">{{dtests}}</span>
 							</div>
+							{{/if}}
 						{{/with}}
 					</div>
 				</div>
