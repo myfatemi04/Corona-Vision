@@ -80,8 +80,8 @@ const data_table_page = async (req, res) => {
     let entry_dates_result = await get_sql("select distinct entry_date from datapoints where" + loc_where + " order by entry_date desc");
     let entry_dates = entry_dates_result.map(x => utc_iso(x['entry_date']));
 
-    let first_available_day = entry_dates[0];
-    let last_available_day = entry_dates[entry_dates.length - 1];
+    let first_available_day = entry_dates[entry_dates.length - 1];
+    let last_available_day = entry_dates[0];
 
     let label = admin2;
 	if (!admin2) label = admin1;
