@@ -1,0 +1,44 @@
+.do-the-five-footer {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-evenly;
+}
+
+.do-the-five-footer small {
+	padding-top: 8px;
+}
+
+.five-list {
+	margin: auto;
+	align-items: center;
+}
+
+.five-list-elem {
+	display: block;
+}
+
+.five-number {
+	font-weight: bold;
+	color: red;
+	padding-left: 0.5rem;
+	padding-right: 0.5rem;
+	width: 10px;
+	display: inline-block;
+}
+
+.five-bold {
+	font-weight: bold;
+	padding-left: 0.5rem;
+	padding-right: 0.5rem;
+}
+
+.five-desc {
+	padding-left: 0.5rem;
+	padding-right: 0.5rem;
+}
+
+.important-info {
+	font-size: 1.5rem;
+	letter-spacing: -0.1px;
+	font-weight: bold;
+}

@@ -1,0 +1,15 @@
+@import url('https://fonts.googleapis.com/css?family=Lato&display=swap');
+
+.lato {
+	font-family: "Lato";
+}
+
+.no-deco {
+	text-decoration: none;
+	color: #111;
+}
+
+.no-deco:hover {
+	text-decoration: none;
+	color: #333;
+}

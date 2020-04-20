@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import io
-from corona_sql import Session, Datapoint
+from corona_sql import Session, Datapoint, upload
 from import_data import bno_countries
 from datetime import timedelta, date
 import standards
@@ -64,7 +64,7 @@ def import_csv_data(csv_text, entry_date):
 			# The admin2 should be "Chicago", and the state should be "IL"
 			if ', ' in admin1 and admin0 == 'United States':
 				admin2, admin1 = standards.get_admin2_admin1(admin0, admin1)
-		
+
 		# STEP 2 #
 		total = row[total_col]
 		deaths = row[death_col]
@@ -74,23 +74,31 @@ def import_csv_data(csv_text, entry_date):
 		if np.isnan(deaths): deaths = 0
 		if np.isnan(recovered): recovered = 0
 
-		row = {
-			"admin0": admin0,
-			"admin1": admin1,
-			"admin2": admin2,
-			"total": total,
-			"deaths": deaths,
-			"recovered": recovered,
-		}
+		if admin1 == 'Recovered':
+			new_row = {
+				"admin0": admin0,
+				"recovered": recovered,
+				"entry_date": entry_date
+			}
+		else:
+			new_row = {
+				"admin0": admin0,
+				"admin1": admin1,
+				"admin2": admin2,
+				"total": total,
+				"deaths": deaths,
+				"recovered": recovered,
+				"entry_date": entry_date
+			}
 
 		# Save the primary location data if we can
 		if lat_col and lng_col:
 			lat, lng = row[lat_col], row[lng_col]
 			if not np.isnan(lat) and not np.isnan(lng):
-				row['latitude'] = lat
-				row['longitude'] = lng
+				new_row['latitude'] = lat
+				new_row['longitude'] = lng
 
-		data_points.append(row)
+		data_points.append(new_row)
 		
 	return data_points
 
@@ -113,9 +121,14 @@ def add_date_range(date_1, date_2):
 	current_date = date_1
 	acc = []
 	while current_date <= date_2:
+		print("Loading JHU data for ", current_date)
 		result = download_data_for_date(current_date)
 		if not result:
 			return
-		acc += result
+		try:
+			upload(result, defaults={}, source_link="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports")
+		except Exception as e:
+			print("Error [", type(e), "] during JHU download")
+			print(e)
 		current_date += next_date
 	return acc

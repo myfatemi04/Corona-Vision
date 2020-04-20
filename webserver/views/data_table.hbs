@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Corona Vision</title>
+		{{> styles}}
+		<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+		<script src="/js/corona_datatables.js"></script>
+		<script src="/js/corona_globals.js"></script>
+		<script src="/js/corona_chart.js"></script>
+		<script src="/js/corona_stats.js"></script>
+		<script src="/js/corona_util.js"></script>
+		<script src="/js/selector.js"></script>
+		
+		<script>
+			function init() {
+				chart = new_chart("chart");
+				init_chart_options();
+				load_chart("{{admin0}}", "{{admin1}}", "{{admin2}}");
+			}
+
+			function update_nochart() {
+				reload_data();
+				update_stats();
+			}
+		</script>
+		<style type="text/css">
+			.stats-row {
+				display: flex;
+				align-items: center;
+			}
+			.stats-row i {
+				flex: 1;
+				text-align: center;
+			}
+			.stats-row span {
+				flex: 2;
+			}
+			.stats-label {
+				text-align: right;
+			}
+		</style>
+	</head>
+	<body onload="init()">
+		{{> navbar}}
+		<div class="d-flex flex-column">
+			<div class="column-container">
+				<div class="box" style="flex: 1;">
+					<div id="stats-info" class="lato" style="display: flex; flex-direction: column; font-size: 1.5rem;">
+						<span id="stats-label" style="text-align: center;">{{label}}</span>
+						<a class="small" href="/sources" style="text-align: center;">Sources</a>
+						{{#with location_datapoint}}
+							<div class="stats-row">
+								<span class="stats-label">Total</span>
+								<i class="fas fa-lungs-virus"></i>
+								<span id="stats-total" class="font-weight-bold" style="color: #f3a513">{{total}}</span>
+							</div>
+							
+							<div class="stats-row">
+								<span class="stats-label">New</span>
+								<i class="fas fa-clock"></i>
+								<span id="stats-dtotal" class="font-weight-bold" style="color: #f3a513">{{dtotal}}</span>
+							</div>
+
+							<div class="stats-row">
+								<span class="stats-label">Active</span>
+								<i class="fas fa-head-side-cough"></i>
+								<span id="stats-active" class="font-weight-bold" style="color: #f58020">{{active}}</span>
+							</div>
+
+							<div class="stats-row">
+								<span class="stats-label">Severe</span>
+								<i class="fas fa-hospital-user"></i>
+								<span id="stats-serious" class="font-weight-bold" style="color: #f75027">{{serious}}</span>
+							</div>
+
+							<div class="stats-row">
+								<span class="stats-label">Deaths</span>
+								<i></i>
+								<span id="stats-deaths" class="font-weight-bold" style="color: #f83e3e">{{deaths}}</span>
+							</div>
+
+							<div class="stats-row">
+								<span class="stats-label">Recoveries</span>
+								<i class="far fa-smile"></i>
+								<span id="stats-recovered" class="font-weight-bold" style="color: #3dff7a">{{recovered}}</span>
+							</div>
+							<div class="stats-row">
+								<span class="stats-label">Tests</span>
+								<i class="fas fa-vials"></i>
+								<span id="stats-tests" class="font-weight-bold" style="color: #3d87ff">{{tests}}</span>
+							</div>
+							<div class="stats-row">
+								<span class="stats-label">Tests Today</span>
+								<i class="fas fa-clock"></i>
+								<span id="stats-dtests" class="font-weight-bold" style="color: #3d87ff">{{dtests}}</span>
+							</div>
+						{{/with}}
+					</div>
+				</div>
+			</div>
+			<div class="column-container">
+				<div id="chart-container" class="box d-flex flex-column" style="flex: 1; height: 50em;">
+					<canvas id="chart"></canvas>
+					<a id="download-chart" style="display: none;"></a>
+					<button class="btn custom-button-color my-2" onclick="download_canvas()">
+						Save Image
+					</button>
+					{{>chart_options}}
+					<div>
+						<a href="/charts_info">More info about the charts</a>
+					</div>
+				</div>
+				<table id="datatable" class="data-container" style="flex: 1; height: 50em;">
+					<thead class="border-bottom pos-sticky datatable-head custom-bg">
+						<tr>
+							<th>
+								Click on any stat to see its source.
+							</th>
+							<th>
+								Last updated: {{last_update}}.
+							</th>
+							<th>
+								Daily counts reset at UTC-0.
+							</th>
+						</tr>
+						<tr class="d-flex py-2" style="display: flex; align-items: center; text-align: center;">
+							<th style="flex: 2;">
+								<input type="text" onkeyup="filter_table()" class="custom-input-color small-input" placeholder="Search for location" id="locationSearch">
+							</th>
+							<th style="flex: 1;">
+								{{{ prev_day_link }}}
+							</th>
+							<th style="flex: 1;" id="date-label">
+								<select class="custom-input-color form-control my-2" id="date" onchange="update_nochart()" style="border-radius: 0.25rem;">
+									{{#each entry_dates}}
+										<option value="{{this}}" {{#ifeq this entry_date}}selected{{/ifeq}}>{{this}}</option>
+									{{/each}}
+								</select>
+							</th>
+							<th style="flex: 1;">
+								{{{ next_day_link }}}
+							</th>
+						</tr>
+						<tr class="d-flex py-2" style="font-size: 0.9rem;">
+							<th style="flex: 1;">#</th>
+							<th style="flex: 2;">Updated</th>
+							<th style="flex: 4;">Location</th>
+							<th style="flex: 4;">Total</th>
+							{{!-- <th style="flex: 1;">New</th> --}}
+							<th style="flex: 2;">Recovered</th>
+							<th style="flex: 2;">Deaths</th>
+							{{!-- <th style="flex: 1;">New</th> --}}
+							{{!-- <th style="flex: 1;">Tests</th> --}}
+							<th style="flex: 2;">Severe</th>
+							{{!-- <th style="flex: 1;">Source</th> --}}
+						</tr>
+					</thead>
+					<tbody id="tablebody">
+						{{{table_rows}}}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</body>
+</html>

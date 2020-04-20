@@ -1,7 +1,6 @@
 const express = require('express');
 const bodyparser = require('body-parser');
 const fs = require('fs');
-const url = require('url');
 
 const Handlebars = require('hbs');
 const corona_sql = require('./corona_sql');
@@ -17,10 +16,6 @@ Handlebars.registerPartial("navbar", fs.readFileSync("views/navbar.hbs", "utf-8"
 Handlebars.registerPartial("styles", fs.readFileSync("views/styles.hbs", "utf-8"));
 Handlebars.registerPartial("selectors", fs.readFileSync("views/selectors.hbs", "utf-8"));
 Handlebars.registerPartial("chart_options", fs.readFileSync("views/chart_options.hbs", "utf-8"));
-Handlebars.registerHelper('ifeq', function (a, b, options) {
-    if (a == b) { return options.fn(this); }
-    return options.inverse(this);
-});
 // Handlebars.registerPartial("map_panel", fs.readFileSync("views/map_panel.hbs", "utf-8"));
 
 app = express();
@@ -39,77 +34,23 @@ app.set('view engine', 'hbs');
 /* Main Page
  * The Main Page includes charts, data tables, and live stats */
 let last_update = null;
-
-function make_next_day_link(admin0, admin1, admin2, entry_date) {
-    let date = new Date(entry_date);
-    date.setUTCDate(date.getUTCDate() + 1);
-    return `<a href="?country=${admin0}&province=${admin1}&admin2=${admin2}&date=${utc_iso(date)}">Next day</a>`;
-}
-
-function make_prev_day_link(admin0, admin1, admin2, entry_date) {
-    let date = new Date(entry_date);
-    date.setUTCDate(date.getUTCDate() - 1);
-    return `<a href="?country=${admin0}&province=${admin1}&admin2=${admin2}&date=${utc_iso(date)}">Previous day</a>`;
-}
-
-const data_table_page = async (req, res) => {
-    let query = "select * from datapoints where";
-    let params = url.parse(req.url, true).query;
-    let group = params['region'] || "";
-    let admin0 = params['country'] || "";
-    let admin1 = params['province'] || "";
-    let admin2 = params['admin2'] || "";
-    let entry_date = params['date'] || utc_iso(new Date());
-    query += " entry_date=" + sqlstring.escape(entry_date);
-    if(group) query += " and `group`=" + sqlstring.escape(group);
-    if(admin0) query += " and admin0=" + sqlstring.escape(admin0);
-    if(!admin0 || admin1) query += " and admin1=" + sqlstring.escape(admin1);
-    if(!admin1 || admin2) query += " and admin2=" + sqlstring.escape(admin2);
-
-    let query2 = "select * from datapoints where "
-    query2 += " entry_date=" + sqlstring.escape(entry_date) + " and";
-    let loc_where = "";
-    loc_where += " admin0=" + sqlstring.escape(admin0);
-    loc_where += " and admin1=" + sqlstring.escape(admin1);
-    loc_where += " and admin2=" + sqlstring.escape(admin2);
-    query2 += loc_where;
-
+app.get("/", (req, res) => {
     if (last_update == null || (Date.now() - last_update > 60000)) {
-        max_update_time = await get_sql("select MAX(update_time) as update_time from datapoints;");
-        last_update = max_update_time[0]['update_time'];
+        get_sql("select MAX(update_time) as update_time from datapoints;").then(
+            data => {
+                last_update = data[0]['update_time'];
+                res.render("main_page", {last_update: datatables.format_update_time(last_update)});
+            }
+        ).catch(
+            err => {
+                res.render("main_page", {last_update: "Recently"});
+                console.err("Error during update time selection")
+            }
+        );
+    } else {
+        res.render("main_page", {last_update: datatables.format_update_time(last_update)});
     }
-
-    let entry_dates_result = await get_sql("select distinct entry_date from datapoints where" + loc_where + " order by entry_date");
-    let entry_dates = entry_dates_result.map(x => utc_iso(x['entry_date']));
-
-    let first_available_day = entry_dates[0];
-    let last_available_day = entry_dates[entry_dates.length - 1];
-
-    let label = admin2;
-	if (!admin2) label = admin1;
-	if (!admin1) label = admin0;
-	if (!admin0) label = "World";
-
-    data = await get_sql(query);
-    location_datapoint = await get_sql(query2)
-
-    res.render("data_table", {
-        table_rows: datatables.make_rows(data, admin0, admin1, admin2),
-        last_update: datatables.format_update_time(last_update),
-        admin0: admin0,
-        admin1: admin1,
-        admin2: admin2,
-        label: label,
-        location_datapoint: location_datapoint[0],
-        entry_dates: entry_dates,
-        next_day_link: (last_available_day == entry_date) ? "" : make_next_day_link(admin0, admin1, admin2, entry_date),
-        prev_day_link: (first_available_day == entry_date) ? "" : make_prev_day_link(admin0, admin1, admin2, entry_date),
-        entry_date: entry_date
-    });
-}
-
-app.get("/", data_table_page);
-app.get("/data", data_table_page);
+});
 
 /* Chart Page
  * The Chart Page includes customizable chart with LSTM and Logistic predictions */
@@ -205,9 +146,9 @@ app.get("/cases/totals_sequence", (req, res) => {
     let params = req.query;
 
     // get location and date
-    let admin0 = params.admin0 || "";
-    let admin1 = params.admin1 || "";
-    let admin2 = params.admin2 || "";
+    let admin0 = get(params, "admin0") || "";
+    let admin1 = get(params, "admin1") || "";
+    let admin2 = get(params, "admin2") || "";
 
     let query = "select * from datapoints";
     
@@ -232,7 +173,7 @@ app.get("/cases/totals_sequence", (req, res) => {
             for (let label of labels) {
                 resp[label] = [];
             }
-
+            
             /* !!! This strongly relies on the date format !!! */
             let day = new Date(content[0].entry_date);
             let last_day = new Date(content[content.length - 1].entry_date);
@@ -357,7 +298,7 @@ app.get("/cases/date", (req, res) => {
 geojson_cache = {};
 geojson_max_age = 1000 * 60 * 15; // 15-minute caching
 app.get("/geojson", (req, res) => {
-    let entry_date = req.query['date'] || utc_iso(new Date());
+    let entry_date = req.query['date'] || new Date().toISOString().substring(0, 10);
     let query = sqlstring.format("select * from datapoints where entry_date = ? and latitude is not null and longitude is not null and admin2 = '' and admin0 != '' and total > 10", entry_date);
     if (query in geojson_cache) {
         let {data, update_time} = geojson_cache[query];
@@ -483,6 +424,28 @@ app.get("/sources", (req, res) => {
 
 app.get("/test-gcloud", (req, res) => {
     res.send("Domain is directed to Google Cloud App Engine");
+});
+
+app.get("/data", (req, res) => {
+    let query = "select * from datapoints where entry_date='2020-04-20'";
+    if (req['region']) {
+        query += " and group=" + sqlstring.escape(req['region']);
+    }
+    if (req['country']) {
+        query += " and admin0=" + sqlstring.escape(req['country']);
+    }
+    if (req['province']) {
+        query += " and admin1=" + sqlstring.escape(req['province']);
+    }
+    get_sql(query).then(
+        data => {
+            res.render("data_table", {table_rows: datatables.make_rows(data, "", "", "")});
+        }
+    ).catch(
+        err => {
+            res.send("We're sorry, there's been an error!");
+        }
+    );
 });
 
 const hostname = '0.0.0.0';

@@ -262,7 +262,9 @@
 				"labels": {
 					"entry_date": ["date", "::str", "::ymd"],
 					"admin1": ["state", "::us_state_code"],
-					"tests": ["total"]
+					"tests": ["total"],
+					"hospitalized": ["hospitalized"],
+					"recovered": ["recovered"]
 				},
 				"namespace": []
 			},
@@ -375,13 +377,6 @@
 			},
 			"method": "csv",
 			"label": "Github Dataset - non USA"
-		},
-		{
-			"args": {},
-			"defaults": {},
-			"source_link": "",
-			"method": "update_all_deltas",
-			"label": "Updating all daily changes(deltas)"
 		}
 	]
 }

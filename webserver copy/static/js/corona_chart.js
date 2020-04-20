@@ -390,22 +390,33 @@ function smooth_data(array, smoothing) {
 	return smooth_array;
 }
 
-function load_chart(admin0, admin1, admin2) {
-	let label = admin2;
-	if (!admin2) label = admin1;
-	if (!admin1) label = admin0;
-	if (!admin0) label = "World";
+function reload_chart() {
+	reset_chart();
+	
+	let admin0 = CORONA_GLOBALS.admin0;
+	let admin1 = CORONA_GLOBALS.admin1;
+	let admin2 = CORONA_GLOBALS.admin2;
+	
+	let label = generate_name(admin0, admin1, admin2);
+
+	let params = {
+		admin0: admin0,
+		admin1: admin1,
+		admin2: admin2,
+		world: "World"
+	}
+	
+	waiting = params;
+
 	$.getJSON(
 		"/cases/totals_sequence",
-		{
-			admin0: admin0,
-			admin1: admin1,
-			admin2: admin2
-		},
+		params,
 		function(data) {
-			set_chart_data(data);
-			chart.options.title.text = 'Cases in: ' + label;
-			chart.update();
+			if (waiting == params) {
+				set_chart_data(data);
+				chart.options.title.text = 'Cases in: ' + label;
+				chart.update();
+			}
 		}
 	)
 }

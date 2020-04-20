@@ -71,7 +71,7 @@ def upload_datasource(datasource):
 
 			upload(results, defaults=datasource['defaults'], source_link=datasource['source_link'])
 	except Exception as e:
-		print("Error during update: ", e, ". Data source: ", datasource['label'])
+		print("Error during update: ", e, type(e), ". Data source: ", datasource['label'])
 		traceback.print_tb(sys.exc_info()[2])
 
 def number(string):
@@ -250,7 +250,7 @@ def extract_json_data(row, labels):
 		try:
 			j = find_json(row, labels[label])
 		except KeyError:
-			print("\rKeyError on ", label)
+			# print("\rKeyError on", label,"- skipping")
 			continue
 		if j is not None:
 			result[label] = j
@@ -319,11 +319,18 @@ def hello():
 	return redirect("https://www.coronavision.us/")
 
 if __name__ == "__main__":
-	# exit()
 	# use_server = False
-	use_server = True
+	use_server = "coronavision_import_data_use_server" not in os.environ
+
+	# import_jhu.download_data_for_date(date.today() - timedelta(days=1))
+	# upload_datasource(data_sources['historical'][4])
+	# import_jhu.add_date_range(date(2020, 2, 7), date.today())
+	# if use_server:
+	# 	exit()
 
 	# DEBUG MARKER
+	jhu_url = "https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports"
+
 	if len(sys.argv) == 1:
 		downloader = Thread(target=data_download, name="Data downloader", daemon=not use_server)
 		downloader.start()
@@ -334,12 +341,15 @@ if __name__ == "__main__":
 		downloader = Thread(target=update_historical_data, name="Data downloader", daemon=not use_server)
 		downloader.start()
 	elif sys.argv[1].startswith('jhu'):
-		d = sys.argv[1][3:]
-		y, m, d = d.split('-')
-		y = int(y)
-		m = int(m)
-		d = int(d)
-		upload(import_jhu.download_data_for_date(date(y, m, d)), defaults={'entry_date': date(y, m, d)}, source_link="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports")
+		if len(sys.argv[1]) == 3:
+			upload(import_jhu.download_data_for_date(date(2020, 3, 5)), defaults={}, source_link=jhu_url)
+		else:
+			d = sys.argv[1][3:]
+			y, m, d = d.split('-')
+			y = int(y)
+			m = int(m)
+			d = int(d)
+			upload(import_jhu.download_data_for_date(date(y, m, d)), defaults={'entry_date': date(y, m, d)}, source_link=jhu_url)
 
 	if use_server:
 		# DEBUG MARKER

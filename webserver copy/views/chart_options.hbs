@@ -1,0 +1,29 @@
+<div>
+    Scale <small>(change Y-axis type)</small>
+</div>
+<select name="scale-type" class="custom-input-color form-control my-2">
+    <option value="linear">Linear</option>
+    <option value="logarithmic">Logarithmic</option>
+</select>
+
+<div>
+    Data type <small>(display daily change of each statistic or total)</small>
+</div>
+<select name="chart-type" class="custom-input-color form-control my-2">
+    <option value="total">Total</option>
+    <option value="daily-change">Daily change</option>
+</select>
+
+<div>
+    Smoothing factor <small>(average N days to the left and right, filling in blanks with nearest value)</small>
+</div>
+<input type="text" id="smoothing" class="custom-input-color form-control my-2" value=0>
+
+<div>
+    Predictor <small>(logistic regression, simulating population growth, or LSTM, discovering trends in data)</small>
+</div>
+<select name="show_predictions" class="custom-input-color form-control my-2">
+    <option value="none" selected>Don't show predictions for future cases</option>
+    <option value="log">Show logistic predictions for future cases</option>
+    {{!-- <option value="lstm">Show LSTM predictions for future cases (will take ~30 seconds to load)</option> --}}
+</select>

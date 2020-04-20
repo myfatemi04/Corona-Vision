@@ -7,6 +7,7 @@ from sqlalchemy.sql import func
 import os
 from datetime import date, datetime, timedelta
 import json
+import time
 import numpy as np
 
 import standards
@@ -15,8 +16,6 @@ import location_data
 # Keep the actual SQL URL private
 sql_uri = os.environ['DATABASE_URL']
 engine = create_engine(sql_uri)
-
-force_refresh = False
 
 # Scoped_session is important here
 Session = scoped_session(sessionmaker(bind=engine, autocommit=False))
@@ -161,20 +160,26 @@ class Datapoint(Base):
 		for label in stat_labels:
 			if label not in data:
 				continue
+			my_val = getattr(self, label)
+			source_is_calculated = getattr(self, "source_" + label) == "calculated"
 			if label in increase_labels:
-				if data[label] > getattr(self, label) or force_refresh:
+				if data[label] > my_val or (source_is_calculated and data[label] != my_val):
+					# SOURCE IS CALCULATED CHECKER
+					# if source_is_calculated:
+					# 	print("Updating because the source was 'calculated'")
 					setattr(self, label, data[label])
 					if label in stat_labels:
 						setattr(self, "source_" + label, source_link)
 					change = True
 			else:
-				if data[label] != getattr(self, label) or force_refresh:
+				if data[label] != my_val:
 					setattr(self, label, data[label])
 					if label in stat_labels:
 						setattr(self, "source_" + label, source_link)
 					change = True
 		if change:
 			self.update_time = datetime.utcnow()
+
 		return change
 	
 	def update_differences(self, prev_row):
@@ -231,12 +236,13 @@ def get_cache(rows, session):
 
 		entry_date = row['entry_date']
 
-		if not min_entry_date or entry_date < min_entry_date:
+		if min_entry_date is None or entry_date < min_entry_date:
 			min_entry_date = entry_date
-		if not max_entry_date or entry_date > max_entry_date:
+		if max_entry_date is None or entry_date > max_entry_date:
 			max_entry_date = entry_date
 	
-	datapoints = session.query(Datapoint).filter(Datapoint.entry_date.between(min_entry_date, max_entry_date))
+	# we add a timedelta here to the lower bound so we can reuse this to find daily change
+	datapoints = session.query(Datapoint).filter(Datapoint.entry_date.between(min_entry_date - timedelta(days=1), max_entry_date))
 
 	if len(admin0_seen) == 1:
 		admin0 = admin0_seen.pop()
@@ -247,7 +253,7 @@ def get_cache(rows, session):
 	if len(admin2_seen) == 1:
 		admin2 = admin2_seen.pop()
 		datapoints = datapoints.filter_by(admin2=admin2)
-	
+
 	return {(datapoint.location_tuple(), datapoint.entry_date): datapoint for datapoint in datapoints}
 
 def upload(rows, defaults={}, source_link=''):
@@ -257,12 +263,12 @@ def upload(rows, defaults={}, source_link=''):
 
 	# so we don't have to recount things hella times
 	updated = set()
-	unique_days = set()
 
 	i = 0
+	seen = set()
 	for row in rows:
 		i += 1
-		print(f"\rFinding changes--{i}/{len(rows)}			   ", end='\r')
+		print(f"Finding changes--{i}/{len(rows)}			   ", end='\r')
 
 		row_link = source_link
 		if 'source_link' in row:
@@ -271,6 +277,10 @@ def upload(rows, defaults={}, source_link=''):
 		
 		# fix the location's name
 		row['admin0'], row['admin1'], row['admin2'] = location = standards.normalize_name(row['admin0'], row['admin1'], row['admin2'])
+		if (location, row['entry_date']) in seen:
+			continue
+		else:
+			seen.add((location, row['entry_date']))
 
 		# skip empty datapoints
 		has_data = False
@@ -286,6 +296,7 @@ def upload(rows, defaults={}, source_link=''):
 			existing = cache[location, row['entry_date']]
 			was_updated = existing.update_data(row, row_link, session)
 		else:
+			# print("adding new", row['admin0'], row['admin1'], row['admin2'], row['entry_date'])
 			existing = Datapoint(**row)
 			session.add(existing)
 			for label in stat_labels:
@@ -296,29 +307,83 @@ def upload(rows, defaults={}, source_link=''):
 		existing.guess_location()
 
 		# now we recalculate the totals
-		if was_updated:
-			unique_days.add(row['entry_date'])
-			if row['admin2']: updated.add((row['admin0'], row['admin1'], row['entry_date']))
-			if row['admin1']: updated.add((row['admin0'], '', row['entry_date']))
-			if row['admin0']: updated.add(('', '', row['entry_date']))
-		
-	i = 0
-	for admin0, admin1, entry_date in sorted(updated, reverse=True):
-		i += 1
-		print(f"Recounting {i}/{len(updated)}...       ", end='\r')
-		update_overall(admin0, admin1, entry_date, session)
+		# if was_updated:
+		updated.add(((row['admin0'], row['admin1'], row['admin2']), row['entry_date']))
+		updated.add(((row['admin0'], row['admin1'],            ''), row['entry_date']))
+		updated.add(((row['admin0'],            '',            ''), row['entry_date']))
+		updated.add(((''           ,            '',            ''), row['entry_date']))
 
-	for day in unique_days:
-		update_deltas(day)
+		# if i % 100 == 0:
+		# 	print("\rRecommitting", end='\r')
+		# 	session.commit()
 
-	print("\rCommitting all...											   ", end='\r')
+	recalculate(updated, session)
+
+	print("Committing all...											   ", end='\r')
 	session.commit()
-	print("\rDone committing		 ", end='\r')
+	print("Done committing		 ", end='\r')
+
+def delete_dp(*where):
+	print("Here is your input: ", *where)
+	print("Is this OK?")
+	input("Make sure there's an entry date, and you aren't missing any fields.")
+	input("You're 100% sure?")
+	print("Deleting")
+	
+	session = Session()
+	results = session.query(Datapoint).filter(*where)
+	updates = set()
+	for result in results:
+		a0, a1, a2 = result.location_tuple()
+		updates.add(((a0, a1, a2), result.entry_date))
+		updates.add(((a0, a1, ''), result.entry_date))
+		updates.add(((a0, '', ''), result.entry_date))
+		updates.add((('', '', ''), result.entry_date))
+		session.delete(result)
+
+	recalculate(updates, session)
+	print("Committing in 10 seconds")
+	time.sleep(10)
+	session.commit()
+	print("Committed")
+
+def recalculate(updated, session):
+	i = 0
+	unique_days = set()
+	for location, entry_date in sorted(updated, reverse=True):
+		i += 1
+		admin0, admin1, admin2 = location
+		if admin2 == '':
+			print(f"Recounting {i}/{len(updated)} {location} {entry_date}                           ", end='\r')
+			update_overall(admin0, admin1, entry_date, session)
+		unique_days.add(entry_date)
+
+	for day in sorted(unique_days):
+		# we tell it what was updated so we can skip things that weren't
+		update_deltas(day, updated)
+
+def recalculate_selection(*where):
+	session = Session()
+	results = session.query(Datapoint).filter(*where)
+	updates = set()
+	for result in results:
+		a0, a1, a2 = result.location_tuple()
+		updates.add(((a0, a1, a2), result.entry_date))
+		updates.add(((a0, a1, ''), result.entry_date))
+		updates.add(((a0, '', ''), result.entry_date))
+		updates.add((('', '', ''), result.entry_date))
+	recalculate(updates, session)
+	session.commit()
 
 def _is_nan(data):
 	return type(data) == float and np.isnan(data)
 
 def _fill_defaults(data, defaults):
+	if 'entry_date' in data:
+		if type(data['entry_date']) == str:
+			y, m, d = data['entry_date'].split("-")
+			data['entry_date'] = date(int(y), int(m), int(d))
+
 	default_data = { 'entry_date': datetime.utcnow().date(), 'group': '', 'admin0': '', 'admin1': '', 'admin2': '', **defaults }
 
 	# add default values if not found
@@ -366,10 +431,10 @@ def update_overall(admin0, admin1, entry_date, session):
 		for label in stat_labels:
 			setattr(overall_dp, label, 0)
 	
-	# prt(labelled, admin0, admin1, entry_date)
+	# print(labelled, admin0, admin1, entry_date)
 	overall_dp.update_data(labelled, "calculated", session)
 
-def update_deltas(day):
+def update_deltas(day, updated=None):
 	compare_day = day + timedelta(days=-1)
 	sess = Session()
 	today_datapoints = sess.query(Datapoint).filter_by(entry_date=day)
@@ -379,10 +444,16 @@ def update_deltas(day):
 	yesterday_dict = {d.location_tuple(): d for d in yesterday_datapoints}
 
 	total = len(today_dict)
-	i = 1
+	i = 0
 
 	for location in today_dict:
-		print("\r", compare_day, "-->", day, f"{i}/{total}		   ", end='\r')
+		i += 1
+		# skip updating datapoints that didn't change
+		if (location, day) not in updated and updated is not None:
+			print(compare_day, "-->", day, f"{i}/{total} - skip	   ", end='\r')
+		else:
+			print(compare_day, "-->", day, f"{i}/{total}		   ", end='\r')
+
 		today_dp = today_dict[location]
 		if today_dp.active != (today_dp.total - today_dp.deaths - today_dp.recovered):
 			today_dp.active = today_dp.total - today_dp.deaths - today_dp.recovered
@@ -394,19 +465,21 @@ def update_deltas(day):
 		
 		today_dp.update_differences(yesterday_dp)
 
-		i += 1
-
-	print("\rCommitting deltas...						 ", end='\r')
-	sess.commit()
+	# print("You have to commit deltas manually btw", end="\r")
+	# print("Committing deltas...						 ", end='\r')
+	# sess.commit()
 
 def update_all_deltas():
 	start_date = date(2020, 1, 22)
 	end_date = datetime.utcnow().date()
 	while start_date <= end_date:
 		next_day = start_date + timedelta(days=1)
-		update_deltas(start_date)
+		update_deltas(start_date, None)
 		start_date = next_day
 
 if __name__ == "__main__":
-	print("Past overhead")
-	sess = Session()
+	# delete_dp(Datapoint.admin0 == 'United States', Datapoint.admin1 == 'Recovered')
+	# print("Remember to comment this out")
+	recalculate_selection(Datapoint.admin0 == "United States", Datapoint.entry_date=='2020-03-05')
+	recalculate_selection(Datapoint.admin0 == "United States", Datapoint.entry_date=='2020-03-06')
+	recalculate_selection(Datapoint.admin0 == "United States", Datapoint.entry_date=='2020-03-11')

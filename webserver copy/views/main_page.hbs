@@ -10,6 +10,7 @@
 		<script src="/js/corona_stats.js"></script>
 		<script src="/js/corona_util.js"></script>
 		<script src="/js/selector.js"></script>
+		
 		<script>
 			function init() {
 				chart = new_chart("chart");
@@ -64,30 +65,80 @@
 				)
 			}
 		</script>
+		<style type="text/css">
+			.stats-row {
+				display: flex;
+				align-items: center;
+			}
+			.stats-row i {
+				flex: 1;
+				text-align: center;
+			}
+			.stats-row span {
+				flex: 2;
+			}
+			.stats-label {
+				text-align: right;
+			}
+		</style>
 	</head>
 	<body onload="init()">
 		{{> navbar}}
 		<div class="d-flex flex-column">
 			<div class="column-container">
-				<div class="box">
+				<div class="box" style="flex: 1;">
 					<div id="stats-info" class="lato" style="display: none; font-size: 1.5rem;">
-						<span id="stats-label" class="font-weight-bold"></span><br/>
-						<span id="stats-total" class="font-weight-bold" style="color: #eb7a34"></span>
-						<span class="stats-label">Total</span><br/>
-						<span id="stats-dtotal" class="font-weight-bold" style="color: #ffbe96"></span>
-						<span class="stats-label">New cases today</span><br/>
-						<span id="stats-recovered" class="font-weight-bold text-success"></span>
-						<span class="stats-label">Recoveries</span><br/>
-						<span id="stats-deaths" class="font-weight-bold" style="color: #ff5252"></span>
-						<span class="stats-label">Deaths</span><br/>
-						<span id="stats-serious" class="font-weight-bold" style="color: #b02020"></span>
-						<span class="stats-label">Severe cases</span><br/>
-						<span id="stats-tests" class="font-weight-bold" style="color: #2121f5"></span>
-						<span class="stats-label">Number of tests</span><br/>
+						<span id="stats-label" style="text-align: center; flex: 1;"></span><br/>
+
+						<div class="stats-row">
+							<span class="stats-label">Total</span><br/>
+							<i class="fas fa-lungs-virus"></i>
+							<span id="stats-total" class="font-weight-bold" style="color: #f3a513"></span>
+						</div>
+						
+						<div class="stats-row">
+							<span class="stats-label">New</span><br/>
+							<i class="fas fa-clock"></i>
+							<span id="stats-dtotal" class="font-weight-bold" style="color: #f3a513"></span>
+						</div>
+
+						<div class="stats-row">
+							<span class="stats-label">Active</span><br/>
+							<i class="fas fa-head-side-cough"></i>
+							<span id="stats-active" class="font-weight-bold" style="color: #f58020"></span>
+						</div>
+
+						<div class="stats-row">
+							<span class="stats-label">Severe</span><br/>
+							<i class="fas fa-hospital-user"></i>
+							<span id="stats-serious" class="font-weight-bold" style="color: #f75027"></span>
+						</div>
+
+						<div class="stats-row">
+							<span class="stats-label">Deaths</span><br/>
+							<i></i>
+							<span id="stats-deaths" class="font-weight-bold" style="color: #f83e3e"></span>
+						</div>
+
+						<div class="stats-row">
+							<span class="stats-label">Recoveries</span><br/>
+							<i class="far fa-smile"></i>
+							<span id="stats-recovered" class="font-weight-bold" style="color: #3dff7a"></span>
+						</div>
+						<div class="stats-row">
+							<span class="stats-label">Tests</span><br/>
+							<i class="fas fa-vials"></i>
+							<span id="stats-tests" class="font-weight-bold" style="color: #3d87ff"></span>
+						</div>
+						<div class="stats-row">
+							<span class="stats-label">Tests Today</span><br/>
+							<i class="fas fa-clock"></i>
+							<span id="stats-dtests" class="font-weight-bold" style="color: #3d87ff"></span>
+						</div>
 					</div>
 					<a href="/sources">Sources</a>
 				</div>
-				<div class="box" style="flex: 1;">
+				<div class="box" style="flex: 2;">
 					Date:
 					<select class="custom-input-color form-control my-2" id="date" onchange="update_nochart()" style="border-radius: 0.25rem;"></select><br/>
 					Region:
