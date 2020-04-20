@@ -1,6 +1,7 @@
 import pandas as pd
 import json
-from corona_sql_new import Session, add_location_data, get_admin1_name
+from corona_sql import Session, Location, add_location_data
+from location_data import get_admin1_name
 
 def na(val, sub):
     if pd.isna(val):
@@ -12,6 +13,7 @@ def import_countries():
     country_location_df = pd.read_csv("location_data/country_locations.tsv", sep='\t', keep_default_na=False, na_values=['_'])
     print("Loading country data")
     i = 0
+    cache = {location.location_tuple(): location for location in session.query(Location)}
     for _, row in country_location_df.iterrows():
         i += 1
         print(f'\r{i}/{len(country_location_df)}          ', end='\r')
@@ -21,7 +23,8 @@ def import_countries():
         country['longitude'] = lng
         country['admin0_code'] = country_code
         country['admin0'] = country_name
-        add_location_data(country, session)
+        
+        add_location_data(country, session=session)
     session.commit()
 
 def import_states():
@@ -29,6 +32,8 @@ def import_states():
     state_location_df = pd.read_csv("location_data/us_state_locations.tsv", sep='\t', keep_default_na=False, na_values=['_'])
     print("Loading US state data")
     i = 0
+    
+    cache = {location.location_tuple(): location for location in session.query(Location)}
     for _, row in state_location_df.iterrows():
         i += 1
         print(f'\r{i}/{len(state_location_df)}          ', end='\r')
@@ -40,7 +45,8 @@ def import_states():
         state['admin1'] = state_name
         state['admin0'] = 'United States'
         state['admin0_code'] = 'US'
-        add_location_data(state, session)
+        
+        add_location_data(state, session=session)
     session.commit()
 
 def import_counties():
@@ -59,6 +65,7 @@ def import_counties():
     i = 0
     seen_counties = set()
     print("Loading county data")
+    cache = {location.location_tuple(): location for location in session.query(Location)}
     for _, row in us_counties.iterrows():
         i += 1
         print(f'\r{i}/{len(us_counties)}          ', end='\r')
@@ -87,7 +94,7 @@ def import_counties():
                 skip = True
                 break
         if not skip:
-            add_location_data(county, session)
+            add_location_data(county, session=session)
 
     session.commit()
 
@@ -96,6 +103,7 @@ def import_population():
     session = Session()
     print("Loading population data")
     i = 0
+    cache = {location.location_tuple(): location for location in session.query(Location)}
     for _, row in df.iterrows():
         i += 1
         print(f"\r{i}/{len(df)}", end='\r')
@@ -104,7 +112,7 @@ def import_population():
             data['admin0'] = row['Location']
             data['population_density'] = row['PopDensity']
             data['population'] = row['PopTotal']
-            add_location_data(data, session, add_new=False)
+            add_location_data(data, session=session, add_new=False)
     session.commit()
 
 def import_all():
@@ -114,4 +122,4 @@ def import_all():
     import_population()
 
 if __name__ == "__main__":
-    import_population()
+    import_all()

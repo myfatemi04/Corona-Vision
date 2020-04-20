@@ -9,11 +9,16 @@ import scipy.optimize
 
 from pandas import read_csv, DataFrame
 import math
+import tensorflow
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.layers import LSTM
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
+from better_predictor import predict_better
+import corona_sql
+
+tensorflow.logging.set_verbosity(tensorflow.logging.WARN)
 
 # DEBUG MARKER
 port = 5050
@@ -88,96 +93,105 @@ def predict_data(fixed_data, advance, lookback=20):
 def logistic(t, MAX, T_INF, T_RISE):
     return MAX / (1 + np.exp(-(t - T_INF)/T_RISE))
 
-lstm_cache = {}
+conv_cache = {}
 log_cache = {}
 
-@app.route("/predict/lstm", methods=['POST'])
-def predict_lstm():
-	dates = []
-	d = {}
-	
-	if "X" not in request.form or "Y" not in request.form:
-		return {"X": [], "Y": []}
-	rfx = request.form.get("X")
-	rfy = request.form.get("Y")
-	
-	# rfx = "2020-02-24 2020-02-25 2020-02-26 2020-02-27 2020-02-28 2020-02-29 2020-03-01 2020-03-02 2020-03-03 2020-03-04 2020-03-05 2020-03-06 2020-03-07 2020-03-08 2020-03-09 2020-03-10 2020-03-11 2020-03-12 2020-03-13 2020-03-14 2020-03-15 2020-03-16 2020-03-17 2020-03-18 2020-03-19 2020-03-20 2020-03-21 2020-03-22 2020-03-23 2020-03-24 2020-03-25 2020-03-26 2020-03-27 2020-03-28 2020-03-29 2020-03-30 2020-03-31 2020-04-01 2020-04-02 2020-04-03 2020-04-04 2020-04-05 2020-04-06 2020-04-07 2020-04-08 2020-04-09 2020-04-10 2020-04-11 2020-04-12 2020-04-13" # = request.form.get("X")
-	# rfy = "1 23 33 33 36 41 47 49 49 52 55 60 85 85 95 110 195 195 189 210 214 214 228 256 278 285 305 334 377 392 419 458 466 476 499 515 567 569 643 672 688 700 756 811 823 887 925 1040 1136 1348" # = request.form.get("Y")
-	
-	for date_ in rfx.split():
-		year, month, day = date_.split('-')
-		dates.append(datetime.date(int(year), int(month), int(day)))
-	
-	min_date = dates[0]
-	
-	X = np.array([(date_ - min_date).days for date_ in dates])
-	Y = np.array([float(y) for y in rfy.split()])
-	
-	# print(" ".join(str(x) for x in X))
-	# print(" ".join(str(y) for y in Y))
-	
-	key = (tuple(X), tuple(Y))
-	
-	if key in lstm_cache:
-		return lstm_cache[key]
-	
-	paired = {X[i]: Y[i] for i in range(len(X))}
+@app.route("/predict/conv")
+def predict_conv():
+	admin0 = request.args.get("admin0") or ""
+	admin1 = request.args.get("admin1") or ""
+	admin2 = request.args.get("admin2") or ""
 
-	fixed_Y = []
-	i = 0
-	while i < (dates[-1] - dates[0]).days:
-		if i not in paired:
-			fixed_Y.append(fixed_Y[-1])
-		else:
-			fixed_Y.append(paired[i])
-		i += 1
-	
-	lookback = min(20, len(fixed_Y)//2)
-	
-	if len(fixed_Y) < 10:
-		d['x'] = list(range(len(fixed_Y)))
-		d['y'] = fixed_Y
-		lstm_cache[key] = d
-		return d
-	
-	x = list(range(len(fixed_Y) * 2))
-	y = predict_data(fixed_Y, len(fixed_Y), lookback)
-	future_data = y[len(fixed_Y) - lookback + 1:]
+	if (admin0, admin1, admin2) in conv_cache and time.time() - conv_cache[admin0, admin1, admin2]['time'] < (60 * 60 * 12):
+		return {"y": conv_cache[admin0, admin1, admin2]['pred']}
 
-	d['x'] = x
-	d['y'] = [point for point in fixed_Y] + [point for point in future_data]
+	_, in_Y = corona_sql.time_series(admin0, admin1, admin2)
+	if not in_Y or len(in_Y) < 10:
+		return {"y": []}
+
+	pred = predict_better(in_Y, len(in_Y))
+	conv_cache[admin0, admin1, admin2] = {'time': time.time(), 'pred': pred}
+	return {"y": pred}
+
+# deprecated
+# def predict_lstm():
+# 	dates = []
+# 	d = {}
 	
-	# print(x, fixed_Y)
-	# print(d['y'])
-	# print(y)
+# 	if "X" not in request.form or "Y" not in request.form:
+# 		return {"X": [], "Y": []}
+# 	rfx = request.form.get("X")
+# 	rfy = request.form.get("Y")
 	
-	lstm_cache[key] = d
-	return d
+# 	# rfx = "2020-02-24 2020-02-25 2020-02-26 2020-02-27 2020-02-28 2020-02-29 2020-03-01 2020-03-02 2020-03-03 2020-03-04 2020-03-05 2020-03-06 2020-03-07 2020-03-08 2020-03-09 2020-03-10 2020-03-11 2020-03-12 2020-03-13 2020-03-14 2020-03-15 2020-03-16 2020-03-17 2020-03-18 2020-03-19 2020-03-20 2020-03-21 2020-03-22 2020-03-23 2020-03-24 2020-03-25 2020-03-26 2020-03-27 2020-03-28 2020-03-29 2020-03-30 2020-03-31 2020-04-01 2020-04-02 2020-04-03 2020-04-04 2020-04-05 2020-04-06 2020-04-07 2020-04-08 2020-04-09 2020-04-10 2020-04-11 2020-04-12 2020-04-13" # = request.form.get("X")
+# 	# rfy = "1 23 33 33 36 41 47 49 49 52 55 60 85 85 95 110 195 195 189 210 214 214 228 256 278 285 305 334 377 392 419 458 466 476 499 515 567 569 643 672 688 700 756 811 823 887 925 1040 1136 1348" # = request.form.get("Y")
 	
-@app.route("/predict/log", methods=['POST'])
+# 	for date_ in rfx.split():
+# 		year, month, day = date_.split('-')
+# 		dates.append(datetime.date(int(year), int(month), int(day)))
+	
+# 	min_date = dates[0]
+	
+# 	X = np.array([(date_ - min_date).days for date_ in dates])
+# 	Y = np.array([float(y) for y in rfy.split()])
+	
+# 	# print(" ".join(str(x) for x in X))
+# 	# print(" ".join(str(y) for y in Y))
+	
+# 	key = (tuple(X), tuple(Y))
+	
+# 	if key in lstm_cache:
+# 		return lstm_cache[key]
+	
+# 	paired = {X[i]: Y[i] for i in range(len(X))}
+
+# 	fixed_Y = []
+# 	i = 0
+# 	while i < (dates[-1] - dates[0]).days:
+# 		if i not in paired:
+# 			fixed_Y.append(fixed_Y[-1])
+# 		else:
+# 			fixed_Y.append(paired[i])
+# 		i += 1
+	
+# 	lookback = min(20, len(fixed_Y)//2)
+	
+# 	if len(fixed_Y) < 10:
+# 		d['x'] = list(range(len(fixed_Y)))
+# 		d['y'] = fixed_Y
+# 		lstm_cache[key] = d
+# 		return d
+	
+# 	x = list(range(len(fixed_Y) * 2))
+# 	y = predict_data(fixed_Y, len(fixed_Y), lookback)
+# 	future_data = y[len(fixed_Y) - lookback + 1:]
+
+# 	d['x'] = x
+# 	d['y'] = [point for point in fixed_Y] + [point for point in future_data]
+	
+# 	# print(x, fixed_Y)
+# 	# print(d['y'])
+# 	# print(y)
+	
+# 	lstm_cache[key] = d
+# 	return d
+	
+@app.route("/predict/log")
 def predict_log():
-	
-	dates = []
-	d = {}
-	
-	if "X" not in request.form or "Y" not in request.form:
+	admin0 = request.args.get("admin0") or ""
+	admin1 = request.args.get("admin1") or ""
+	admin2 = request.args.get("admin2") or ""
+
+	X, Y = corona_sql.time_series(admin0, admin1, admin2)
+
+	if not X or len(X) < 10:
 		return {"MAX": 0, "T_INF": 0, "T_RISE": 1}
 
-	for date_ in request.form.get("X").split():
-		year, month, day = date_.split('-')
-		dates.append(datetime.date(int(year), int(month), int(day)))
-		
-	if not dates:
-		return {"MAX": 0, "T_INF": 0, "T_RISE": 1}
-	
-	min_date = dates[0]
-	
-	X = np.array([(date_ - min_date).days for date_ in dates])
-	Y = np.array([float(y) for y in request.form.get("Y").split()])
-	
-	key = (tuple(X), tuple(Y))
-	if key in log_cache:
-		return log_cache[key]
+	if (admin0, admin1, admin2) in log_cache and time.time() - log_cache[admin0, admin1, admin2]['time'] < (60 * 60 * 12):
+		return log_cache[admin0, admin1, admin2]['pred']
+
+	min_date = min(X)
+	numbered_X = [(x - min_date).days for x in X]
 	
 	bounds = (
 		[
@@ -196,23 +210,24 @@ def predict_log():
 	p0 = np.clip(
 		np.array([
 			Y[-1],		   # max (default: max)
-			X[len(X)//2],	 # t_inf (default: middle value)
+			numbered_X[len(X)//2],	 # t_inf (default: middle value)
 			30,				# t_rise (default: 30 days)
 		]),
 		0, 7.3e9  # min and max values
 	)
 
 	try:
-		(MAX, T_INF, T_RISE), cov = scipy.optimize.curve_fit(logistic, X, Y, p0=p0, maxfev=10000, bounds=bounds)
+		(MAX, T_INF, T_RISE), cov = scipy.optimize.curve_fit(logistic, numbered_X, Y, p0=p0, maxfev=10000, bounds=bounds)
 	except Exception as e:
 		print("Exception: ", e)
 		MAX, T_INF, T_RISE = list(p0)
 
+	d = {}
 	d['MAX'] = MAX
 	d['T_INF'] = T_INF
 	d['T_RISE'] = T_RISE
-	
-	log_cache[key] = d
+
+	log_cache[admin0, admin1, admin2] = {"time": time.time(), "pred": d}
 	
 	return d
 

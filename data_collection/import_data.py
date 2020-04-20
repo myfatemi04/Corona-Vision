@@ -270,6 +270,65 @@ app = Flask(__name__)
 def hello():
 	return redirect("https://www.coronavision.us/")
 
+def get_attr(attributes, selector):
+	head = attributes
+	for s in selector.split("."):
+		if s.isdigit():
+			s = int(s)
+		if s.startswith("::"):
+			head = json_methods[s](head)
+		else:
+			head = head[s]
+	return head
+
+def import_gis(gis_url, labels, use_geometry=True):
+	query_url = gis_url + "/query?f=geojson&outFields=*&where=1%3D1"
+	source_link = "http://www.arcgis.com/home/webmap/viewer.html?url=" + gis_url
+	labels = {
+		"location.admin0": "",
+		"location.admin1": "",
+		"location.admin2": "",
+		"datapoint.admin0": "",
+		"datapoint.admin1": "",
+		"datapoint.admin2": "",
+		"datapoint.entry_date": date.today(),
+		**labels
+	}
+	geojson = requests.get(query_url).json()
+	features = geojson['features']
+	feature_rows = []
+	for feature in features:
+		row = {'location': {}, 'datapoint': {}}
+		if use_geometry:
+			row['location']['geometry'] = json.dumps(feature['geometry'])
+		attributes = feature['properties']
+		for label in labels:
+			selector = labels[label]
+			table, label = label.split(".")
+			if type(selector) == list:
+				row[table][label] = find_json(attributes, selector)
+			else:
+				row[table][label] = selector
+		print(row)
+		feature_rows.append(row)
+	upload(feature_rows)
+
+import_gis(
+	"https://services6.arcgis.com/L1SotImj1AAZY1eK/arcgis/rest/services/dpc_regioni_covid19/FeatureServer/0/",
+	{
+		"location.admin1": ["denominazione_regione"],
+		"datapoint.admin1": ["denominazione_regione"],
+		"location.latitude": ["latitudine"],
+		"location.longitude": ["longitudine"],
+		"location.admin0": "Italy",
+		"datapoint.admin0": "Italy",
+		"datapoint.total": ["totale_casi"],
+		"datapoint.deaths": ["deceduti"],
+		"datapoint.entry_date": date.today()
+	}
+)
+
+exit()
 if __name__ == "__main__":
 	# use_server = False
 	use_server = "coronavision_import_data_use_server" not in os.environ

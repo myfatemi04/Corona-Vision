@@ -12,7 +12,7 @@ let chart_type = "total";
 
 let predictor_type = "none";
 let log_predictor = {};
-// let lstm_predictor = {};
+// let conv_predictor = {};
 
 let plugins = [{
 	beforeDraw: function (chart, easing) {
@@ -36,12 +36,12 @@ function download_canvas() {
 	$("#download-chart")[0].click();
 }
 
-function init_chart() {
-	init_chart_options();
-	reload_chart();
+function init_chart(admin0, admin1, admin2) {
+	init_chart_options(admin0, admin1, admin2);
+	load_chart();
 }
 
-function init_chart_options() {
+function init_chart_options(admin0, admin1, admin2) {
     $("select[name=scale-type]").change(
         function() {
             if (this.value == 'logarithmic' || this.value == 'linear') {
@@ -54,7 +54,7 @@ function init_chart_options() {
     $("select[name=chart-type]").change(
         function() {
             chart_type = this.value;
-            reload_chart();
+            load_chart();
         }
     );
 	
@@ -63,15 +63,15 @@ function init_chart_options() {
 			if (this.value == "log") {
 				chart.data.datasets[index.predicted].data = [];
 				predictor_type = "log";
-				redraw_chart();
-			} else if (this.value == "lstm") {
+				redraw_chart(admin0, admin1, admin2);
+			} else if (this.value == "conv") {
 				chart.data.datasets[index.predicted].data = [];
-				predictor_type = "lstm";
-				redraw_chart();
+				predictor_type = "conv";
+				redraw_chart(admin0, admin1, admin2);
 			} else {
 				predictor_type = "none";
 				reset_predicted_data_datapoints();
-				redraw_chart();
+				redraw_chart(admin0, admin1, admin2);
 			}
 		}	
 	);
@@ -252,7 +252,7 @@ function add_log_predictor(fit) {
 	chart.update();
 }
 
-function add_lstm_predictor({y}) {
+function add_conv_predictor({y}) {
 	reset_predicted_data_datapoints();
 	for (let day = 0; day < y.length; day++) {
 		if (chart_type == "total") {
@@ -274,11 +274,11 @@ function reset_chart_data() {
 	}
 }
 
-function redraw_chart() {
-	set_chart_data({...last_added_data.data, entry_date: last_added_data.days.slice(0, last_added_data.data.total.length)});
+function redraw_chart(admin0, admin1, admin2) {
+	set_chart_data({...last_added_data.data, entry_date: last_added_data.days.slice(0, last_added_data.data.total.length)}, admin0, admin1, admin2);
 }
 
-function set_chart_data(data) {
+function set_chart_data(data, admin0, admin1, admin2) {
 	reset_chart_data();
 	let datasets = chart.data.datasets;
 
@@ -295,15 +295,12 @@ function set_chart_data(data) {
 	}
 
 	if (predictor_type == "log") {
-		$.post(
+		$.get(
 			// DEBUG MARKER
 			"//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/log",
-			//"//localhost:5050/predict/log",
+			// "//localhost:5050/predict/log",
 			//"//coronavision-ml.herokuapp.com/predict/log",
-			{
-				X: fixed.days.slice(fixed.data.total.length).join(" "),
-				Y: fixed.data.total.join(" ")
-			},
+			{ admin0: admin0, admin1: admin1, admin2: admin2 },
 			(log_predictor_json) => {
 				// make sure they didn't change the settings
 				if (predictor_type == "log") {
@@ -314,21 +311,18 @@ function set_chart_data(data) {
 			"json"
 		);
 	} 
-	else if (predictor_type == "lstm") {
-		$.post(
+	else if (predictor_type == "conv") {
+		$.get(
 			// DEBUG MARKER
-			"//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/lstm",
-			// "//localhost:5050/predict/lstm",
-			//"//coronavision-ml.herokuapp.com/predict/lstm",
-			{
-				X: fixed.days.slice(fixed.data.total.length).join(" "),
-				Y: fixed.data.total.join(" ")
-			},
-			(lstm_predictor_json) => {
+			"//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/conv",
+			// "//localhost:5050/predict/conv",
+			//"//coronavision-ml.herokuapp.com/predict/conv",
+			{ admin0: admin0, admin1: admin1, admin2: admin2 },
+			(conv_predictor_json) => {
 				// make sure they didn't change the settings
-				if (predictor_type == "lstm") {
-					predictor_type = "lstm";
-					add_lstm_predictor(lstm_predictor_json);
+				if (predictor_type == "conv") {
+					predictor_type = "conv";
+					add_conv_predictor(conv_predictor_json);
 				}
 			},
 			"json"
@@ -403,7 +397,7 @@ function load_chart(admin0, admin1, admin2) {
 			admin2: admin2
 		},
 		function(data) {
-			set_chart_data(data);
+			set_chart_data(data, admin0, admin1, admin2);
 			chart.options.title.text = 'Cases in: ' + label;
 			chart.update();
 		}

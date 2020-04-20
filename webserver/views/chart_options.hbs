@@ -20,10 +20,10 @@
 <input type="text" id="smoothing" class="custom-input-color form-control my-2" value=0>
 
 <div>
-    Predictor <small>(logistic regression, simulating population growth, or LSTM, discovering trends in data)</small>
+    Predictor <small>(logistic regression, simulating population growth, or convolutional neural network)</small>
 </div>
 <select name="show_predictions" class="custom-input-color form-control my-2">
     <option value="none" selected>Don't show predictions for future cases</option>
     <option value="log">Show logistic predictions for future cases</option>
-    {{!-- <option value="lstm">Show LSTM predictions for future cases (will take ~30 seconds to load)</option> --}}
+    <option value="conv">Show convolutional neural network predictions for future cases (will take ~30 seconds to load)</option>
 </select>
