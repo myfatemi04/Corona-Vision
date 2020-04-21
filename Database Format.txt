@@ -1,0 +1,73 @@
+Database Format
+
+locations:
+	admin0: String
+	admin1: String
+	admin2: String
+	center: Json
+	boundary: Json
+	properties: Json
+	primary(admin0, admin1, admin2)
+
+datapoints:
+	entry_date: Date
+	admin0: String
+	admin1: String
+	admin2: String
+	properties: Json
+	primary(admin0, admin1, admin2, entry_date)
+
+geojson(entry_date):
+	datapoints.admin0
+	datapoints.admin1
+	datapoints.admin2
+	datapoints.data
+	locations.boundary
+	locations.center
+
+center:
+	"latitude": float
+	"longitude": float
+	
+boundary:
+	"geometry": GeoJSON
+	"geometry_precision": int
+
+locations.properties:
+	"population": float
+	"population_density": float
+
+datapoints.properties:
+	"total": [(..., source), (..., source), (..., source)]
+
+
+
+
+Importing data from a datasource:
+
+upload(
+	reference_link,
+	query_link,
+	{
+		'admin0': selector
+		'admin1': selector
+		'admin2': selector
+		'entry_date': selector
+		'properties':
+		{
+			'total': selector,
+			'deaths': selector,
+			'recovered': selector
+		}
+	}
+)
+
+context:
+we have a lot of coronavirus data, with many different sources.
+we need to be able to access data and show it on a map.
+we also need to be able to show the most accurate data possible given its sources.
+we want to be able to easily extract a time series of the data
+
+- possible solution:
+	- have only one source of data per stat per country
+	- for the entire world, we will just add everything up

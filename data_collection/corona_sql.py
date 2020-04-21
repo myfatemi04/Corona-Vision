@@ -68,6 +68,7 @@ class Location(Base):
 	start_lockdown = Column(Date)
 
 	geometry = Column(JSON)
+	geometry_precision = Column(Integer(), default=6)
 
 	@property
 	def location_labelled(self):
@@ -91,24 +92,44 @@ class Location(Base):
 		return self.t
 
 	def update(self, new_data):
-		for key, value in new_data.items():
-			if not Location.eq(getattr(self, key), value):
-				setattr(self, key, value)
-
-	@staticmethod
-	def eq(a, b):
-		if type(a) == Decimal:
-			a = float(a)
-		if type(b) == Decimal:
-			b = float(b)
-		if type(a) == float and type(b) == float:
-			return abs(a - b) < 1e-5
-		else:
-			return a == b
+		for key in ['latitude', 'longitude', 'population', 'population_density', 'humidity', 'temperature']:
+			if key in new_data:
+				new_value = float(new_data[key] or "0")
+				old_value = float(getattr(self, key) or "0")
+				if abs(new_value - old_value) > 1e-5:
+					setattr(self, key, new_value)
+		for key in ['admin0_code', 'admin1_code', 'admin2_code', 'start_cases', 'start_socdist', 'start_lockdown']:
+			if key in new_data:
+				new_value = new_data[key]
+				old_value = getattr(self, key)
+				if new_value and not old_value:
+					setattr(self, key, new_value)
+		if 'geometry' in new_data:
+			if not self.geometry:
+				self.geometry = new_data['geometry']
+				self.geometry_precision = new_data['geometry_precision']
+			else:
+				old_value = self.geometry
+				new_value = new_data['geometry']
+				if type(old_value) == str:
+					old_value = json.loads(old_value)
+				if type(new_value) == str:
+					new_value = json.loads(new_value)
+				if old_value['type'] != new_value['type']:
+					if new_value['type'] != 'Point':
+						self.geometry = new_data['geometry']
+						self.geometry_precision = new_data['geometry_precision']
+				else:
+					if new_data['geometry_precision'] > self.geometry_precision:
+						self.geometry = new_data['geometry']
+						self.geometry_precision = new_data['geometry_precision']
 
 	#### Generated keys are commented out and replaced with functions ####
 	@staticmethod
-	def add_location_data(new_data, cache=None, session=None):
+	def add_location_data(new_data, cache=None, session=None, add_new=True):
+		import prepare_data
+		new_data = prepare_data.prepare_location_data(new_data)
+		
 		admin0 = new_data['admin0'] if 'admin0' in new_data else ''
 		admin1 = new_data['admin1'] if 'admin1' in new_data else ''
 		admin2 = new_data['admin2'] if 'admin2' in new_data else ''
@@ -116,15 +137,21 @@ class Location(Base):
 
 		if cache:
 			if location_tuple not in cache:
-				location = Location(admin0=admin0, admin1=admin1, admin2=admin2)
-				session.add(location)
-				cache[location_tuple] = location
+				if add_new:
+					location = Location(admin0=admin0, admin1=admin1, admin2=admin2)
+					session.add(location)
+					cache[location_tuple] = location
+				else:
+					return None
 			location = cache[location_tuple]
 		else:
 			location = session.query(Location).filter_by(admin0=admin0, admin1=admin1, admin2=admin2).first()
 			if location is None:
-				location = Location(admin0=admin0, admin1=admin1, admin2=admin2)
-				session.add(location)
+				if add_new:
+					location = Location(admin0=admin0, admin1=admin1, admin2=admin2)
+					session.add(location)
+				else:
+					return None
 
 		location.update(new_data)
 		return location
@@ -243,6 +270,8 @@ class Datapoint(Base):
 
 	@staticmethod
 	def add_datapoint_data(datapoint_data, source_link, session, cache=None):
+		import prepare_data
+		datapoint_data = prepare_data.prepare_datapoint_data(datapoint_data)
 		if cache is not None:
 			t = datapoint_data['admin0'], datapoint_data['admin1'], datapoint_data['admin2'], datapoint_data['entry_date'].isoformat()
 			if t in cache:
@@ -305,29 +334,3 @@ class Hospital(Base):
 	potential_beds_increase = Column(Integer, default=0)
 	average_ventilator_usage = Column(Integer, default=0)
 
-def _is_nan(data):
-	return type(data) == float and np.isnan(data)
-
-def _fill_defaults(data, defaults):
-	if 'entry_date' in data:
-		if type(data['entry_date']) == str:
-			y, m, d = data['entry_date'].split("-")
-			data['entry_date'] = date(int(y), int(m), int(d))
-
-	default_data = { 'entry_date': datetime.utcnow().date(), 'group': '', 'admin0': '', 'admin1': '', 'admin2': '', **defaults }
-
-	# add default values if not found
-	for label in default_data:
-		if label not in data:
-			data[label] = default_data[label]
-		
-	# remove NaN data
-	for label in stat_labels:
-		if label in data:
-			if _is_nan(data[label]):
-				del data[label]
-
-	data['admin0'] = standards.fix_admin0_name(data['admin0'])
-	data['group'] = standards.get_continent(data['admin0'])
-
-	return data

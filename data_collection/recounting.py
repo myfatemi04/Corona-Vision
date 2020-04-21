@@ -77,7 +77,7 @@ def update_deltas(day, updated=None):
         print(f"Updating deltas {i}/{len(today_dict)} {data_tuple}                              ", end='\r')
         # skip updating datapoints that didn't change
         if updated is not None and data_tuple not in updated:
-            print("Skipping delta update", data_tuple, "                       ")
+            # print("Skipping delta update", data_tuple, "                       ")
             skipped += 1
             continue
 

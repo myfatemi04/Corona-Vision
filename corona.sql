@@ -108,6 +108,7 @@ create table test_locations (
 	start_lockdown date,
 
 	`geometry` json,
+	geometry_precision int(2) default 6, /* number of digits past decimal place */
 
 	primary key (admin0, admin1, admin2)
 

@@ -1,6 +1,6 @@
 import pandas as pd
 import json
-from corona_sql import Session, Location, add_location_data
+from corona_sql import Location, Session
 from location_data import get_admin1_name
 
 def na(val, sub):
@@ -24,7 +24,7 @@ def import_countries():
         country['admin0_code'] = country_code
         country['admin0'] = country_name
         
-        add_location_data(country, session=session)
+        Location.add_location_data(country, session=session, cache=cache)
     session.commit()
 
 def import_states():
@@ -46,7 +46,7 @@ def import_states():
         state['admin0'] = 'United States'
         state['admin0_code'] = 'US'
         
-        add_location_data(state, session=session)
+        Location.add_location_data(state, session=session, cache=cache)
     session.commit()
 
 def import_counties():
@@ -94,7 +94,7 @@ def import_counties():
                 skip = True
                 break
         if not skip:
-            add_location_data(county, session=session)
+            Location.add_location_data(county, session=session, cache=cache)
 
     session.commit()
 
@@ -112,13 +112,13 @@ def import_population():
             data['admin0'] = row['Location']
             data['population_density'] = row['PopDensity']
             data['population'] = row['PopTotal']
-            add_location_data(data, session=session, add_new=False)
+            Location.add_location_data(data, session=session, cache=cache, add_new=False)
     session.commit()
 
 def import_all():
-    import_countries()
-    import_states()
-    import_counties()
+    # import_countries()
+    # import_states()
+    # import_counties()
     import_population()
 
 if __name__ == "__main__":

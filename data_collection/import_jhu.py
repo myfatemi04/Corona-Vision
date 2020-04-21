@@ -119,4 +119,4 @@ def import_jhu_date_range(date_1, date_2):
 		current_date += next_date
 
 def import_jhu_historical():
-	return import_jhu_date_range(date_1=date(2020, 3, 22), date_2=date.today())
+	return import_jhu_date_range(date_1=date(2020, 4, 9), date_2=date.today())

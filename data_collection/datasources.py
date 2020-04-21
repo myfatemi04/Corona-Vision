@@ -110,11 +110,18 @@ def upload_worldometers():
 		)
 	)
 
+def upload_all_live():
+	upload_usa_counties()
+	upload_italy_counties()
+	upload_portugal_counties()
+	upload_south_korea_provinces()
+	upload_jhu_today()
+	upload_worldometers()
+
+def loop():
+	while True:
+		upload_all_live()
+
 if __name__ == "__main__":
-	# upload_usa_counties()
-	# upload_italy_counties()
-	# upload_portugal_counties()
-	# upload_south_korea_provinces()
-	# upload_jhu_today()
-	# upload_worldometers()
-	upload_jhu_historical()
+	upload_all_live()
+	# upload_jhu_historical()

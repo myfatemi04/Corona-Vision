@@ -22,9 +22,15 @@ def upload(data):
     if data:
         for table, rows in data.items():
             if table == 'location':
-                upload_locations(rows)
+                try:
+                    upload_locations(rows)
+                except Exception as e:
+                    print("Error during locations upload", type(e), e)
             elif table == 'datapoint':
-                upload_datapoints(rows, data['source_link'])
+                try:
+                    upload_datapoints(rows, data['source_link'])
+                except Exception as e:
+                    print("Error during datapoints upload", type(e), e)
     print("\rDone uploading          ", end='\r')
 
 def upload_locations(locations):

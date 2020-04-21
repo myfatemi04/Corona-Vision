@@ -148,31 +148,6 @@ def remove_end(string, end):
 		return string[:-len(end)]
 	return string
 
-def fix_admin0_name(admin0):
-	for req, fix in in_fixes.items():
-		should_fix = True
-		for part in req:
-			if part not in admin0.lower():
-				should_fix = False
-		if should_fix:
-			admin0 = fix
-			break
-	
-	for fix in fixes:
-		if admin0.lower() == fix:
-			admin0 = fixes[fix]
-			break
-
-	admin0 = remove_start(admin0, "the ")
-	admin0 = remove_start(admin0, "republic of")
-	admin0 = remove_end(admin0, ", the")
-	admin0 = remove_end(admin0, " (islamic republic of)")
-	
-	if admin0.lower() in ['overall', 'total', 'world']:
-		admin0 = ''
-
-	return admin0
-
 china_provinces = {
 	"北京市": "Beijing",
 	"天津市": "Tianjin",
@@ -223,11 +198,37 @@ def normalize_name(admin0, admin1='', admin2=''):
 	admin1 = str(admin1)
 	admin2 = str(admin2)
 
+	admin0 = get_admin0_name(admin0)
 	admin0 = admin0.strip()
 	admin1 = admin1.strip()
 	admin2 = admin2.strip()
 
+	for req, fix in in_fixes.items():
+		should_fix = True
+		for part in req:
+			if part not in admin0.lower():
+				should_fix = False
+		if should_fix:
+			admin0 = fix
+			break
+	
+	for fix in fixes:
+		if admin0.lower() == fix:
+			admin0 = fixes[fix]
+			break
+
+	admin0 = remove_start(admin0, "the ")
+	admin0 = remove_start(admin0, "republic of")
+	admin0 = remove_end(admin0, ", the")
+	admin0 = remove_end(admin0, " (islamic republic of)")
+	
+	if admin0.lower() in ['overall', 'total', 'world']:
+		admin0 = ''
+
 	if admin0 == 'U.S.': admin0 = "United States"
+	if admin0.lower() == 'united states of america':
+		admin0 = 'United States'
+	
 	admin1 = admin1.replace("U.S.", "US")
 	admin2 = admin2.replace("U.S.", "US")
 
@@ -274,9 +275,6 @@ def normalize_name(admin0, admin1='', admin2=''):
 
 	if admin2 != admin2.upper():
 		admin2 = ' '.join([word.lower() if word.lower() in ['and', 'of'] else word for word in admin2.split()])
-
-	admin0 = get_admin0_name(admin0)
-	admin0 = fix_admin0_name(admin0)
 
 	if ", " in admin1 and admin2 == '':
 		admin2, admin1 = get_admin2_admin1(admin0, admin1)
