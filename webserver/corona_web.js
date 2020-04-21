@@ -78,7 +78,8 @@ const data_table_page = async (req, res) => {
     last_update = last_update_result[0]['update_time'];
 
     let entry_dates_result = await get_sql("select distinct entry_date from datapoints where" + loc_where + " order by entry_date desc");
-    let entry_dates = entry_dates_result.map(x => utc_iso(x['entry_date']));
+    // console.log(entry_dates_result);
+    let entry_dates = entry_dates_result.map(x => x['entry_date']);
 
     let first_available_day = entry_dates[entry_dates.length - 1];
     let last_available_day = entry_dates[0];
@@ -270,7 +271,6 @@ app.get("/cases/totals_sequence", (req, res) => {
             res.json({...resp, ...daily_changes});
         }
     );
-
 });
 
 /* Countries API - returns a list of all countries for a given date */
@@ -360,7 +360,26 @@ geojson_cache = {};
 geojson_max_age = 1000 * 60 * 15; // 15-minute caching
 app.get("/geojson", (req, res) => {
     let entry_date = req.query['date'] || utc_iso(new Date());
-    let query = sqlstring.format("select * from datapoints where entry_date = ? and latitude is not null and longitude is not null and admin2 = '' and admin0 != '' and total > 10", entry_date);
+    let query = sqlstring.format(`
+        select
+            datapoints.admin0,
+            datapoints.admin1,
+            datapoints.admin2,
+            datapoints.total,
+            datapoints.dtotal,
+            datapoints.recovered,
+            datapoints.deaths,
+            test_locations.geometry
+        from datapoints
+        inner join test_locations
+        on
+            test_locations.admin0 = datapoints.admin0 and
+            test_locations.admin1 = datapoints.admin1 and
+            test_locations.admin2 = datapoints.admin2
+        where
+            datapoints.entry_date=? and
+            datapoints.admin0!='';
+    `, entry_date);
     if (query in geojson_cache) {
         let {data, update_time} = geojson_cache[query];
         if (Date.now() - update_time < geojson_max_age) {
@@ -389,12 +408,11 @@ function geojson(content) {
             type: "Feature",
             properties: {
                 name: name,
-                ...datapoint
+                total: datapoint.total,
+                deaths: datapoint.deaths,
+                recovered: datapoint.recovered
             },
-            geometry: {
-                coordinates: [datapoint.longitude, datapoint.latitude],
-                type: 'Point'
-            }
+            geometry: datapoint.geometry
         });
     }
     return {
