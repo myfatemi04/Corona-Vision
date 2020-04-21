@@ -1,4 +1,4 @@
-from sqlalchemy import and_, between, not_
+from sqlalchemy import and_, between, not_, or_
 from sqlalchemy import create_engine, Column, Integer, Float, Boolean, String, DateTime, Enum, Date, JSON
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -9,6 +9,7 @@ from datetime import date, datetime, timedelta
 import json
 import time
 import numpy as np
+from decimal import Decimal
 
 import standards
 import location_data
@@ -28,9 +29,11 @@ increase_labels = {'total', 'deaths', 'recovered', 'tests'}
 
 class Location(Base):
 	__tablename__ = "test_locations"
+	# __tablename__ = "locations"
 
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
+		# prt("new location-", self.admin0, self.admin1, self.admin2)
 		self.admin_level = location_data.get_admin_level(self.admin0, self.admin1, self.admin2)
 		
 		new_admin0_code, new_admin1_code, new_admin2_code = location_data.get_codes(self.admin0, self.admin1, self.admin2)
@@ -41,11 +44,11 @@ class Location(Base):
 
 		location_data.store_codes(self.admin0, self.admin1, self.admin2, self.admin0_code, self.admin1_code, self.admin2_code)
 	
-	location_id = Column(Integer, primary_key=True)
+	# location_id = Column(Integer, primary_key=True)
 
-	admin0 = Column(String(256))
-	admin1 = Column(String(256))
-	admin2 = Column(String(256))
+	admin0 = Column(String(256), primary_key=True)
+	admin1 = Column(String(256), primary_key=True)
+	admin2 = Column(String(256), primary_key=True)
 	admin0_code = Column(String(2))
 	admin1_code = Column(String(2))
 	admin2_code = Column(String(10))
@@ -87,7 +90,45 @@ class Location(Base):
 	def location_tuple(self):
 		return self.t
 
+	def update(self, new_data):
+		for key, value in new_data.items():
+			if not Location.eq(getattr(self, key), value):
+				setattr(self, key, value)
+
+	@staticmethod
+	def eq(a, b):
+		if type(a) == Decimal:
+			a = float(a)
+		if type(b) == Decimal:
+			b = float(b)
+		if type(a) == float and type(b) == float:
+			return abs(a - b) < 1e-5
+		else:
+			return a == b
+
 	#### Generated keys are commented out and replaced with functions ####
+	@staticmethod
+	def add_location_data(new_data, cache=None, session=None):
+		admin0 = new_data['admin0'] if 'admin0' in new_data else ''
+		admin1 = new_data['admin1'] if 'admin1' in new_data else ''
+		admin2 = new_data['admin2'] if 'admin2' in new_data else ''
+		location_tuple = (admin0, admin1, admin2)
+
+		if cache:
+			if location_tuple not in cache:
+				location = Location(admin0=admin0, admin1=admin1, admin2=admin2)
+				session.add(location)
+				cache[location_tuple] = location
+			location = cache[location_tuple]
+		else:
+			location = session.query(Location).filter_by(admin0=admin0, admin1=admin1, admin2=admin2).first()
+			if location is None:
+				location = Location(admin0=admin0, admin1=admin1, admin2=admin2)
+				session.add(location)
+
+		location.update(new_data)
+		return location
+
 
 	def __str__(self):
 		return self.__repr__()
@@ -101,11 +142,14 @@ class Location(Base):
 class Datapoint(Base):
 	# DEBUG MARKER
 	__tablename__ = "test_datapoints"
+	# __tablename__ = "datapoints"
+	# __tablename__ = "datapoints_reload"
 
 	def __init__(self, data, source_link):
 		super().__init__(**data)
+		# prt("new data point-", self.admin0, self.admin1, self.admin1, source_link)
 		for label in stat_labels:
-			if getattr(self, label):
+			if getattr(self, label) is not None:
 				setattr(self, "source_" + label, source_link)
 
 	# columns about the date/time of the datapoint
@@ -160,21 +204,22 @@ class Datapoint(Base):
 				self.latitude = est_lat
 				self.longitude = est_lng
 
-	def update_data(self, data, source_link, session):
+	def update_data(self, data, source_link):
 		change = False
+		# prt(data)
 		for label in stat_labels:
 			if label not in data:
 				continue
 			my_val = getattr(self, label)
 			source_is_calculated = getattr(self, "source_" + label) == "calculated"
 			if label in increase_labels:
-				if data[label] > my_val or (source_is_calculated and data[label] != my_val):
+				if my_val is None or data[label] > my_val or (source_is_calculated and data[label] != my_val):
 					setattr(self, label, data[label])
 					if label in stat_labels:
 						setattr(self, "source_" + label, source_link)
 					change = True
 			else:
-				if data[label] != my_val:
+				if my_val is None or data[label] != my_val:
 					setattr(self, label, data[label])
 					if label in stat_labels:
 						setattr(self, "source_" + label, source_link)
@@ -196,8 +241,51 @@ class Datapoint(Base):
 				setattr(self, "d" + label, calculated_value)
 				self.update_time = datetime.utcnow()
 
+	@staticmethod
+	def add_datapoint_data(datapoint_data, source_link, session, cache=None):
+		if cache is not None:
+			t = datapoint_data['admin0'], datapoint_data['admin1'], datapoint_data['admin2'], datapoint_data['entry_date'].isoformat()
+			if t in cache:
+				datapoint = cache[t]
+				datapoint.update_data(data=datapoint_data, source_link=source_link)
+			else:
+				datapoint = Datapoint(data=datapoint_data, source_link=source_link)
+				session.add(datapoint)
+				cache[datapoint.t] = datapoint
+			return datapoint
+		else:
+			datapoint = session.query(
+				admin0=datapoint_data['admin0'],
+				admin1=datapoint_data['admin1'],
+				admin2=datapoint_data['admin2'],
+				entry_date=datapoint_data['entry_date']
+			).first()
+
+			if datapoint is not None:
+				datapoint.update_data(data=datapoint_data, source_link=source_link)
+			else:
+				datapoint = Datapoint(data=datapoint_data, source_link=source_link)
+				session.add(datapoint)
+			return datapoint
+
 	def location_tuple(self):
 		return (self.admin0, self.admin1, self.admin2)
+
+	def ripples(self):
+		if type(self.entry_date) == str:
+			date_str = self.entry_date
+		elif type(self.entry_date) == date:
+			date_str = self.entry_date.isoformat()
+		result = set()
+		result.add(('', '', '', date_str))
+		result.add((self.admin0, '', '', date_str))
+		result.add((self.admin0, self.admin1, '', date_str))
+		result.add((self.admin0, self.admin1, self.admin2, date_str))
+		return result
+
+	@property
+	def t(self):
+		return self.admin0, self.admin1, self.admin2, self.entry_date
 
 class Hospital(Base):
 	__tablename__ = "hospitals"
@@ -216,184 +304,6 @@ class Hospital(Base):
 	pediatric_icu_beds = Column(Integer, default=0)
 	potential_beds_increase = Column(Integer, default=0)
 	average_ventilator_usage = Column(Integer, default=0)
-
-def add_location_data(new_data, cache=None, session=None, add_new=True):
-	admin0 = new_data['admin0'] if 'admin0' in new_data else ''
-	admin1 = new_data['admin1'] if 'admin1' in new_data else ''
-	admin2 = new_data['admin2'] if 'admin2' in new_data else ''
-
-	if cache:
-		location_tuple = (admin0, admin1, admin2)
-		if location_tuple not in cache['locations']:
-			if add_new:
-				location = Location(admin0=admin0, admin1=admin1, admin2=admin2)
-				session.add(location)
-				cache['locations'][location_tuple] = location
-			else:
-				return None
-		else:
-			location = cache['locations'][location_tuple]
-	else:
-		location = session.query(Location).filter_by(admin0=admin0, admin1=admin1, admin2=admin2).first()
-		if not location:
-			if add_new:
-				location = Location(admin0=admin0, admin1=admin1, admin2=admin2)
-				session.add(location)
-			else:
-				return None
-
-	for key in new_data:
-		if getattr(location, key) != new_data[key]:
-			setattr(location, key, new_data[key])
-	return location
-
-def get_cache(rows, session):
-	if not rows:
-		return {}
-
-	# returns locations filtered by the min entry-date, max entry-date
-	admin0_seen = set()
-	admin1_seen = set()
-	admin2_seen = set()
-
-	min_entry_date = None
-	max_entry_date = None
-
-	for row in rows:
-		row['location'] = {'admin0': '', 'admin1': '', 'admin2': '', **row['location']}
-
-		admin0_seen.add(row['location']['admin0'])
-		admin1_seen.add(row['location']['admin1'])
-		admin2_seen.add(row['location']['admin2'])
-
-		entry_date = row['datapoint']['entry_date']
-
-		if min_entry_date is None or entry_date < min_entry_date:
-			min_entry_date = entry_date
-		if max_entry_date is None or entry_date > max_entry_date:
-			max_entry_date = entry_date
-	
-	# we add a timedelta here to the lower bound so we can reuse this to find daily change
-	datapoints = session.query(Datapoint).filter(Datapoint.entry_date.between(min_entry_date - timedelta(days=1), max_entry_date))
-	locations = session.query(Location)
-
-	if len(admin0_seen) == 1:
-		admin0 = admin0_seen.pop()
-		datapoints = datapoints.filter_by(admin0=admin0)
-		locations = locations.filter_by(admin0=admin0)
-	if len(admin1_seen) == 1:
-		admin1 = admin1_seen.pop()
-		datapoints = datapoints.filter_by(admin1=admin1)
-		locations = locations.filter_by(admin0=admin1)
-	if len(admin2_seen) == 1:
-		admin2 = admin2_seen.pop()
-		datapoints = datapoints.filter_by(admin2=admin2)
-		locations = locations.filter_by(admin0=admin2)
-
-	cache = {}
-	cache['datapoints'] = {(datapoint.location_tuple(), datapoint.entry_date): datapoint for datapoint in datapoints}
-	cache['locations'] = {(location.admin0, location.admin1, location.admin2): location for location in locations}
-	return cache
-
-def upload(rows, source_link=''):
-	session = Session()
-	cache = get_cache(rows, session)
-
-	# so we don't have to recount things hella times
-	updated = set()
-
-	i = 0
-	seen = set()
-	for row in rows:
-		i += 1
-		print(f"Finding changes--{i}/{len(rows)}			   ", end='\r')
-
-		location, datapoint = row['location'], row['datapoint']
-		
-		# fix the location's name
-		a0, a1, a2 = location_tuple = location['admin0'], location['admin1'], location['admin2'] = standards.normalize_name(location['admin0'], location['admin1'], location['admin2'])
-		entry_date = datapoint['entry_date']
-		data_tuple = location_tuple, entry_date
-		
-		# primary key
-		if data_tuple in seen:
-			continue
-		else:
-			seen.add(data_tuple)
-
-		add_location_data(location, cache, session)
-		
-		# find the already-existing data
-		if data_tuple in cache['datapoints']:
-			existing = cache['datapoints'][data_tuple]
-			existing.update_data(datapoint, source_link, session)
-		else:
-			existing = Datapoint(data=datapoint, source_link=source_link)
-			session.add(existing)
-
-		# recalculate the totals
-		updated.add(((a0, a1, a2), entry_date))
-		updated.add(((a0, a1, ''), entry_date))
-		updated.add(((a0, '', ''), entry_date))
-		updated.add((('', '', ''), entry_date))
-
-	recalculate(updated, session)
-
-	print("Committing all...											   ", end='\r')
-	session.commit()
-	print("Done committing		 ", end='\r')
-
-def delete_dp(*where):
-	print("Here is your input: ", *where)
-	print("Is this OK?")
-	input("Make sure there's an entry date, and you aren't missing any fields.")
-	input("You're 100% sure?")
-	print("Deleting")
-	
-	session = Session()
-	results = session.query(Datapoint).filter(*where)
-	updates = set()
-	for result in results:
-		a0, a1, a2 = result.location_tuple()
-		updates.add(((a0, a1, a2), result.entry_date))
-		updates.add(((a0, a1, ''), result.entry_date))
-		updates.add(((a0, '', ''), result.entry_date))
-		updates.add((('', '', ''), result.entry_date))
-		session.delete(result)
-
-	recalculate(updates, session)
-	print("Committing in 10 seconds")
-	time.sleep(10)
-	session.commit()
-	print("Committed")
-
-def recalculate(updated, session):
-	i = 0
-	unique_days = set()
-	for location, entry_date in sorted(updated, reverse=True):
-		i += 1
-		admin0, admin1, admin2 = location
-		if admin2 == '':
-			print(f"Recounting {i}/{len(updated)} {location} {entry_date}                           ", end='\r')
-			update_overall(admin0, admin1, entry_date, session)
-		unique_days.add(entry_date)
-
-	for day in sorted(unique_days):
-		# we tell it what was updated so we can skip things that weren't
-		update_deltas(day, updated)
-
-def recalculate_selection(*where):
-	session = Session()
-	results = session.query(Datapoint).filter(*where)
-	updates = set()
-	for result in results:
-		a0, a1, a2 = result.location_tuple()
-		updates.add(((a0, a1, a2), result.entry_date))
-		updates.add(((a0, a1, ''), result.entry_date))
-		updates.add(((a0, '', ''), result.entry_date))
-		updates.add((('', '', ''), result.entry_date))
-	recalculate(updates, session)
-	session.commit()
 
 def _is_nan(data):
 	return type(data) == float and np.isnan(data)
@@ -421,87 +331,3 @@ def _fill_defaults(data, defaults):
 	data['group'] = standards.get_continent(data['admin0'])
 
 	return data
-
-sums = tuple(func.sum(getattr(Datapoint, label)) for label in stat_labels)
-
-def filter_children(results, admin0, admin1):
-	if not admin0: # sum entire world
-		results = results.filter(Datapoint.admin0 != '', Datapoint.admin1 == '', Datapoint.admin2 == '')
-	elif not admin1: # sum entire country
-		results = results.filter(Datapoint.admin0 == admin0, Datapoint.admin1 != '', Datapoint.admin2 == '')
-	else: # sum entire state
-		results = results.filter(Datapoint.admin0 == admin0, Datapoint.admin1 == admin1, Datapoint.admin2 != '')
-	return results
-
-def update_overall(admin0, admin1, entry_date, session):
-	results = session.query(*sums).filter_by(entry_date=entry_date)
-	results = filter_children(results, admin0, admin1)
-	result = results.first()
-	if not result or not any(result):
-		return
-	
-	labelled = {x[0]: x[1] for x in zip(stat_labels, result)}
-	
-	_filter = {"admin0": admin0, "admin1": admin1, "admin2": '', "entry_date": entry_date}
-	overall_dp = session.query(Datapoint).filter_by(**_filter).first()
-
-	if not overall_dp:
-		overall_dp = Datapoint(_filter, "calculated")
-		session.add(overall_dp)
-		# fill in defaults
-		for label in stat_labels:
-			setattr(overall_dp, label, 0)
-	
-	# print(labelled, admin0, admin1, entry_date)
-	overall_dp.update_data(labelled, "calculated", session)
-
-def update_deltas(day, updated=None):
-	compare_day = day + timedelta(days=-1)
-	sess = Session()
-	today_datapoints = sess.query(Datapoint).filter_by(entry_date=day)
-	yesterday_datapoints = sess.query(Datapoint).filter_by(entry_date=compare_day)
-
-	today_dict = {d.location_tuple(): d for d in today_datapoints}
-	yesterday_dict = {d.location_tuple(): d for d in yesterday_datapoints}
-
-	total = len(today_dict)
-	i = 0
-
-	for location in today_dict:
-		i += 1
-		# skip updating datapoints that didn't change
-		if (location, day) not in updated and updated is not None:
-			print(compare_day, "-->", day, f"{i}/{total} - skip	   ", end='\r')
-		else:
-			print(compare_day, "-->", day, f"{i}/{total}		   ", end='\r')
-
-		today_dp = today_dict[location]
-		active = (float(today_dp.total) - float(today_dp.deaths) - float(today_dp.recovered))
-		if today_dp.active != active:
-			today_dp.active = active
-
-		if location in yesterday_dict:
-			yesterday_dp = yesterday_dict[location]
-		else:
-			yesterday_dp = None
-		
-		today_dp.update_differences(yesterday_dp)
-
-	# print("You have to commit deltas manually btw", end="\r")
-	# print("Committing deltas...						 ", end='\r')
-	# sess.commit()
-
-def update_all_deltas():
-	start_date = date(2020, 1, 22)
-	end_date = datetime.utcnow().date()
-	while start_date <= end_date:
-		next_day = start_date + timedelta(days=1)
-		update_deltas(start_date, None)
-		start_date = next_day
-
-if __name__ == "__main__":
-	# delete_dp(Datapoint.admin0 == 'United States', Datapoint.admin1 == 'Recovered')
-	# print("Remember to comment this out")
-	recalculate_selection(Datapoint.admin0 == "United States", Datapoint.entry_date=='2020-03-05')
-	recalculate_selection(Datapoint.admin0 == "United States", Datapoint.entry_date=='2020-03-06')
-	recalculate_selection(Datapoint.admin0 == "United States", Datapoint.entry_date=='2020-03-11')

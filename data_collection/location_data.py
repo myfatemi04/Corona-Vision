@@ -75,4 +75,3 @@ def get_admin_level(admin0, admin1, admin2):
     if not admin2:
         return 'admin1'
     return 'admin2'
-

@@ -12,9 +12,7 @@ create table datapoints (
 	
 	latitude float(10, 6),
 	longitude float(10, 6),
-	
-	is_first_day boolean default false,
-	
+
 	total integer default 0,
 	recovered integer default 0,
 	deaths integer default 0,
@@ -40,7 +38,6 @@ create table datapoints (
 
 	PRIMARY KEY(admin0, admin1, admin2, entry_date)
 ) COLLATE utf8_bin;
-
 
 create table locations (
 	location_id int auto_increment primary key,
@@ -80,7 +77,6 @@ create table locations (
 ) collate utf8_bin;
 
 create table test_locations (
-	location_id int auto_increment primary key,
 	/* Administrative division location */
 	admin0 varchar(256) default '',
 	admin1 varchar(256) default '',
@@ -111,7 +107,9 @@ create table test_locations (
 	start_socdist date,
 	start_lockdown date,
 
-	`geometry` json
+	`geometry` json,
+
+	primary key (admin0, admin1, admin2)
 
 ) collate utf8_bin;
 
