@@ -2,7 +2,7 @@ from import_gis import upload_geojson, upload_gis
 from import_jhu import import_jhu_date, import_jhu_historical
 from upload import upload
 from datetime import datetime, date
-from data_parser import import_table
+from data_parser import import_table, import_json
 
 def upload_usa_counties():
 	upload_geojson(
@@ -83,6 +83,22 @@ def upload_south_korea_provinces():
 		}
 	)
 
+def upload_japan_provinces():
+	upload(
+		import_json(
+			url="https://data.covid19japan.com/summary/latest.json",
+			source_link="https://covid19japan.com",
+			table_labels={
+				"admin0": "Japan",
+				"admin1": ["name"],
+				"total": ["confirmed"],
+				"deaths": ["deaths"],
+				"recovered": ["recovered"]	
+			},
+			namespace=["prefectures"]
+		)
+	)
+
 def upload_jhu_today():
 	print("Uploading today's JHU data")
 	upload(import_jhu_date(date.today()))
@@ -91,31 +107,45 @@ def upload_jhu_historical():
 	for data in import_jhu_historical():
 		upload(data)
 
+worldometers_disallow_countries = [
+	'United States',
+	'Italy',
+	'Portugal',
+	'South Korea',
+	'Japan'
+]
 def upload_worldometers():
 	print("Uploading live Worldometers data")
-	upload(
-		import_table(
-			"http://www.worldometers.info/coronavirus",
-			["#main_table_countries_today", 0],
-			{
-				"datapoint": {
-					"admin0": ["Country,  Other"],
-					"total": ["Total  Cases", "::number"],
-					"deaths": ["Total  Deaths", "::number"],
-					"serious": ["Serious,  Critical", "::number"],
-					"tests": ["Total  Tests", "::number"],
-					"recovered": ["Total  Recovered", "::number"]
-				}
+	results = import_table(
+		"http://www.worldometers.info/coronavirus",
+		["#main_table_countries_today", 0],
+		{
+			"datapoint": {
+				"admin0": ["Country,  Other"],
+				"total": ["Total  Cases", "::number"],
+				"deaths": ["Total  Deaths", "::number"],
+				"serious": ["Serious,  Critical", "::number"],
+				"tests": ["Total  Tests", "::number"],
+				"recovered": ["Total  Recovered", "::number"]
 			}
-		)
+		}
 	)
+
+	def delif(result, key):
+		if key in result:
+			del result[key]
+	
+	for result in results:
+		if result in worldometers_disallow_countries:
+			delif(result, 'total')
+			delif(result, 'deaths')
 
 def upload_all_live():
 	upload_usa_counties()
 	upload_italy_counties()
 	upload_portugal_counties()
 	upload_south_korea_provinces()
-	upload_jhu_today()
+	upload_japan_provinces()
 	upload_worldometers()
 
 def loop():

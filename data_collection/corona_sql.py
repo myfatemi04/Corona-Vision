@@ -233,24 +233,17 @@ class Datapoint(Base):
 
 	def update_data(self, data, source_link):
 		change = False
-		# prt(data)
+		
 		for label in stat_labels:
 			if label not in data:
 				continue
 			my_val = getattr(self, label)
-			source_is_calculated = getattr(self, "source_" + label) == "calculated"
-			if label in increase_labels:
-				if my_val is None or data[label] > my_val or (source_is_calculated and data[label] != my_val):
-					setattr(self, label, data[label])
-					if label in stat_labels:
-						setattr(self, "source_" + label, source_link)
-					change = True
-			else:
-				if my_val is None or data[label] != my_val:
-					setattr(self, label, data[label])
-					if label in stat_labels:
-						setattr(self, "source_" + label, source_link)
-					change = True
+			if my_val is None or data[label] != my_val:
+				setattr(self, label, data[label])
+				if label in stat_labels:
+					setattr(self, "source_" + label, source_link)
+				change = True
+
 		if change:
 			self.update_time = datetime.utcnow()
 
@@ -264,7 +257,7 @@ class Datapoint(Base):
 			else:
 				calculated_value = getattr(self, label)
 
-			if calculated_value != original_value:
+			if float(calculated_value) != float(original_value):
 				setattr(self, "d" + label, calculated_value)
 				self.update_time = datetime.utcnow()
 

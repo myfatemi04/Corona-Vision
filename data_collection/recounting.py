@@ -71,10 +71,12 @@ def update_deltas(day, updated=None):
     today_dict = {d.t: d for d in today_datapoints}
     yesterday_dict = {d.location_tuple(): d for d in yesterday_datapoints}
 
+    print("Updating deltas    ", end='\r')
+
     i = skipped = 0
     for data_tuple, today_dp in today_dict.items():
         i += 1
-        print(f"Updating deltas {i}/{len(today_dict)} {data_tuple}                              ", end='\r')
+        # print(f"Updating deltas {i}/{len(today_dict)} {data_tuple}                              ", end='\r')
         # skip updating datapoints that didn't change
         if updated is not None and data_tuple not in updated:
             # print("Skipping delta update", data_tuple, "                       ")
@@ -92,5 +94,7 @@ def update_deltas(day, updated=None):
             yesterday_dp = None
         
         today_dp.update_differences(yesterday_dp)
+
+    print("Committing deltas", end='\r')
 
     sess.commit()
