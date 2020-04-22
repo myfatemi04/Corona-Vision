@@ -55,64 +55,103 @@ function make_prev_day_link(admin0, admin1, admin2, entry_date) {
     return `<a href="?country=${admin0}&province=${admin1}&admin2=${admin2}&date=${utc_iso(date)}">Previous day</a>`;
 }
 
+const get_datapoint = async(admin0, admin1, admin2, group, entry_date) => {
+    try {
+        let query = "select * from datapoints where";
+        query += " entry_date=" + sqlstring.escape(entry_date);
+        if(group) query += " and `group`=" + sqlstring.escape(group);
+        if(admin0) query += " and admin0=" + sqlstring.escape(admin0);
+        if(!admin0 || admin1) query += " and admin1=" + sqlstring.escape(admin1);
+        if(!admin1 || admin2) query += " and admin2=" + sqlstring.escape(admin2);
+
+        let query2 = "select * from datapoints where "
+        query2 += " entry_date=" + sqlstring.escape(entry_date) + " and";
+        let loc_where = "";
+        loc_where += " admin0=" + sqlstring.escape(admin0);
+        loc_where += " and admin1=" + sqlstring.escape(admin1);
+        loc_where += " and admin2=" + sqlstring.escape(admin2);
+        query2 += loc_where;
+
+        last_update_result = await get_sql("select MAX(update_time) as update_time from datapoints where entry_date=" + sqlstring.escape(entry_date) + ";");
+        last_update = last_update_result[0]['update_time'];
+
+        let label = admin2;
+        if (!admin2) label = admin1;
+        if (!admin1) label = admin0;
+        if (!admin0) label = "World";
+
+        data = await get_sql(query);
+        location_datapoints = await get_sql(query2)
+
+        if (location_datapoints.length == 0) {
+            return null;
+        }
+
+        return {
+            location_datapoint: location_datapoints[0],
+            loc_where: loc_where,
+            label: label
+        };
+    } catch (err) {
+        console.err("Error while querying for datapoints at that location!");
+        return {"error": err}
+    }
+}
+
+get_all_dates = async(loc_where) => {
+    try {
+        let entry_dates_result = await get_sql("select distinct entry_date from datapoints where" + loc_where + " order by entry_date desc");
+        let entry_dates = entry_dates_result.map(x => utc_iso(x['entry_date']));
+        return {
+            first_available_day: entry_dates[entry_dates.length - 1],
+            last_available_day: entry_dates[0],
+            entry_dates: entry_dates
+        }
+    } catch (err) {
+        console.err("Error while obtaining list of dates! Error:", err);
+        return {"error": err}
+    }
+}
+
 const data_table_page = async (req, res) => {
-    let query = "select * from datapoints where";
     let params = url.parse(req.url, true).query;
     let group = params['region'] || "";
     let admin0 = params['country'] || "";
     let admin1 = params['province'] || "";
     let admin2 = params['admin2'] || "";
     let entry_date = params['date'] || utc_iso(new Date());
-    query += " entry_date=" + sqlstring.escape(entry_date);
-    if(group) query += " and `group`=" + sqlstring.escape(group);
-    if(admin0) query += " and admin0=" + sqlstring.escape(admin0);
-    if(!admin0 || admin1) query += " and admin1=" + sqlstring.escape(admin1);
-    if(!admin1 || admin2) query += " and admin2=" + sqlstring.escape(admin2);
+    let datapoint_response = await get_datapoint(admin0, admin1, admin2, group, entry_date);
 
-    let query2 = "select * from datapoints where "
-    query2 += " entry_date=" + sqlstring.escape(entry_date) + " and";
-    let loc_where = "";
-    loc_where += " admin0=" + sqlstring.escape(admin0);
-    loc_where += " and admin1=" + sqlstring.escape(admin1);
-    loc_where += " and admin2=" + sqlstring.escape(admin2);
-    query2 += loc_where;
-
-    last_update_result = await get_sql("select MAX(update_time) as update_time from datapoints where entry_date=" + sqlstring.escape(entry_date) + ";");
-    last_update = last_update_result[0]['update_time'];
-
-    let entry_dates_result = await get_sql("select distinct entry_date from datapoints where" + loc_where + " order by entry_date desc");
-    let entry_dates = entry_dates_result.map(x => utc_iso(x['entry_date']));
-
-    let first_available_day = entry_dates[entry_dates.length - 1];
-    let last_available_day = entry_dates[0];
-
-    let label = admin2;
-	if (!admin2) label = admin1;
-	if (!admin1) label = admin0;
-	if (!admin0) label = "World";
-
-    data = await get_sql(query);
-    location_datapoints = await get_sql(query2)
-
-    if (location_datapoints.length == 0) {
+    if (!datapoint_response) {
         res.render("data_table", {error: "Location not found"});
+        return;
+    } else if (datapoint_response.error) {
+        res.render("data_table", {error: datapoint_response.error});
         return;
     }
 
-    let location_datapoint = location_datapoints[0];
+    let {location_datapoint, loc_where, label} = datapoint_response;
 
-    let cases_hr = "";
+    let date_response = await get_all_dates(loc_where);
+    if (!date_response) {
+        res.render("data_table", {error: "Dates couldn't be loaded"});
+        return;
+    } else if (date_response.error) {
+        res.render("data_table", {error: date_response.error});
+        return;
+    }
+
+    let {first_available_day, last_available_day, entry_dates} = date_response;
+
     let hrs_elapsed = 24;
     if ((entry_date == utc_iso(new Date())) && location_datapoint.dtotal) {
         hrs_elapsed = (new Date() - new Date(entry_date)) / (1000 * 60 * 60);
     }
     
     if (hrs_elapsed >= 1) {
-        cases_hr = (location_datapoint.dtotal / hrs_elapsed).toFixed(0) + " cases/hr";
+        location_datapoint.cases_hr = (location_datapoint.dtotal / hrs_elapsed).toFixed(0) + " cases/hr";
     }
     
-    location_datapoint.cases_hr = cases_hr;
-
     res.render("data_table", {
         ...datatables.make_rows(data, admin0, admin1, admin2, entry_date),
         last_update: datatables.format_update_time(last_update),
@@ -144,6 +183,10 @@ app.get("/charts", (req, res) => {
 /* Technical info about the charts */
 app.get("/charts_info", (req, res) => {
     res.render("charts_info");
+});
+
+app.get("/future", (req, res) => {
+    res.render("future");
 });
 
 /* Map Page
