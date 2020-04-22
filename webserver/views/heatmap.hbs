@@ -118,15 +118,7 @@
 
 				$("select#fpsChange").change(function() {
 					fps = $("select#fpsChange").val();
-				});	
-
-				{{!-- map.data.loadGeoJson(
-					'/geojson'
-				);
-
-				map.data.setStyle(function(feature) {
-					var total = feature.getProperty('total');
-				}); --}}
+				});
 
 				init_dates();
 				load_heatmaps();
@@ -136,7 +128,7 @@
 			function load_heatmaps() {
 				let date = $("#date").val();
 				$.getJSON(
-					"/heatmap",
+					"/api/heatmap",
 					{date: date},
 					format_heatmap_data
 				);

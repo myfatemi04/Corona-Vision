@@ -459,7 +459,7 @@ function geojson(content) {
 /* Heatmap API - returns a list of lat/longs, and various properties. */
 let heatmap_cache = {};
 let heatmap_max_age = 1000 * 60 * 15;
-app.get("/heatmap", (req, res) => {
+app.get("/api/heatmap", (req, res) => {
     let entry_date = req.query['date'] || utc_iso(new Date());
     let query = sqlstring.format(`
         select
