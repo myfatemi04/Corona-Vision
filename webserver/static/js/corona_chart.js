@@ -79,7 +79,7 @@ function init_chart_options(admin0, admin1, admin2) {
 	$("input#smoothing").change(
 		function() {
 			chart_smoothing = this.value;
-			reload_chart();
+			load_chart();
 		}
 	);
 }
@@ -186,51 +186,7 @@ function reset_chart() {
 	chart.update();
 }
 
-// ADD: total cases (predicted)
-// ADD: mortality rate (predicted)
-// ADD: time to recover (predicted)
-
 function fix_data(data, extra_days) {
-	// let last_date = new Date(data.entry_date[data.entry_date.length - 1]);
-	// let first_date = new Date(data.entry_date[0]);
-	// let diff = (last_date.getTime() - first_date.getTime());
-	// let day_length = 1000 * 60 * 60 * 24;
-	// let num_days = diff / day_length + 1;
-	// let paired = {};
-	// for (let i = 0; i < data.entry_date.length; i++) {
-	// 	paired[data.entry_date[i]] = {
-	// 		total: data.total[i],
-	// 		recovered: data.recovered[i],
-	// 		deaths: data.deaths[i],
-	// 		dtotal: data.dtotal[i],
-	// 		drecovered: data.drecovered[i],
-	// 		ddeaths: data.ddeaths[i]
-	// 	};
-	// }
-
-	// let new_days = null;
-
-	// if (extra_days)
-	// 	new_days = date_range(data.entry_date[0], num_days * 2);
-	// else
-	// 	new_days = date_range(data.entry_date[0], num_days);
-	
-	// let new_data = {};
-	// let props = ['total', 'deaths', 'recovered', 'dtotal', 'ddeaths', 'drecovered'];
-	// for (let day_n in new_days) {
-	// 	let day = new_days[day_n];
-	// 	for (let prop of props) {
-	// 		if (!(prop in new_data)) {
-	// 			new_data[prop] = [];
-	// 		}
-	// 		if (day in paired) {
-	// 			new_data[prop].push(paired[day][prop]);
-	// 		} else if (day_n < num_days) {
-	// 			new_data[prop].push(new_data[prop][new_data[prop].length - 1]);
-	// 		}
-	// 	}
-	// }
-
 	new_days = date_range(data.entry_date[0], data.entry_date.length * (extra_days ? 2 : 1));
 	new_data = data;
 
