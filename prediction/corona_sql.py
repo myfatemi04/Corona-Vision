@@ -81,7 +81,7 @@ def time_series(admin0, admin1, admin2):
 
 		d += timedelta(days=1)
 		if i + 1 < len(rows):
-			if rows[i + 1].entry_date == d:
+			if rows[i + 1].entry_date == d.isoformat():
 				i += 1
 	
 	return X, Y
