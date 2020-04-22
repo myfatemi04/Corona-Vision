@@ -2,14 +2,14 @@ def get_defaults():
     from datetime import datetime
     return {
         "location": {
-            "admin0": "",
+            "country": "",
             "admin1": "",
-            "admin2": ""
+            "county": ""
         },
         "datapoint": {
-            "admin0": "",
+            "country": "",
             "admin1": "",
-            "admin2": "",
+            "county": "",
             "entry_date": datetime.utcnow().date()
         }
     }

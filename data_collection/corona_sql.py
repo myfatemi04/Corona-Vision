@@ -32,26 +32,26 @@ class Location(Base):
 
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
-		# prt("new location-", self.admin0, self.admin1, self.admin2)
-		self.admin_level = location_data.get_admin_level(self.admin0, self.admin1, self.admin2)
+		# prt("new location-", self.country, self.province, self.county)
+		self.admin_level = location_data.get_admin_level(self.country, self.province, self.county)
 		
-		new_admin0_code, new_admin1_code, new_admin2_code = location_data.get_codes(self.admin0, self.admin1, self.admin2)
+		new_country_code, new_province_code, new_county_code = location_data.get_codes(self.country, self.province, self.county)
 
-		if not self.admin0_code: self.admin0_code = new_admin0_code
-		if not self.admin1_code: self.admin1_code = new_admin1_code
-		if not self.admin2_code: self.admin2_code = new_admin2_code
+		if not self.country_code: self.country_code = new_country_code
+		if not self.province_code: self.province_code = new_province_code
+		if not self.county_code: self.county_code = new_county_code
 
-		location_data.store_codes(self.admin0, self.admin1, self.admin2, self.admin0_code, self.admin1_code, self.admin2_code)
+		location_data.store_codes(self.country, self.province, self.county, self.country_code, self.province_code, self.county_code)
 	
 	# location_id = Column(Integer, primary_key=True)
 
-	admin0 = Column(String(256), primary_key=True)
-	admin1 = Column(String(256), primary_key=True)
-	admin2 = Column(String(256), primary_key=True)
-	admin0_code = Column(String(2))
-	admin1_code = Column(String(2))
-	admin2_code = Column(String(10))
-	admin_level = Column(Enum('world', 'admin0', 'admin1', 'admin2'))
+	country = Column(String(256), primary_key=True)
+	province = Column(String(256), primary_key=True)
+	county = Column(String(256), primary_key=True)
+	country_code = Column(String(2))
+	province_code = Column(String(2))
+	county_code = Column(String(10))
+	admin_level = Column(Enum('world', 'country', 'province', 'county'))
 
 	latitude = Column(Float(10, 6))
 	longitude = Column(Float(10, 6))
@@ -75,17 +75,17 @@ class Location(Base):
 
 	@property
 	def combined_key(self):
-		if self.admin0 == '':
+		if self.country == '':
 			return "World"
 		else:
-			combined = self.admin0
-			if self.admin1: combined = self.admin1 + ", " + combined
-			if self.admin2: combined = self.admin2 + ", " + combined
+			combined = self.country
+			if self.province: combined = self.province + ", " + combined
+			if self.county: combined = self.county + ", " + combined
 			return combined
 
 	@property
 	def t(self):
-		return self.admin0, self.admin1, self.admin2
+		return self.country, self.province, self.county
 
 	def location_tuple(self):
 		return self.t
@@ -97,7 +97,7 @@ class Location(Base):
 				old_value = float(getattr(self, key) or "0")
 				if abs(new_value - old_value) > 1e-5:
 					setattr(self, key, new_value)
-		for key in ['admin0_code', 'admin1_code', 'admin2_code', 'start_cases', 'start_socdist', 'start_lockdown']:
+		for key in ['country_code', 'province_code', 'county_code', 'start_cases', 'start_socdist', 'start_lockdown']:
 			if key in new_data:
 				new_value = new_data[key]
 				old_value = getattr(self, key)
@@ -130,25 +130,25 @@ class Location(Base):
 		import prepare_data
 		new_data = prepare_data.prepare_location_data(new_data)
 		
-		admin0 = new_data['admin0'] if 'admin0' in new_data else ''
-		admin1 = new_data['admin1'] if 'admin1' in new_data else ''
-		admin2 = new_data['admin2'] if 'admin2' in new_data else ''
-		location_tuple = (admin0, admin1, admin2)
+		country = new_data['country'] if 'country' in new_data else ''
+		province = new_data['province'] if 'province' in new_data else ''
+		county = new_data['county'] if 'county' in new_data else ''
+		location_tuple = (country, province, county)
 
 		if cache:
 			if location_tuple not in cache:
 				if add_new:
-					location = Location(admin0=admin0, admin1=admin1, admin2=admin2)
+					location = Location(country=country, province=province, county=county)
 					session.add(location)
 					cache[location_tuple] = location
 				else:
 					return None
 			location = cache[location_tuple]
 		else:
-			location = session.query(Location).filter_by(admin0=admin0, admin1=admin1, admin2=admin2).first()
+			location = session.query(Location).filter_by(country=country, province=province, county=county).first()
 			if location is None:
 				if add_new:
-					location = Location(admin0=admin0, admin1=admin1, admin2=admin2)
+					location = Location(country=country, province=province, county=county)
 					session.add(location)
 				else:
 					return None
@@ -171,7 +171,7 @@ class Datapoint(Base):
 
 	def __init__(self, data, source_link):
 		super().__init__(**data)
-		# prt("new data point-", self.admin0, self.admin1, self.admin1, source_link)
+		# prt("new data point-", self.country, self.province, self.province, source_link)
 		for label in stat_labels:
 			if getattr(self, label) is not None:
 				setattr(self, "source_" + label, source_link)
@@ -181,9 +181,9 @@ class Datapoint(Base):
 	update_time = Column(DateTime, default=datetime.utcnow())
 	
 	# columns about the nominal location
-	admin2 = Column(String(320), default='', primary_key=True)
-	admin1 = Column(String(320), default='', primary_key=True)
-	admin0 = Column(String(320), default='', primary_key=True)
+	county = Column(String(320), default='', primary_key=True)
+	province = Column(String(320), default='', primary_key=True)
+	country = Column(String(320), default='', primary_key=True)
 	group = Column(String(320), default='')
 	
 	# COVID-19 stats about this datapoint
@@ -219,7 +219,7 @@ class Datapoint(Base):
 		if not self.location_labelled():
 			# if the object's location is not accurate, however,
 			# we try to estimate its location
-			estimated_location = standards.get_estimated_location(self.admin0, self.admin1, self.admin2)
+			estimated_location = standards.get_estimated_location(self.country, self.province, self.county)
 
 			# ^^^ returns none if no accurate data could be found
 			if estimated_location:
@@ -276,7 +276,7 @@ class Datapoint(Base):
 		import prepare_data
 		datapoint_data = prepare_data.prepare_datapoint_data(datapoint_data)
 		if cache is not None:
-			t = datapoint_data['admin0'], datapoint_data['admin1'], datapoint_data['admin2'], datapoint_data['entry_date'].isoformat()
+			t = datapoint_data['country'], datapoint_data['province'], datapoint_data['county'], datapoint_data['entry_date'].isoformat()
 			if t in cache:
 				datapoint = cache[t]
 				datapoint.update_data(data=datapoint_data, source_link=source_link)
@@ -287,9 +287,9 @@ class Datapoint(Base):
 			return datapoint
 		else:
 			datapoint = session.query(
-				admin0=datapoint_data['admin0'],
-				admin1=datapoint_data['admin1'],
-				admin2=datapoint_data['admin2'],
+				country=datapoint_data['country'],
+				province=datapoint_data['province'],
+				county=datapoint_data['county'],
 				entry_date=datapoint_data['entry_date']
 			).first()
 
@@ -301,7 +301,7 @@ class Datapoint(Base):
 			return datapoint
 
 	def location_tuple(self):
-		return (self.admin0, self.admin1, self.admin2)
+		return (self.country, self.province, self.county)
 
 	def ripples(self):
 		if type(self.entry_date) == str:
@@ -310,14 +310,14 @@ class Datapoint(Base):
 			date_str = self.entry_date.isoformat()
 		result = set()
 		result.add(('', '', '', date_str))
-		result.add((self.admin0, '', '', date_str))
-		result.add((self.admin0, self.admin1, '', date_str))
-		result.add((self.admin0, self.admin1, self.admin2, date_str))
+		result.add((self.country, '', '', date_str))
+		result.add((self.country, self.province, '', date_str))
+		result.add((self.country, self.province, self.county, date_str))
 		return result
 
 	@property
 	def t(self):
-		return self.admin0, self.admin1, self.admin2, self.entry_date
+		return self.country, self.province, self.county, self.entry_date
 
 class Hospital(Base):
 	__tablename__ = "hospitals"
@@ -326,9 +326,9 @@ class Hospital(Base):
 	hospital_type = Column(String(256))
 	address1 = Column(String(256))
 	address2 = Column(String(256))
-	admin0 = Column(String(256))
-	admin1 = Column(String(256))
-	admin2 = Column(String(256))
+	country = Column(String(256))
+	province = Column(String(256))
+	county = Column(String(256))
 	licensed_beds = Column(Integer, default=0)
 	staffed_beds = Column(Integer, default=0)
 	icu_beds = Column(Integer, default=0)

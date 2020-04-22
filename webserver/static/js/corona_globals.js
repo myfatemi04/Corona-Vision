@@ -1,7 +1,7 @@
 let CORONA_GLOBALS = {
-    admin0: "",
+    country: "",
     admin1: "",
-    admin2: "",
+    county: "",
     scale_type: "linear",
     chart_type: "total",
     chart: null,
@@ -19,9 +19,9 @@ let CORONA_GLOBALS = {
         tests: "#3440eb",
         serious: "#bf4b49"
     },
-    admin0_list: [],
+    country_list: [],
     admin1_list: {},
-    admin2_list: {},
+    county_list: {},
     smoothing: 0,
     show_predictions: false
 };

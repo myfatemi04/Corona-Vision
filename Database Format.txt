@@ -1,26 +1,26 @@
 Database Format
 
 locations:
-	admin0: String
-	admin1: String
-	admin2: String
+	country: String
+	province: String
+	county: String
 	center: Json
 	boundary: Json
 	properties: Json
-	primary(admin0, admin1, admin2)
+	primary(country, province, county)
 
 datapoints:
 	entry_date: Date
-	admin0: String
-	admin1: String
-	admin2: String
+	country: String
+	province: String
+	county: String
 	properties: Json
-	primary(admin0, admin1, admin2, entry_date)
+	primary(country, province, county, entry_date)
 
 geojson(entry_date):
-	datapoints.admin0
-	datapoints.admin1
-	datapoints.admin2
+	datapoints.country
+	datapoints.province
+	datapoints.county
 	datapoints.data
 	locations.boundary
 	locations.center
@@ -49,9 +49,9 @@ upload(
 	reference_link,
 	query_link,
 	{
-		'admin0': selector
-		'admin1': selector
-		'admin2': selector
+		'country': selector
+		'province': selector
+		'county': selector
 		'entry_date': selector
 		'properties':
 		{

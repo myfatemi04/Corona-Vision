@@ -1,6 +1,6 @@
 const sql = require('./corona_sql');
 
-let admin0_list = [];
+let country_list = [];
 let admin1_list = {};
 
 let COLORS = {
@@ -70,17 +70,17 @@ function table_col(options) {
 
 let ico = ""; // <i class="fas fa-angle-right"></i>
 
-function set_admin0_link(entry_date, admin0) {
-    return `<a style="color: #3657ff;" href='?date=${entry_date}&country=${admin0}'>${admin0} ${ico}</a>`;
-    // return `<a style="color: #3657ff;" href='javascript:set_admin0("${label}")';>${label} ${ico}</a>`;
+function set_country_link(entry_date, country) {
+    return `<a style="color: #3657ff;" href='?date=${entry_date}&country=${country}'>${country} ${ico}</a>`;
+    // return `<a style="color: #3657ff;" href='javascript:set_country("${label}")';>${label} ${ico}</a>`;
 }
 
-function set_admin1_link(entry_date, admin0, admin1) {
-    return `<a style="color: #3657ff;" href='?date=${entry_date}&country=${admin0}&province=${admin1}'>${admin1} ${ico}</a>`;
+function set_admin1_link(entry_date, country, admin1) {
+    return `<a style="color: #3657ff;" href='?date=${entry_date}&country=${country}&province=${admin1}'>${admin1} ${ico}</a>`;
 }
 
-function set_admin2_link(entry_date, admin0, admin1, admin2) {
-    return `<a style="color: #3657ff;" href='?date=${entry_date}&country=${admin0}&province=${admin1}&admin2=${admin2}';>${admin2} ${ico}</a>`
+function set_county_link(entry_date, country, admin1, county) {
+    return `<a style="color: #3657ff;" href='?date=${entry_date}&country=${country}&province=${admin1}&county=${county}';>${county} ${ico}</a>`
 }
 
 function format_update_time(update_time) {
@@ -103,31 +103,31 @@ function format_update_time(update_time) {
 
 module.exports = {
     format_update_time: format_update_time,
-    make_rows: (data, admin0, admin1, admin2, entry_date) => {
-        // if the admin0 isn't specified, we are listing countries
-        if (admin0 == 'all' || admin0 == '') { label_prop = 'admin0'; label_default = 'World'; }
+    make_rows: (data, country, admin1, county, entry_date) => {
+        // if the country isn't specified, we are listing countries
+        if (country == 'all' || country == '') { label_prop = 'country'; label_default = 'World'; }
 
         // if the admin1 isn't specified, we are listing admin1s
-        else if (admin1 == 'all' || admin1 == '') { label_prop = 'admin1'; label_default = admin0; }
+        else if (admin1 == 'all' || admin1 == '') { label_prop = 'admin1'; label_default = country; }
 
-        // if the admin2 isn't specified, we are listing admin2
-        else if (admin2 == 'all' || admin2 == '') { label_prop = 'admin2'; label_default = admin1; }
+        // if the county isn't specified, we are listing county
+        else if (county == 'all' || county == '') { label_prop = 'county'; label_default = admin1; }
 
         // if all are specified, we are listing a single entry
-        else { label_prop = ''; label_default = admin2; }
+        else { label_prop = ''; label_default = county; }
 
         data.sort((a, b) => (a.total > b.total) ? -1 : 1)
 
         let i = 0;
         
-        let deselect_admin0_link = `<a href="?date=${entry_date}"><i class="fas fa-angle-double-left"></i> Go back</a>`;
-        let deselect_admin1_link = `<a href="?date=${entry_date}&country=${admin0}"><i class="fas fa-angle-double-left"></i> Go back</a>`;
-        let deselect_admin2_link = `<a href="?date=${entry_date}^country=${admin0}&province=${admin1}"><i class="fas fa-angle-double-left"></i> Go back</a>`;
+        let deselect_country_link = `<a href="?date=${entry_date}"><i class="fas fa-angle-double-left"></i> Go back</a>`;
+        let deselect_admin1_link = `<a href="?date=${entry_date}&country=${country}"><i class="fas fa-angle-double-left"></i> Go back</a>`;
+        let deselect_county_link = `<a href="?date=${entry_date}^country=${country}&province=${admin1}"><i class="fas fa-angle-double-left"></i> Go back</a>`;
 
         let html = "";
         let go_back_link = '';
-        if (admin0 != '' && admin0 != 'all') {
-            go_back_link = `${(admin1 == '' || admin1 == 'all' ? deselect_admin0_link : (admin2 == '' || admin2 == 'all' ? deselect_admin1_link : deselect_admin2_link))}`;
+        if (country != '' && country != 'all') {
+            go_back_link = `${(admin1 == '' || admin1 == 'all' ? deselect_country_link : (county == '' || county == 'all' ? deselect_admin1_link : deselect_county_link))}`;
             html = `
             <tr>
                 <td class="mx-1" style="flex: 1;"></td>
@@ -143,12 +143,12 @@ module.exports = {
             let label_link = label;
             if (label) {
                 let label = datapoint[label_prop];
-                if (label_prop == 'admin0') {
-                    label_link = set_admin0_link(entry_date, datapoint.admin0);
+                if (label_prop == 'country') {
+                    label_link = set_country_link(entry_date, datapoint.country);
                 } else if (label_prop == 'admin1') {
-                    label_link = set_admin1_link(entry_date, datapoint.admin0, datapoint.admin1);
-                } else if (label_prop == 'admin2') {
-                    label_link = set_admin2_link(entry_date, datapoint.admin0, datapoint.admin1, datapoint.admin2);
+                    label_link = set_admin1_link(entry_date, datapoint.country, datapoint.admin1);
+                } else if (label_prop == 'county') {
+                    label_link = set_county_link(entry_date, datapoint.country, datapoint.admin1, datapoint.county);
                 } else {
                     label_link = label;
                 }

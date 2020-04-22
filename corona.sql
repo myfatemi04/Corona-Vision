@@ -5,9 +5,9 @@ create table datapoints (
 	entry_date varchar(16),
 	update_time datetime not null default CURRENT_TIMESTAMP,
 	
-	admin0 varchar(320) default '',
-	admin1 varchar(320) default '',
-	admin2 varchar(320) default '',
+	country varchar(320) default '',
+	province varchar(320) default '',
+	county varchar(320) default '',
 	`group` varchar(320) default '',
 	
 	latitude float(10, 6),
@@ -36,23 +36,23 @@ create table datapoints (
 	source_tests TEXT,
 	source_hospitalized TEXT,
 
-	PRIMARY KEY(admin0, admin1, admin2, entry_date)
+	PRIMARY KEY(country, province, county, entry_date)
 ) COLLATE utf8_bin;
 
 create table locations (
 	location_id int auto_increment primary key,
 	/* Administrative division location */
-	admin0 varchar(256) default '',
-	admin1 varchar(256) default '',
-	admin2 varchar(256) default '',
+	country varchar(256) default '',
+	province varchar(256) default '',
+	county varchar(256) default '',
 
 	/* Administrative division ISO codes */
-	admin0_code varchar(2) default '',
-	admin1_code varchar(2) default '',
-	admin2_code varchar(10) default '',
+	country_code varchar(2) default '',
+	province_code varchar(2) default '',
+	county_code varchar(10) default '',
 
 	/* Specificity of location */
-	admin_level enum("world", "admin0", "admin1", "admin2"),
+	admin_level enum("world", "country", "province", "county"),
 
 	/* Geographic location */
 	latitude float(10, 6),
@@ -78,17 +78,17 @@ create table locations (
 
 create table test_locations (
 	/* Administrative division location */
-	admin0 varchar(256) default '',
-	admin1 varchar(256) default '',
-	admin2 varchar(256) default '',
+	country varchar(256) default '',
+	province varchar(256) default '',
+	county varchar(256) default '',
 
 	/* Administrative division ISO codes */
-	admin0_code varchar(2) default '',
-	admin1_code varchar(2) default '',
-	admin2_code varchar(10) default '',
+	country_code varchar(2) default '',
+	province_code varchar(2) default '',
+	county_code varchar(10) default '',
 
 	/* Specificity of location */
-	admin_level enum("world", "admin0", "admin1", "admin2"),
+	admin_level enum("world", "country", "province", "county"),
 
 	/* Demographics */
 	population float,
@@ -110,7 +110,7 @@ create table test_locations (
 	`geometry` json,
 	geometry_precision int(2) default 6, /* number of digits past decimal place */
 
-	primary key (admin0, admin1, admin2)
+	primary key (country, province, county)
 
 ) collate utf8_bin;
 
@@ -118,9 +118,9 @@ create table test_datapoints (
 	entry_date varchar(16),
 	update_time datetime not null default CURRENT_TIMESTAMP,
 	
-	admin0 varchar(320) default '',
-	admin1 varchar(320) default '',
-	admin2 varchar(320) default '',
+	country varchar(320) default '',
+	province varchar(320) default '',
+	county varchar(320) default '',
 	`group` varchar(320) default '',
 	
 	total integer default 0,
@@ -146,7 +146,7 @@ create table test_datapoints (
 	source_tests TEXT,
 	source_hospitalized TEXT,
 
-	PRIMARY KEY(admin0, admin1, admin2, entry_date)
+	PRIMARY KEY(country, province, county, entry_date)
 ) COLLATE utf8_bin;
 
 create table hospitals (
@@ -155,9 +155,9 @@ create table hospitals (
 	hospital_type varchar(256),
 	`address1` varchar(256),
 	`address2` varchar(256),
-	admin0 varchar(256),
-	admin1 varchar(256),
-	admin2 varchar(256),
+	country varchar(256),
+	province varchar(256),
+	county varchar(256),
 	licensed_beds int default 0,
 	staffed_beds int default 0,
 	icu_beds int default 0,

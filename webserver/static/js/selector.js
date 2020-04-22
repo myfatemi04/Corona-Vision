@@ -1,21 +1,21 @@
-CORONA_GLOBALS.admin0_list = [];
+CORONA_GLOBALS.country_list = [];
 CORONA_GLOBALS.admin1_list = {};
-CORONA_GLOBALS.admin2_list = {};
+CORONA_GLOBALS.county_list = {};
 
 let admin1_head = '<option value="">Whole country</option>';
-let admin0_head = '<option value="">Whole world</option>';
-let admin2_head = '<option value="">Whole state</option>';
+let country_head = '<option value="">Whole world</option>';
+let county_head = '<option value="">Whole state</option>';
 
-function generate_name(admin0, admin1, admin2) {
+function generate_name(country, admin1, county) {
     let l = '';
-    if (admin2) {
-        l += admin2 + ", ";
+    if (county) {
+        l += county + ", ";
     }
     if (admin1) {
         l += admin1 + ", ";
     }
-    if (admin0) {
-        l += admin0;
+    if (country) {
+        l += country;
     }
     if (!l) {
         return "World";
@@ -23,15 +23,15 @@ function generate_name(admin0, admin1, admin2) {
     return l;
 }
 
-function add_selector_items(id, head, admin0_list) {
+function add_selector_items(id, head, country_list) {
     let elem_pointer = $("#" + id);
     let elem = elem_pointer[0];
-    if (admin0_list.length > 0) {
+    if (country_list.length > 0) {
         elem_pointer.show();
     }
     elem.innerHTML = head;
-    for (let admin0 of admin0_list) {
-        elem.innerHTML += `<option value="${admin0}">${admin0}</option>`;
+    for (let country of country_list) {
+        elem.innerHTML += `<option value="${country}">${country}</option>`;
     }
 }
 
@@ -43,41 +43,41 @@ function init_selectors(after_change, need_child) {
             need_admin1: need_child
         },
         function(data) {
-            CORONA_GLOBALS.admin0_list = data.map(({admin0}) => admin0);
-            add_selector_items("admin0-selector", admin0_head, CORONA_GLOBALS.admin0_list);
+            CORONA_GLOBALS.country_list = data.map(({country}) => country);
+            add_selector_items("country-selector", country_head, CORONA_GLOBALS.country_list);
         }
     )
 
-    $("#admin0-selector").change(
+    $("#country-selector").change(
         function() {
-            CORONA_GLOBALS.admin0 = this.value;
+            CORONA_GLOBALS.country = this.value;
             CORONA_GLOBALS.admin1 = "";
-            CORONA_GLOBALS.admin2 = "";
+            CORONA_GLOBALS.county = "";
             
             $("#admin1-selector").hide();
             $("#admin1-selector")[0].innerHTML = admin1_head;
-            $("#admin2-selector").hide();
-            $("#admin2-selector")[0].innerHTML = admin2_head;
+            $("#county-selector").hide();
+            $("#county-selector")[0].innerHTML = county_head;
                 
             if (this.value) {
-                let admin0 = CORONA_GLOBALS.admin0;
+                let country = CORONA_GLOBALS.country;
 
-                if (!CORONA_GLOBALS.admin1_list.hasOwnProperty(admin0)) {
+                if (!CORONA_GLOBALS.admin1_list.hasOwnProperty(country)) {
                     $.getJSON(
                         "/list/provinces",
                         {
-                            admin0: admin0,
+                            country: country,
                             date: $("#date")[0].value,
-                            need_admin2: need_child
+                            need_county: need_child
                         },
                         function(data) {
-                            CORONA_GLOBALS.admin1_list[admin0] = data.map(({admin1}) => admin1);
-                            add_selector_items("admin1-selector", admin1_head, CORONA_GLOBALS.admin1_list[admin0]);
+                            CORONA_GLOBALS.admin1_list[country] = data.map(({admin1}) => admin1);
+                            add_selector_items("admin1-selector", admin1_head, CORONA_GLOBALS.admin1_list[country]);
                             after_change();
                         }
                     )
                 } else {
-                    add_selector_items("admin1-selector", admin1_head, CORONA_GLOBALS.admin1_list[admin0]);
+                    add_selector_items("admin1-selector", admin1_head, CORONA_GLOBALS.admin1_list[country]);
                     after_change();
                 }
             } else {
@@ -89,31 +89,31 @@ function init_selectors(after_change, need_child) {
     $("#admin1-selector").change(
         function() {
             CORONA_GLOBALS.admin1 = this.value;
-            CORONA_GLOBALS.admin2 = "";
+            CORONA_GLOBALS.county = "";
             
-            $("#admin2-selector").hide();
-            $("#admin2-selector")[0].innerHTML = admin2_head;
+            $("#county-selector").hide();
+            $("#county-selector")[0].innerHTML = county_head;
             
             if (this.value) {    
-                let admin0 = CORONA_GLOBALS.admin0;
+                let country = CORONA_GLOBALS.country;
                 let admin1 = CORONA_GLOBALS.admin1;
 
-                if (!CORONA_GLOBALS.admin2_list.hasOwnProperty(admin0)) {
-                    CORONA_GLOBALS.admin2_list[admin0] = {};
+                if (!CORONA_GLOBALS.county_list.hasOwnProperty(country)) {
+                    CORONA_GLOBALS.county_list[country] = {};
                 }
 
-                if (!CORONA_GLOBALS.admin2_list[admin0].hasOwnProperty(admin1)) {
+                if (!CORONA_GLOBALS.county_list[country].hasOwnProperty(admin1)) {
                     $.getJSON(
-                        "/list/admin2",
-                        { admin0: admin0, admin1: admin1, date: $("#date")[0].value },
+                        "/list/county",
+                        { country: country, admin1: admin1, date: $("#date")[0].value },
                         function(data) {
-                            CORONA_GLOBALS.admin2_list[admin0][admin1] = data.map(({admin2}) => admin2);
-                            add_selector_items("admin2-selector", admin2_head, CORONA_GLOBALS.admin2_list[admin0][admin1]);
+                            CORONA_GLOBALS.county_list[country][admin1] = data.map(({county}) => county);
+                            add_selector_items("county-selector", county_head, CORONA_GLOBALS.county_list[country][admin1]);
                             after_change();
                         }
                     );
                 } else {
-                    add_selector_items("admin2-selector", admin2_head, CORONA_GLOBALS.admin2_list[admin0][admin1]);
+                    add_selector_items("county-selector", county_head, CORONA_GLOBALS.county_list[country][admin1]);
                     after_change();
                 }
             } else {
@@ -122,9 +122,9 @@ function init_selectors(after_change, need_child) {
         }
     );
 
-    $("#admin2-selector").change(
+    $("#county-selector").change(
         function() {
-            CORONA_GLOBALS.admin2 = $("#admin2-selector")[0].value;
+            CORONA_GLOBALS.county = $("#county-selector")[0].value;
             after_change();
         }
     );

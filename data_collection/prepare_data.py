@@ -13,8 +13,8 @@ def prepare_datapoint_data(datapoint_data):
         if type(datapoint_data[key]) == float and np.isnan(datapoint_data[key]):
             del datapoint_data[key]
 
-    datapoint_data = {"admin0": "", "admin1": "", "admin2": "", "entry_date": datetime.utcnow().date(), **datapoint_data}
-    datapoint_data['admin0'], datapoint_data['admin1'], datapoint_data['admin2'] = standards.normalize_name(datapoint_data['admin0'], datapoint_data['admin1'], datapoint_data['admin2'])
+    datapoint_data = {"country": "", "admin1": "", "county": "", "entry_date": datetime.utcnow().date(), **datapoint_data}
+    datapoint_data['country'], datapoint_data['admin1'], datapoint_data['county'] = standards.normalize_name(datapoint_data['country'], datapoint_data['admin1'], datapoint_data['county'])
 
     return datapoint_data
 
@@ -22,9 +22,9 @@ def prepare_location_data(location_data):
     import standards
     from geometry import compress_geo, get_center_long_lat, generate_point_geometry, get_precision
 
-    location_data = {"admin0": "", "admin1": "", "admin2": "", **location_data}
-    location_data['admin0'], location_data['admin1'], location_data['admin2'] = standards.normalize_name(location_data['admin0'], location_data['admin1'], location_data['admin2'])
-    continent = standards.get_continent(location_data['admin0'])
+    location_data = {"country": "", "admin1": "", "county": "", **location_data}
+    location_data['country'], location_data['admin1'], location_data['county'] = standards.normalize_name(location_data['country'], location_data['admin1'], location_data['county'])
+    continent = standards.get_continent(location_data['country'])
     if continent:
         location_data['group'] = continent
 
@@ -43,7 +43,7 @@ def is_total(string):
     return string.lower().startswith("total") or string.lower().endswith("total")
 
 def prepare_locations(locations):
-    return [prepare_location_data(location_data) for location_data in locations if not is_total(location_data['admin0'])]
+    return [prepare_location_data(location_data) for location_data in locations if not is_total(location_data['country'])]
 
 def prepare_datapoints(datapoints):
-    return [prepare_datapoint_data(datapoint_data) for datapoint_data in datapoints if not is_total(datapoint_data['admin0'])]
+    return [prepare_datapoint_data(datapoint_data) for datapoint_data in datapoints if not is_total(datapoint_data['country'])]

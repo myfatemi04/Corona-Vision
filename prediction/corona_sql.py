@@ -28,9 +28,9 @@ class Datapoint(Base):
 	update_time = Column(DateTime, default=datetime.utcnow())
 	
 	# columns about the nominal location
-	admin2 = Column(String(320), default='', primary_key=True)
-	admin1 = Column(String(320), default='', primary_key=True)
-	admin0 = Column(String(320), default='', primary_key=True)
+	county = Column(String(320), default='', primary_key=True)
+	province = Column(String(320), default='', primary_key=True)
+	country = Column(String(320), default='', primary_key=True)
 	group = Column(String(320), default='')
 	
 	# COVID-19 stats about this datapoint
@@ -58,9 +58,9 @@ class Datapoint(Base):
 	source_tests = Column(String())
 	source_hospitalized = Column(String())
 
-def time_series(admin0, admin1, admin2):
+def time_series(country, province, county):
 	session = Session()
-	rows = session.query(Datapoint).filter_by(admin0=admin0, admin1=admin1, admin2=admin2).order_by(Datapoint.entry_date).all()
+	rows = session.query(Datapoint).filter_by(country=country, province=province, county=county).order_by(Datapoint.entry_date).all()
 	X = []
 	Y = []
 	if len(rows) == 0:

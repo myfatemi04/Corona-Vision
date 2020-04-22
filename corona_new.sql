@@ -4,17 +4,17 @@ drop table if exists locations;
 create table locations (
 	location_id int auto_increment primary key,
 	/* Administrative division location */
-	admin0 varchar(256) default '',
-	admin1 varchar(256) default '',
-	admin2 varchar(256) default '',
+	country varchar(256) default '',
+	province varchar(256) default '',
+	county varchar(256) default '',
 
 	/* Administrative division ISO codes */
-	admin0_code varchar(2) default '',
-	admin1_code varchar(2) default '',
-	admin2_code varchar(10) default '',
+	country_code varchar(2) default '',
+	province_code varchar(2) default '',
+	county_code varchar(10) default '',
 
 	/* Specificity of location */
-	admin_level enum("world", "admin0", "admin1", "admin2"),
+	admin_level enum("world", "country", "province", "county"),
 
 	/* Geographic location */
 	latitude float(10, 6),
@@ -40,9 +40,9 @@ create table test (
 	entry_date date,
 	update_time datetime default current_timestamp,
 
-	admin0 varchar(256),
-	admin1 varchar(256),
-	admin2 varchar(256),
+	country varchar(256),
+	province varchar(256),
+	county varchar(256),
 	
 	total int,
 	deaths int,
@@ -65,5 +65,5 @@ create table test (
 	source_serious text,
 	source_hospitalized text,
 	
-	primary key(entry_date, admin0, admin1, admin2)
+	primary key(entry_date, country, province, county)
 );

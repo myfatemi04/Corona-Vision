@@ -1,23 +1,23 @@
 function update_stats() {
     let entry_date = $("#date")[0].value;
     
-    let admin0 = CORONA_GLOBALS.admin0;
+    let country = CORONA_GLOBALS.country;
     let admin1 = CORONA_GLOBALS.admin1;
-    let admin2 = CORONA_GLOBALS.admin2;
+    let county = CORONA_GLOBALS.county;
 
     $.getJSON(
         "/cases/totals",
         {
-            admin0: admin0,
+            country: country,
             admin1: admin1,
-            admin2: admin2,
+            county: county,
             date: entry_date
         },
         function(data_) {
             if (data_) {
                 data = data_[0];
                 $("#stats-info").show()
-                $("#stats-label")[0].innerHTML = generate_name(admin0, admin1, admin2)
+                $("#stats-label")[0].innerHTML = generate_name(country, admin1, county)
                 for (let prop of ['total', 'recovered', 'deaths', 'dtotal', 'active', 'serious', 'tests', 'dtests']) {
                     if (("source_" + prop) in data && data["source_" + prop]) {
                         if (data["source_" + prop] == "calculated") {

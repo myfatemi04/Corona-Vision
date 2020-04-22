@@ -6,19 +6,19 @@ def fix_location_names():
     all_countries = session.query(Datapoint)
     for row in all_countries:
         session = Session()
-        country, province, admin2, entry_date = row.country, row.province, row.admin2, row.entry_date
+        country, province, county, entry_date = row.country, row.province, row.county, row.entry_date
 
         # normalize the name
-        new_country, new_province, new_admin2 = standards.normalize_name(country, province, admin2)
+        new_country, new_province, new_county = standards.normalize_name(country, province, county)
 
         # see if the normalized name is different
-        if new_country == country and new_province == province and new_admin2 == admin2:
+        if new_country == country and new_province == province and new_county == county:
             continue
         else:
-            print(country, province, admin2, entry_date, "-->", new_country, new_province, new_admin2)
+            print(country, province, county, entry_date, "-->", new_country, new_province, new_county)
 
         # check if an entry with the fixed name already exists
-        real_name = session.query(Datapoint).filter_by(country=new_country, province=new_province, admin2=new_admin2, entry_date=entry_date).first()
+        real_name = session.query(Datapoint).filter_by(country=new_country, province=new_province, county=new_county, entry_date=entry_date).first()
         old_name = row
 
         if real_name:
@@ -37,7 +37,7 @@ def fix_location_names():
             # update the row with the fake name to have the correct name
             old_name.country = new_country
             old_name.province = new_province
-            old_name.admin2 = new_admin2
+            old_name.county = new_county
             
     session.commit()
 
@@ -48,7 +48,7 @@ def remove_duplicates():
     seen = {}
     rows = session.query(Datapoint).all()
     for row in rows:
-        primary = row.country.lower(), row.province.lower(), row.admin2.lower(), row.entry_date
+        primary = row.country.lower(), row.province.lower(), row.county.lower(), row.entry_date
         if primary in seen:
             # if it's been seen before, merge them together
             other = seen[primary]
@@ -85,8 +85,8 @@ fix_location_names()
 # 	print(today, yesterday)
 # today_datapoints = sess.query(Datapoint).filter_by(entry_date=today)
 # yesterday_datapoints = sess.query(Datapoint).filter_by(entry_date=yesterday)
-# today_dict = {(d.country, d.province, d.admin2): d for d in today_datapoints}
-# yesterday_dict = {(d.country, d.province, d.admin2): d for d in yesterday_datapoints}
+# today_dict = {(d.country, d.province, d.county): d for d in today_datapoints}
+# yesterday_dict = {(d.country, d.province, d.county): d for d in yesterday_datapoints}
 
 # total = len(today_dict)
 
@@ -99,11 +99,11 @@ fix_location_names()
 
 # today_dp = sess.query(Datapoint).filter_by(entry_date='2020-04-15')
 # live_dp = sess.query(Datapoint).filter_by(entry_date='live')
-# today_mapped = {(dp.country, dp.province, dp.admin2): dp for dp in today_dp}
+# today_mapped = {(dp.country, dp.province, dp.county): dp for dp in today_dp}
 
 # # update live dactives
 # for dp in live_dp:
-# 	location = dp.country, dp.province, dp.admin2
+# 	location = dp.country, dp.province, dp.county
 # 	if location not in today_mapped:
 # 		dp.dactive = 0
 # 	else:

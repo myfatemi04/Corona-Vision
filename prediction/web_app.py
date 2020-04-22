@@ -98,19 +98,19 @@ log_cache = {}
 
 @app.route("/predict/conv")
 def predict_conv():
-	admin0 = request.args.get("admin0") or ""
-	admin1 = request.args.get("admin1") or ""
-	admin2 = request.args.get("admin2") or ""
+	country = request.args.get("country") or ""
+	province = request.args.get("province") or ""
+	county = request.args.get("county") or ""
 
-	if (admin0, admin1, admin2) in conv_cache and time.time() - conv_cache[admin0, admin1, admin2]['time'] < (60 * 60 * 12):
-		return {"y": conv_cache[admin0, admin1, admin2]['pred']}
+	if (country, province, county) in conv_cache and time.time() - conv_cache[country, province, county]['time'] < (60 * 60 * 12):
+		return {"y": conv_cache[country, province, county]['pred']}
 
-	_, in_Y = corona_sql.time_series(admin0, admin1, admin2)
+	_, in_Y = corona_sql.time_series(country, province, county)
 	if not in_Y or len(in_Y) < 10:
 		return {"y": []}
 
 	pred = predict_better(in_Y, len(in_Y))
-	conv_cache[admin0, admin1, admin2] = {'time': time.time(), 'pred': pred}
+	conv_cache[country, province, county] = {'time': time.time(), 'pred': pred}
 	return {"y": pred}
 
 # deprecated
@@ -178,17 +178,17 @@ def predict_conv():
 	
 @app.route("/predict/log")
 def predict_log():
-	admin0 = request.args.get("admin0") or ""
-	admin1 = request.args.get("admin1") or ""
-	admin2 = request.args.get("admin2") or ""
+	country = request.args.get("country") or ""
+	province = request.args.get("province") or ""
+	county = request.args.get("county") or ""
 
-	X, Y = corona_sql.time_series(admin0, admin1, admin2)
+	X, Y = corona_sql.time_series(country, province, county)
 
 	if not X or len(X) < 10:
 		return {"MAX": 0, "T_INF": 0, "T_RISE": 1}
 
-	if (admin0, admin1, admin2) in log_cache and time.time() - log_cache[admin0, admin1, admin2]['time'] < (60 * 60 * 12):
-		return log_cache[admin0, admin1, admin2]['pred']
+	if (country, province, county) in log_cache and time.time() - log_cache[country, province, county]['time'] < (60 * 60 * 12):
+		return log_cache[country, province, county]['pred']
 
 	min_date = min(X)
 	numbered_X = [(x - min_date).days for x in X]
@@ -227,7 +227,7 @@ def predict_log():
 	d['T_INF'] = T_INF
 	d['T_RISE'] = T_RISE
 
-	log_cache[admin0, admin1, admin2] = {"time": time.time(), "pred": d}
+	log_cache[country, province, county] = {"time": time.time(), "pred": d}
 	
 	return d
 

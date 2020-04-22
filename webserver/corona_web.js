@@ -43,42 +43,42 @@ app.set('view engine', 'hbs');
  * The Main Page includes charts, data tables, and live stats */
 let last_update = null;
 
-function make_next_day_link(admin0, admin1, admin2, entry_date) {
+function make_next_day_link(country, admin1, county, entry_date) {
     let date = new Date(entry_date);
     date.setUTCDate(date.getUTCDate() + 1);
-    return `<a href="?country=${admin0}&province=${admin1}&admin2=${admin2}&date=${utc_iso(date)}">Next day</a>`;
+    return `<a href="?country=${country}&province=${admin1}&county=${county}&date=${utc_iso(date)}">Next day</a>`;
 }
 
-function make_prev_day_link(admin0, admin1, admin2, entry_date) {
+function make_prev_day_link(country, admin1, county, entry_date) {
     let date = new Date(entry_date);
     date.setUTCDate(date.getUTCDate() - 1);
-    return `<a href="?country=${admin0}&province=${admin1}&admin2=${admin2}&date=${utc_iso(date)}">Previous day</a>`;
+    return `<a href="?country=${country}&province=${admin1}&county=${county}&date=${utc_iso(date)}">Previous day</a>`;
 }
 
-const get_datapoint = async(admin0, admin1, admin2, group, entry_date) => {
+const get_datapoint = async(country, admin1, county, group, entry_date) => {
     try {
         let query = "select * from datapoints where";
         query += " entry_date=" + sqlstring.escape(entry_date);
         if(group) query += " and `group`=" + sqlstring.escape(group);
-        if(admin0) query += " and admin0=" + sqlstring.escape(admin0);
-        if(!admin0 || admin1) query += " and admin1=" + sqlstring.escape(admin1);
-        if(!admin1 || admin2) query += " and admin2=" + sqlstring.escape(admin2);
+        if(country) query += " and country=" + sqlstring.escape(country);
+        if(!country || admin1) query += " and admin1=" + sqlstring.escape(admin1);
+        if(!admin1 || county) query += " and county=" + sqlstring.escape(county);
 
         let query2 = "select * from datapoints where "
         query2 += " entry_date=" + sqlstring.escape(entry_date) + " and";
         let loc_where = "";
-        loc_where += " admin0=" + sqlstring.escape(admin0);
+        loc_where += " country=" + sqlstring.escape(country);
         loc_where += " and admin1=" + sqlstring.escape(admin1);
-        loc_where += " and admin2=" + sqlstring.escape(admin2);
+        loc_where += " and county=" + sqlstring.escape(county);
         query2 += loc_where;
 
         last_update_result = await get_sql("select MAX(update_time) as update_time from datapoints where entry_date=" + sqlstring.escape(entry_date) + ";");
         last_update = last_update_result[0]['update_time'];
 
-        let label = admin2;
-        if (!admin2) label = admin1;
-        if (!admin1) label = admin0;
-        if (!admin0) label = "World";
+        let label = county;
+        if (!county) label = admin1;
+        if (!admin1) label = country;
+        if (!country) label = "World";
 
         data = await get_sql(query);
         location_datapoints = await get_sql(query2)
@@ -93,7 +93,7 @@ const get_datapoint = async(admin0, admin1, admin2, group, entry_date) => {
             label: label
         };
     } catch (err) {
-        console.err("Error while querying for datapoints at that location!");
+        console.error("Error while querying for datapoints at that location!");
         return {"error": err}
     }
 }
@@ -108,7 +108,7 @@ get_all_dates = async(loc_where) => {
             entry_dates: entry_dates
         }
     } catch (err) {
-        console.err("Error while obtaining list of dates! Error:", err);
+        console.error("Error while obtaining list of dates! Error:", err);
         return {"error": err}
     }
 }
@@ -116,11 +116,11 @@ get_all_dates = async(loc_where) => {
 const data_table_page = async (req, res) => {
     let params = url.parse(req.url, true).query;
     let group = params['region'] || "";
-    let admin0 = params['country'] || "";
+    let country = params['country'] || "";
     let admin1 = params['province'] || "";
-    let admin2 = params['admin2'] || "";
+    let county = params['county'] || "";
     let entry_date = params['date'] || utc_iso(new Date());
-    let datapoint_response = await get_datapoint(admin0, admin1, admin2, group, entry_date);
+    let datapoint_response = await get_datapoint(country, admin1, county, group, entry_date);
 
     if (!datapoint_response) {
         res.render("data_table", {error: "Location not found"});
@@ -153,17 +153,17 @@ const data_table_page = async (req, res) => {
     }
     
     res.render("data_table", {
-        ...datatables.make_rows(data, admin0, admin1, admin2, entry_date),
+        ...datatables.make_rows(data, country, admin1, county, entry_date),
         last_update: datatables.format_update_time(last_update),
-        admin0: admin0,
+        country: country,
         admin1: admin1,
-        admin2: admin2,
+        county: county,
         label: label,
         location_datapoint: location_datapoint,
         entry_date: entry_date,
         entry_dates: entry_dates,
-        next_day_link: (last_available_day == entry_date) ? "" : make_next_day_link(admin0, admin1, admin2, entry_date),
-        prev_day_link: (first_available_day == entry_date) ? "" : make_prev_day_link(admin0, admin1, admin2, entry_date)
+        next_day_link: (last_available_day == entry_date) ? "" : make_next_day_link(country, admin1, county, entry_date),
+        prev_day_link: (first_available_day == entry_date) ? "" : make_prev_day_link(country, admin1, county, entry_date)
     });
 }
 
@@ -185,8 +185,91 @@ app.get("/charts_info", (req, res) => {
     res.render("charts_info");
 });
 
-app.get("/future", (req, res) => {
-    res.render("future");
+function noneUndefined(row) {
+    if(('country' in row) && !row.country) return false;
+    if(('admin1' in row) && !row.admin1) return false;
+    if(('county' in row) && !row.county) return false;
+    return true;
+}
+
+const getCountries = async() => {
+    try {
+        let query = "select distinct country from datapoints";
+        let countriesResult = await get_sql(query);
+        return countriesResult.filter(noneUndefined).map(row => {
+            return `<a href="?country=${row.country}">${row.country}</a>`
+        });
+    } catch (err) {
+        console.error("Error when retrieving country list!", err);
+        return [];
+    }
+}
+
+const getProvinces = async(country) => {
+    try {
+        let query = sqlstring.format("select distinct admin1 from datapoints where country = ?", [country]);
+        let provincesResult = await get_sql(query);
+        return provincesResult.filter(noneUndefined).map(row => {
+            return `<a href="?country=${country}&province=${row.admin1}">${row.admin1}</a>`
+        });
+    } catch (err) {
+        console.error("Error when retrieving province list!", err);
+        return [];
+    }
+}
+
+const getCounties = async(country, province) => {
+    try {
+        let query = sqlstring.format("select distinct county from datapoints where country = ? and admin1 = ?", [country, province]);
+        let countiesResult = await get_sql(query);
+        return countiesResult.filter(noneUndefined).map(row => {
+            return `<a href="?country=${country}&province=${province}&country=${row.county}">${row.county}</a>`
+        });
+    } catch (err) {
+        console.error("Error when retrieving county list!", err);
+        return [];
+    }
+}
+
+app.get("/future", async(req, res) => {
+    let params = url.parse(req.url, true).query;
+    let country = params.country || "";
+    let admin1 = params.province || "";
+    let county = params.county || "";
+    let choices = [];
+    let back = "";
+    if (!country) {
+        try {
+            choices = await getCountries();
+        } catch (err) {
+            console.error("Error when retrieving country list!", err);
+        }
+    }
+    else if (!admin1) {
+        try {
+            choices = await getProvinces(country);
+        } catch (err) {
+            console.error("Error when retrieving province list!", err);
+        }
+        back = `<a href="?"><i class="fas fa-angle-double-left"></i> Go back</a>`
+    }
+    else if (!county) {
+        try {
+            choices = await getCounties(country, admin1);
+        } catch (err) {
+            console.error("Error when retrieving county list!", err);
+        }
+        back = `<a href="?country=${country}"><i class="fas fa-angle-double-left"></i> Go back</a>`
+    } else {
+        back = `<a href="?country=${country}&province=${admin1}"><i class="fas fa-angle-double-left"></i> Go back</a>`
+    }
+    res.render("future", {
+        country: country,
+        admin1: admin1,
+        county: county,
+        choices: choices,
+        back: back
+    });
 });
 
 /* Map Page
@@ -213,18 +296,18 @@ app.get("/cases/totals_table", (req, res) => {
     let params = req.query;
 
     // get location and date
-    let admin0 = get(params, "admin0") || "";
+    let country = get(params, "country") || "";
     let admin1 = get(params, "admin1") || "";
-    let admin2 = get(params, "admin2") || "";
-    let entry_date = get(params, "date") || "live";
+    let county = get(params, "county") || "";
+    let entry_date = get(params, "date") || utc_iso(new Date());
 
     let query = "select * from datapoints";
     
     // dont filter if the field = 'all'
     let where_conds = [];
-    if (admin0 != 'all') where_conds.push("admin0 = " + sqlstring.escape(admin0));
+    if (country != 'all') where_conds.push("country = " + sqlstring.escape(country));
     if (admin1 != 'all') where_conds.push("admin1 = " + sqlstring.escape(admin1));
-    if (admin2 != 'all') where_conds.push("admin2 = " + sqlstring.escape(admin2));
+    if (county != 'all') where_conds.push("county = " + sqlstring.escape(county));
 
     if (where_conds.length > 0) {
         query += " where " + where_conds.join(" and ");
@@ -234,29 +317,29 @@ app.get("/cases/totals_table", (req, res) => {
 
     get_sql(query, key="table_" + query).then(
         content => {
-            res.send(datatables.make_rows(content, admin0, admin1, admin2, entry_date).table_rows);
+            res.send(datatables.make_rows(content, country, admin1, county, entry_date).table_rows);
         }
     );
 });
 
 /* Totals API
- * This provides results for a given admin0, admin1, or admin2 */
+ * This provides results for a given country, admin1, or county */
 app.get("/cases/totals", (req, res) => {
     let params = req.query;
 
     // get location and date
-    let admin0 = get(params, "admin0") || "";
+    let country = get(params, "country") || "";
     let admin1 = get(params, "admin1") || "";
-    let admin2 = get(params, "admin2") || "";
-    let entry_date = get(params, "date") || "live";
+    let county = get(params, "county") || "";
+    let entry_date = get(params, "date") || utc_iso(new Date());
 
     let query = "select * from datapoints";
     
     // dont filter if the field = 'all'
     let where_conds = [];
-    if (admin0 != 'all') where_conds.push("admin0 = " + sqlstring.escape(admin0));
+    if (country != 'all') where_conds.push("country = " + sqlstring.escape(country));
     if (admin1 != 'all') where_conds.push("admin1 = " + sqlstring.escape(admin1));
-    if (admin2 != 'all') where_conds.push("admin2 = " + sqlstring.escape(admin2));
+    if (county != 'all') where_conds.push("county = " + sqlstring.escape(county));
 
     if (where_conds.length > 0) {
         query += " where " + where_conds.join(" and ");
@@ -287,17 +370,17 @@ app.get("/cases/totals_sequence", (req, res) => {
     let params = req.query;
 
     // get location and date
-    let admin0 = params.admin0 || "";
+    let country = params.country || "";
     let admin1 = params.admin1 || "";
-    let admin2 = params.admin2 || "";
+    let county = params.county || "";
 
     let query = "select * from datapoints";
     
     // dont filter if the field = 'all'
     let where_conds = [];
-    if (admin0 != 'all') where_conds.push("admin0 = " + sqlstring.escape(admin0));
+    if (country != 'all') where_conds.push("country = " + sqlstring.escape(country));
     if (admin1 != 'all') where_conds.push("admin1 = " + sqlstring.escape(admin1));
-    if (admin2 != 'all') where_conds.push("admin2 = " + sqlstring.escape(admin2));
+    if (county != 'all') where_conds.push("county = " + sqlstring.escape(county));
 
     if (where_conds.length > 0) {
         query += " where " + where_conds.join(" and ");
@@ -313,6 +396,11 @@ app.get("/cases/totals_sequence", (req, res) => {
             resp.entry_date = [];
             for (let label of labels) {
                 resp[label] = [];
+            }
+
+            if (content.length == 0) {
+                res.json({...resp})
+                return;
             }
 
             /* !!! This strongly relies on the date format !!! */
@@ -335,19 +423,18 @@ app.get("/cases/totals_sequence", (req, res) => {
                 }
             }
             
-            let daily_changes = {};
             for (let label of labels) {
                 let daily_label = "d" + label;
                 let last_val = 0;
-                daily_changes[daily_label] = [];
+                resp[daily_label] = [];
                 for (let i = 0; i < resp[label].length; i++) {
                     let this_val = resp[label][i];
-                    daily_changes[daily_label].push(this_val - last_val)
+                    resp[daily_label].push(this_val - last_val)
                     last_val = this_val;
                 }
             }
 
-            res.json({...resp, ...daily_changes});
+            res.json(resp);
         }
     );
 });
@@ -355,16 +442,16 @@ app.get("/cases/totals_sequence", (req, res) => {
 /* Countries API - returns a list of all countries for a given date */
 app.get("/list/countries", (req, res) => {
     let params = req.query;
-    let entry_date = get(params, "date") || "live";
+    let entry_date = get(params, "date") || utc_iso(new Date());
 
     // base query
-    let query = "select distinct admin0 from datapoints where admin0 != '' and entry_date = " + sqlstring.escape(entry_date);
+    let query = "select distinct country from datapoints where country != '' and entry_date = " + sqlstring.escape(entry_date);
 
     // require a admin1 if necessary
     if ("need_admin1" in params && params.need_admin1 == 1) { query += " and admin1 != ''"; }
 
     // alphabetical order
-    query += " order by admin0";
+    query += " order by country";
 
     get_sql(query).then(
         content => {
@@ -373,18 +460,18 @@ app.get("/list/countries", (req, res) => {
     );
 });
 
-/* Provinces API - gives a list of admin1s for a given admin0 and date */
+/* Provinces API - gives a list of admin1s for a given country and date */
 app.get("/list/provinces", (req, res) => {
     let params = req.query;
 
-    // require the admin0
-    if (!("admin0" in params)) res.end();
+    // require the country
+    if (!("country" in params)) res.end();
 
     // base query
-    let query = sqlstring.format("select distinct admin1 from datapoints where admin0 = ? and admin1 != ''" , params.admin0);
+    let query = sqlstring.format("select distinct admin1 from datapoints where country = ? and admin1 != ''" , params.country);
 
-    // require a admin2 if necessary
-    if ("need_admin2" in params && params.need_admin2 == 1) { query += " and admin2 != ''"; }
+    // require a county if necessary
+    if ("need_county" in params && params.need_county == 1) { query += " and county != ''"; }
     
     // alphabetical order
     query += " order by admin1";
@@ -394,15 +481,15 @@ app.get("/list/provinces", (req, res) => {
     );
 });
 
-/* County API - gives a list of counties for a given admin0, admin1, and date */
-app.get("/list/admin2", (req, res) => {
+/* County API - gives a list of counties for a given country, admin1, and date */
+app.get("/list/county", (req, res) => {
     let params = req.query;
 
-    // require the admin0 and admin1
-    if (!("admin0" in params) || !("admin1" in params)) res.end();
+    // require the country and admin1
+    if (!("country" in params) || !("admin1" in params)) res.end();
 
     // base query
-    let query = sqlstring.format("select distinct admin2 from datapoints where admin0 = ? and admin1 = ? and admin2 != '' order by admin2", [params.admin0, params.admin1]);
+    let query = sqlstring.format("select distinct county from datapoints where country = ? and admin1 = ? and county != '' order by county", [params.country, params.admin1]);
     
     get_sql(query).then(
         content => res.json(content)
@@ -418,7 +505,7 @@ app.get("/list/dates", (req, res) => {
     );
 });
 
-/* First Days API - returns the stats for each admin0 on the first day of infection */
+/* First Days API - returns the stats for each country on the first day of infection */
 app.get("/cases/first_days", (req, res) => {
     let query = sqlstring.format("select * from datapoints where is_first_day = true order by entry_date;");
     get_sql(query).then(
@@ -428,8 +515,8 @@ app.get("/cases/first_days", (req, res) => {
 
 /* Cases-by-date API - returns all cases (with a labelled location) for a given date. Used by the map */
 app.get("/cases/date", (req, res) => {
-    let entry_date = get(req.query, "date") || "live";
-    let query = sqlstring.format("select * from datapoints where entry_date = ? and latitude != 0 and longitude != 0 and admin2 = '' and admin0 != ''", entry_date);
+    let entry_date = get(req.query, "date") || utc_iso(new Date());
+    let query = sqlstring.format("select * from datapoints where entry_date = ? and latitude != 0 and longitude != 0 and county = '' and country != ''", entry_date);
     get_sql(query).then( 
         content => res.json(content)
     );
@@ -441,9 +528,9 @@ app.get("/geojson", (req, res) => {
     let entry_date = req.query['date'] || utc_iso(new Date());
     let query = sqlstring.format(`
         select
-            datapoints.admin0,
+            datapoints.country,
             datapoints.admin1,
-            datapoints.admin2,
+            datapoints.county,
             datapoints.total,
             datapoints.dtotal,
             datapoints.recovered,
@@ -455,12 +542,12 @@ app.get("/geojson", (req, res) => {
         from datapoints
         inner join locations
         on
-            locations.admin0 = datapoints.admin0 and
+            locations.country = datapoints.country and
             locations.admin1 = datapoints.admin1 and
-            locations.admin2 = datapoints.admin2
+            locations.county = datapoints.county
         where
             datapoints.entry_date=? and
-            datapoints.admin0!='' and
+            datapoints.country!='' and
             locations.latitude is not null
     `, entry_date);
     if (query in geojson_cache) {
@@ -484,10 +571,10 @@ function geojson(content) {
     let feature_list = [];
     let i = 0;
     for (let datapoint of content) {
-        let name = datapoint.admin0 || "World";
+        let name = datapoint.country || "World";
         i += 1;
         if (datapoint.admin1) name = datapoint.admin1 + ", " + name;
-        if (datapoint.admin2) name = datapoint.admin2 + ", " + name;
+        if (datapoint.county) name = datapoint.county + ", " + name;
         feature_list.push({
             id: i,
             type: "Feature",
@@ -536,12 +623,12 @@ app.get("/api/heatmap", (req, res) => {
         from datapoints
         inner join locations
         on
-            locations.admin0 = datapoints.admin0 and
+            locations.country = datapoints.country and
             locations.admin1 = datapoints.admin1 and
-            locations.admin2 = datapoints.admin2
+            locations.county = datapoints.county
         where
             datapoints.entry_date=? and
-            datapoints.admin0!='' and
+            datapoints.country!='' and
             locations.latitude is not null
     `, entry_date);
     if (query in heatmap_cache) {

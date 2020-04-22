@@ -10,7 +10,7 @@
 		{
 			"source_link": "https://covid19.isciii.es/",
 			"defaults": {
-				"admin0": "Spain"
+				"country": "Spain"
 			},
 			"args": {
 				"url": "https://covid19.isciii.es/resources/data.csv",
@@ -27,7 +27,7 @@
 		{
 			"source_link": "https://covid19.isciii.es/",
 			"defaults": {
-				"admin0": "Spain"
+				"country": "Spain"
 			},
 			"args": {
 				"url": "https://covid19.isciii.es/resources/ccaa.csv",
@@ -43,7 +43,7 @@
 		{
 			"source_link": "http://opendatadpc.maps.arcgis.com/apps/opsdashboard/index.html#/b0c68bce2cce478eaac82fe38d4138b1",
 			"defaults": {
-				"admin0": "Italy"
+				"country": "Italy"
 			},
 			"args": {
 				"url": "https://services6.arcgis.com/L1SotImj1AAZY1eK/arcgis/rest/services/dpc_regioni_covid19/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=totale_casi%20desc&resultOffset=0",
@@ -62,13 +62,13 @@
 		{
 			"source_link": "http://opendatadpc.maps.arcgis.com/apps/opsdashboard/index.html#/b0c68bce2cce478eaac82fe38d4138b1",
 			"defaults": {
-				"admin0": "Italy"
+				"country": "Italy"
 			},
 			"args": {
 				"url": "https://services6.arcgis.com/L1SotImj1AAZY1eK/arcgis/rest/services/dpc_province_covid19/FeatureServer/0/query?f=json&where=totale_casi%20%3E%200&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=totale_casi",
 				"labels": {
 					"admin1": ["attributes", "denominazione_regione"],
-					"admin2": ["attributes", "denominazione_provincia"],
+					"county": ["attributes", "denominazione_provincia"],
 					"latitude": ["attributes", "latitudine"],
 					"longitude": ["attributes", "longitudine"],
 					"total": ["attributes", "totale_casi"]
@@ -81,7 +81,7 @@
 		{
 			"source_link": "https://www.arcgis.com/apps/opsdashboard/index.html#/acf023da9a0b4f9dbb2332c13f635829",
 			"defaults": {
-				"admin0": "Portugal"
+				"country": "Portugal"
 			},
 			"args": {
 				"url": "https://services.arcgis.com/CCZiGSEQbAxxFVh3/ArcGIS/rest/services/COVID19_Concelhos_V/FeatureServer/0/query?where=1%3D1&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&resultType=standard&distance=0.0&units=esriSRUnit_Meter&returnGeodetic=false&outFields=*&returnGeometry=false&returnCentroid=false&featureEncoding=esriDefault&multipatchOption=xyFootprint&maxAllowableOffset=&geometryPrecision=&outSR=&datumTransformation=&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=Distrito&outStatistics=%5B%7B%22statisticType%22%3A+%22sum%22%2C+%22onStatisticField%22%3A+%22ConfirmadosAcumulado_Conc%22%2C+%22outStatisticField%22%3A+%22Confirmed%22%7D%5D&having=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&returnExceededLimitFeatures=true&quantizationParameters=&sqlFormat=none&f=pjson&token=",
@@ -97,13 +97,13 @@
 		{
 			"source_link": "https://www.arcgis.com/apps/opsdashboard/index.html#/acf023da9a0b4f9dbb2332c13f635829",
 			"defaults": {
-				"admin0": "Portugal"
+				"country": "Portugal"
 			},
 			"args": {
 				"url": "https://services.arcgis.com/CCZiGSEQbAxxFVh3/arcgis/rest/services/COVID19_Concelhos_V/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=ConfirmadosAcumulado_Conc%20desc",
 				"labels": {
 					"admin1": ["attributes", "Distrito", "::cap"],
-					"admin2": ["attributes", "Concelho", "::cap"],
+					"county": ["attributes", "Concelho", "::cap"],
 					"total": ["attributes", "ConfirmadosAcumulado_Conc"]
 				},
 				"namespace": ["features"]
@@ -114,7 +114,7 @@
 		{
 			"source_link": "https://esrikrmkt.maps.arcgis.com/apps/MapSeries/index.html?appid=b379f788425349168d02669285758af0",
 			"defaults": {
-				"admin0": "South Korea"
+				"country": "South Korea"
 			},
 			"args": {
 				"url": "https://services2.arcgis.com/RiHDI9SnFmD3Itzs/arcgis/rest/services/%EC%8B%9C%EB%8F%84%EB%B3%84_%EC%BD%94%EB%A1%9C%EB%82%98/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=%EB%B0%9C%EC%83%9D%EC%9E%90%EC%88%98%20desc&resultOffset=0",
@@ -131,7 +131,7 @@
 		{
 			"source_link": "https://covid19japan.com",
 			"defaults": {
-				"admin0": "Japan"
+				"country": "Japan"
 			},
 			"args": {
 				"url": "https://data.covid19japan.com/summary/latest.json",
@@ -149,7 +149,7 @@
 		{
 			"source_link": "https://npgeo-de.maps.arcgis.com/apps/opsdashboard/index.html#/2694322fc7894bf5886647f652f093ca",
 			"defaults": {
-				"admin0": "Germany"
+				"country": "Germany"
 			},
 			"args": {
 				"url": "https://services7.arcgis.com/mOBPykOjAyBO2ZKk/arcgis/rest/services/Coronaf%C3%A4lle_in_den_Bundesl%C3%A4ndern/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Fallzahl%20desc&resultOffset=0",
@@ -166,7 +166,7 @@
 		{
 			"source_link": "https://covidtracking.com",
 			"defaults": {
-				"admin0": "United States"
+				"country": "United States"
 			},
 			"args": {
 				"url": "https://covidtracking.com/api/v1/states/current.json",
@@ -182,7 +182,7 @@
 		{
 			"source_link": "https://resources-covid19canada.hub.arcgis.com/",
 			"defaults": {
-				"admin0": "Canada"
+				"country": "Canada"
 			},
 			"args": {
 				"url": "https://services9.arcgis.com/pJENMVYPQqZZe20v/arcgis/rest/services/Join_Features_to_Enriched_Population_Case_Data_By_Province_Polygon/FeatureServer/0/query?f=json&where=Case_Total%3E0&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Case_Total%20desc&resultOffset=0",
@@ -203,7 +203,7 @@
 		{
 			"source_link": "https://www.worldometers.info/coronavirus/country/us/",
 			"defaults": {
-				"admin0": "United States"
+				"country": "United States"
 			},
 			"args": {
 				"url": "https://www.worldometers.info/coronavirus/country/us/",
@@ -226,12 +226,12 @@
             "args": {
                 "url": "http://www.vdh.virginia.gov/content/uploads/sites/182/2020/03/VDH-COVID-19-PublicUseDataset-Cases.csv",
                 "labels": {
-                    "admin2": "Locality",
+                    "county": "Locality",
                     "total": "Total Cases"
                 }
             },
             "defaults": {
-                "admin0": "United States",
+                "country": "United States",
                 "admin1": "Virginia"
             },
             "source_link": "http://www.vdh.virginia.gov/coronavirus/",
@@ -242,14 +242,14 @@
             "args": {
                 "url": "https://services7.arcgis.com/4RQmZZ0yaZkGR1zy/arcgis/rest/services/COV19_Public_Dashboard_ReadOnly/FeatureServer/0/query?where=1%3D1&outFields=*&returnGeometry=false&f=pjson",
                 "labels": {
-                    "admin2": ["attributes", "CNTYNAME"],
+                    "county": ["attributes", "CNTYNAME"],
                     "total": ["attributes", "CONFIRMED"],
                     "deaths": ["attributes", "DIED"]
                 },
                 "namespace": ["features"]
             },
             "defaults": {
-                "admin0": "United States",
+                "country": "United States",
                 "admin1": "Alabama"
             },
             "source_link": "https://alabamapublichealth.gov/infectiousdiseases/2019-coronavirus.html",
@@ -260,7 +260,7 @@
             "args": {
                 "url": "https://opendata.arcgis.com/datasets/11b9eba44ba24e5a9cd365467e25da15_0/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json",
                 "labels": {
-                    "admin2": ["attributes", "Borough_Census_Area"],
+                    "county": ["attributes", "Borough_Census_Area"],
                     "total": ["attributes", "All_Cases"]
                 },
                 "namespace": ["features"],
@@ -269,7 +269,7 @@
                 ]
             },
             "defaults": {
-                "admin0": "United States",
+                "country": "United States",
                 "admin1": "Alaska"
             },
             "source_link": "https://coronavirus-response-alaska-dhss.hub.arcgis.com/datasets/daily-cases-hospitalizations-and-deaths-1?page=2&selectedAttribute=Local_Cases_Cumulative",
@@ -282,7 +282,7 @@
 				"url": "https://services.arcgis.com/nSZVuSZjHpEZZbRo/arcgis/rest/services/Coronavirus_RIVM_vlakken_actueel/FeatureServer/0//query?where=1%3D1&geometryType=esriGeometryEnvelope&outFields=*&returnGeometry=false&returnCentroid=true&outSR=4326&datumTransformation=&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&returnExceededLimitFeatures=true&quantizationParameters=&sqlFormat=none&f=pjson&token=",
 				"labels": {
 					"admin1": ["attributes", "Provincie"],
-					"admin2": ["attributes", "Gemeentenaam"],
+					"county": ["attributes", "Gemeentenaam"],
 					"hospitalized": ["attributes", "Ziekenhuisopnamen"],
 					"deaths": ["attributes", "Overleden"],
 					"total": ["attributes", "Meldingen"],
@@ -294,7 +294,7 @@
 			},
 			"method": "json",
 			"defaults": {
-				"admin0": "Netherlands"
+				"country": "Netherlands"
 			},
 			"label": "Netherlands county data"
 		},
@@ -304,8 +304,8 @@
 				"url": "https://opendata.arcgis.com/datasets/628578697fb24d8ea4c32fa0c5ae1843_0.geojson",
 				"labels": {
 					"admin1": ["properties", "Province_State"],
-					"admin0": ["properties", "Country_Region"],
-					"admin2": ["properties", "Admin2"],
+					"country": ["properties", "Country_Region"],
+					"county": ["properties", "Admin2"],
 					"latitude": ["properties", "Lat"],
 					"longitude": ["properties", "Long_"],
 					"total": ["properties", "Confirmed"],
@@ -316,14 +316,14 @@
 			},
 			"method": "json",
 			"defaults": {
-				"admin0": "United States"
+				"country": "United States"
 			},
 			"label": "US County data"
 		},
 		{
 			"source_link": "",
 			"defaults": {
-				"admin0": "China"
+				"country": "China"
 			},
 			"args": {
 				"url": "http://49.4.25.117/JKZX/yq_%Y%m%d.json",
@@ -341,7 +341,7 @@
 		{
 			"source_link": "https://www.esri.in/en-in/programs/disaster-response/corona-impact-2020/overview",
 			"defaults": {
-				"admin0": "India"
+				"country": "India"
 			},
 			"args": {
 				"url": "https://utility.arcgis.com/usrsvcs/servers/83b36886c90942ab9f67e7a212e515c8/rest/services/Corona/DailyCasesMoHUA/MapServer/0/query?f=pjson&where=1%3D1&returnGeometry=false&returnCentroid=true&spatialRel=esriSpatialRelIntersects&geometryType=esriGeometryEnvelope&inSR=102100&outFields=*&outSR=4326",
@@ -362,7 +362,7 @@
 		{
 			"source_link": "https://covidtracking.com",
 			"defaults": {
-				"admin0": "United States"
+				"country": "United States"
 			},
 			"args": {
 				"url": "https://covidtracking.com/api/v1/states/daily.json",
@@ -381,7 +381,7 @@
 		{
 			"source_link": "http://opendatadpc.maps.arcgis.com/apps/opsdashboard/index.html#/b0c68bce2cce478eaac82fe38d4138b1",
 			"defaults": {
-				"admin0": "Italy"
+				"country": "Italy"
 			},
 			"args": {
 				"url": "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-andamento-nazionale.json",
@@ -401,7 +401,7 @@
 		{
 			"source_link": "http://opendatadpc.maps.arcgis.com/apps/opsdashboard/index.html#/b0c68bce2cce478eaac82fe38d4138b1",
 			"defaults": {
-				"admin0": "Italy"
+				"country": "Italy"
 			},
 			"args": {
 				"url": "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-regioni.json",
@@ -424,14 +424,14 @@
 		{
 			"source_link": "http://opendatadpc.maps.arcgis.com/apps/opsdashboard/index.html#/b0c68bce2cce478eaac82fe38d4138b1",
 			"defaults": {
-				"admin0": "Italy"
+				"country": "Italy"
 			},
 			"args": {
 				"url": "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-province.json",
 				"labels": {
 					"entry_date": ["data", "::date_t"],
 					"admin1": ["denominazione_regione"],
-					"admin2": ["denominazione_provincia"],
+					"county": ["denominazione_provincia"],
 					"total": ["totale_casi"]
 				},
 				"namespace": []
@@ -455,9 +455,9 @@
 			"args": {
 				"url": "https://raw.githubusercontent.com/datasets/covid-19/master/data/us_confirmed.csv",
 				"labels": {
-					"admin0": "Country/Region",
+					"country": "Country/Region",
 					"admin1": "Province/State",
-					"admin2": "Admin2",
+					"county": "Admin2",
 					"latitude": "Lat",
 					"longitude": "Long",
 					"total": "Case"
@@ -473,7 +473,7 @@
 				"url": "https://raw.githubusercontent.com/datasets/covid-19/master/data/time-series-19-covid-combined.csv",
 				"labels": {
 					"entry_date": "Date",
-					"admin0": "Country/Region",
+					"country": "Country/Region",
 					"admin1": "Province/State",
 					"latitude": "Lat",
 					"longitude": "Long",

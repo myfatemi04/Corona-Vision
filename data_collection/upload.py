@@ -44,7 +44,7 @@ def upload_locations(locations):
     for location_row in locations:
         i += 1
         # print(f"\rUploading locations [{i}/{len(locations)}]          ", end='\r')
-        t = location_row['admin0'], location_row['admin1'], location_row['admin2']
+        t = location_row['country'], location_row['admin1'], location_row['county']
         if t in seen:
             pass
             # print("already seen [loc]:", t)
@@ -65,7 +65,7 @@ def upload_datapoints(datapoints, source_link):
     updates = set()
     seen = set()
     for datapoint_data in datapoints:
-        t = datapoint_data['admin0'], datapoint_data['admin1'], datapoint_data['admin2'], datapoint_data['entry_date'].isoformat()
+        t = datapoint_data['country'], datapoint_data['admin1'], datapoint_data['county'], datapoint_data['entry_date'].isoformat()
         if t in seen:
             pass
             # print("already seen [data]:", t)

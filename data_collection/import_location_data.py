@@ -21,8 +21,8 @@ def import_countries():
         country = {}
         country['latitude'] = lat
         country['longitude'] = lng
-        country['admin0_code'] = country_code
-        country['admin0'] = country_name
+        country['country_code'] = country_code
+        country['country'] = country_name
         
         Location.add_location_data(country, session=session, cache=cache)
     session.commit()
@@ -43,8 +43,8 @@ def import_states():
         state['longitude'] = lng or None
         state['admin1_code'] = state_code
         state['admin1'] = state_name
-        state['admin0'] = 'United States'
-        state['admin0_code'] = 'US'
+        state['country'] = 'United States'
+        state['country_code'] = 'US'
         
         Location.add_location_data(state, session=session, cache=cache)
     session.commit()
@@ -80,14 +80,14 @@ def import_counties():
         if row.isna().values.any() or row.isnull().values.any():
             print("Found NaN row", end='\r')
             continue
-        county['admin2'] = row['COUNTY_NAME']
-        county['admin2_code'] = row['CENSUS_CODE']
+        county['county'] = row['COUNTY_NAME']
+        county['county_code'] = row['CENSUS_CODE']
         county['latitude'] = row['PRIMARY_LATITUDE']
         county['longitude'] = row['PRIMARY_LONGITUDE']
         county['admin1'] = admin1_name
         county['admin1_code'] = row['STATE_ALPHA']
-        county['admin0'] = "United States"
-        county['admin0_code'] = "US"
+        county['country'] = "United States"
+        county['country_code'] = "US"
         skip = False
         for col in county:
             if col not in ['latitude', 'longitude'] and pd.isna(county[col]):
@@ -109,7 +109,7 @@ def import_population():
         print(f"\r{i}/{len(df)}", end='\r')
         if row['Variant'] == 'Medium' and row['Time'] == 2020:
             data = {}
-            data['admin0'] = row['Location']
+            data['country'] = row['Location']
             data['population_density'] = row['PopDensity']
             data['population'] = row['PopTotal']
             Location.add_location_data(data, session=session, cache=cache, add_new=False)

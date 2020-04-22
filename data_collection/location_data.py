@@ -1,15 +1,15 @@
-admin0_codes = {}
+country_codes = {}
 admin1_codes = {}
-admin2_codes = {}
+county_codes = {}
 
-admin0_names = {}
+country_names = {}
 admin1_names = {}
-admin2_names = {}
+county_names = {}
 
 def store_codes(a0, a1, a2, a0_c, a1_c, a2_c):
     if a0_c:
-        admin0_codes[a0] = a0_c
-        admin0_names[a0_c] = a0
+        country_codes[a0] = a0_c
+        country_names[a0_c] = a0
 
     if a1_c:
         if a0 not in admin1_codes:
@@ -21,57 +21,57 @@ def store_codes(a0, a1, a2, a0_c, a1_c, a2_c):
         admin1_names[a0][a1_c] = a1
 
     if a2_c:
-        if a0 not in admin2_codes:
-            admin2_codes[a0] = {}
-        if a1 not in admin2_codes[a0]:
-            admin2_codes[a0][a1] = {}
-        admin2_codes[a0][a1][a2] = a2_c
+        if a0 not in county_codes:
+            county_codes[a0] = {}
+        if a1 not in county_codes[a0]:
+            county_codes[a0][a1] = {}
+        county_codes[a0][a1][a2] = a2_c
 
-        if a0 not in admin2_names:
-            admin2_names[a0] = {}
-        if a1 not in admin2_names[a0]:
-            admin2_names[a0][a1] = {}
-        admin2_names[a0][a1][a2_c] = a2
+        if a0 not in county_names:
+            county_names[a0] = {}
+        if a1 not in county_names[a0]:
+            county_names[a0][a1] = {}
+        county_names[a0][a1][a2_c] = a2
 
-# returns admin0_code, admin1_code, admin2_code
-def get_codes(admin0, admin1, admin2):
-    admin0_code = admin1_code = admin2_code = ''
+# returns country_code, admin1_code, county_code
+def get_codes(country, admin1, county):
+    country_code = admin1_code = county_code = ''
     
-    if admin0 in admin0_codes:
-        admin0_code = admin0_codes[admin0]
+    if country in country_codes:
+        country_code = country_codes[country]
 
-    if admin0 in admin1_codes:
-        if admin1 in admin1_codes[admin0]:
-            admin1_code = admin1_codes[admin0][admin1]
+    if country in admin1_codes:
+        if admin1 in admin1_codes[country]:
+            admin1_code = admin1_codes[country][admin1]
             
-    if admin0 in admin2_codes:
-        if admin1 in admin2_codes[admin0]:
-            if admin2 in admin2_codes[admin0][admin1]:
-                admin2_code = admin2_codes[admin0][admin1][admin2]
+    if country in county_codes:
+        if admin1 in county_codes[country]:
+            if county in county_codes[country][admin1]:
+                county_code = county_codes[country][admin1][county]
     
-    return admin0_code, admin1_code, admin2_code
+    return country_code, admin1_code, county_code
 
-# returns admin0_code, admin1_code, admin2_code
-def get_admin0_name(admin0_code):
-    if admin0_code in admin0_names:
-        return admin0_names[admin0_code]
+# returns country_code, admin1_code, county_code
+def get_country_name(country_code):
+    if country_code in country_names:
+        return country_names[country_code]
 
-def get_admin1_name(admin0, admin1_code):
-    if admin0 in admin1_names:
-        if admin1_code in admin1_names[admin0]:
-            return admin1_names[admin0][admin1_code]
+def get_admin1_name(country, admin1_code):
+    if country in admin1_names:
+        if admin1_code in admin1_names[country]:
+            return admin1_names[country][admin1_code]
 
-def get_admin2_name(admin0, admin1, admin2_code):
-    if admin0 in admin2_names:
-        if admin1 in admin2_names[admin0]:
-            if admin2_code in admin2_names[admin0][admin1]:
-                return admin2_names[admin0][admin1][admin2_code]
+def get_county_name(country, admin1, county_code):
+    if country in county_names:
+        if admin1 in county_names[country]:
+            if county_code in county_names[country][admin1]:
+                return county_names[country][admin1][county_code]
 
-def get_admin_level(admin0, admin1, admin2):
-    if not admin0:
+def get_admin_level(country, admin1, county):
+    if not country:
         return 'world'
     if not admin1:
-        return 'admin0'
-    if not admin2:
+        return 'country'
+    if not county:
         return 'admin1'
-    return 'admin2'
+    return 'county'

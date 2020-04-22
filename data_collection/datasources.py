@@ -11,16 +11,16 @@ def upload_usa_counties():
 		query_url="https://opendata.arcgis.com/datasets/628578697fb24d8ea4c32fa0c5ae1843_0.geojson",
 		table_labels={
 			"location": {
-				"admin0": ["Country_Region"],
+				"country": ["Country_Region"],
 				"admin1": ["Province_State"],
-				"admin2": ["Admin2"],
+				"county": ["Admin2"],
 				"latitude": ["Lat"],
 				"longitude": ["Long_"]
 			},
 			"datapoint": {
-				"admin0": ["Country_Region"],
+				"country": ["Country_Region"],
 				"admin1": ["Province_State"],
-				"admin2": ["Admin2"],
+				"county": ["Admin2"],
 				"total": ["Confirmed"],
 				"recovered": ["Recovered"],
 				"deaths": ["Deaths"]
@@ -33,13 +33,13 @@ def upload_italy_counties():
 		"https://services6.arcgis.com/L1SotImj1AAZY1eK/arcgis/rest/services/dpc_regioni_covid19/FeatureServer/0/",
 		{
 			"location" :{
-				"admin0": "Italy",
+				"country": "Italy",
 				"admin1": ["denominazione_regione"],
 				"latitude": ["latitudine"],
 				"longitude": ["longitudine"],
 			},
 			"datapoint": {
-				"admin0": "Italy",
+				"country": "Italy",
 				"admin1": ["denominazione_regione"],
 				"total": ["totale_casi"],
 				"deaths": ["deceduti"]
@@ -52,14 +52,14 @@ def upload_portugal_counties():
 		"http://services.arcgis.com/CCZiGSEQbAxxFVh3/ArcGIS/rest/services/COVID19_Concelhos_V/FeatureServer/0/",
 		{
 			"location": {
-				"admin0": "Portugal",
+				"country": "Portugal",
 				"admin1": ["Distrito", "::cap"],
-				"admin2": ["Concelho", "::cap"]
+				"county": ["Concelho", "::cap"]
 			},
 			"datapoint": {
-				"admin0": "Portugal",
+				"country": "Portugal",
 				"admin1": ["Distrito", "::cap"],
-				"admin2": ["Concelho", "::cap"],
+				"county": ["Concelho", "::cap"],
 				"deaths": ["Obitos_Conc"],
 				"recovered": ["Recuperados_Conc"],
 				"total": ["ConfirmadosAcumulado_Conc"]
@@ -72,11 +72,11 @@ def upload_south_korea_provinces():
 		"https://services2.arcgis.com/RiHDI9SnFmD3Itzs/arcgis/rest/services/%EC%8B%9C%EB%8F%84%EB%B3%84_%EC%BD%94%EB%A1%9C%EB%82%98/FeatureServer/0/",
 		{
 			"location": {
-				"admin0": "South Korea",
+				"country": "South Korea",
 				"admin1": ["CTP_ENG_NM"]
 			},
 			"datapoint": {
-				"admin0": "South Korea",
+				"country": "South Korea",
 				"admin1": ["CTP_ENG_NM"],
 				"total": ["발생자수"],
 				"deaths": ["사망자수"],
@@ -92,7 +92,7 @@ def upload_japan_provinces():
 				source_link="https://covid19japan.com",
 				table_labels={
 					"datapoint": {
-						"admin0": "Japan",
+						"country": "Japan",
 						"admin1": ["name"],
 						"total": ["confirmed"],
 						"deaths": ["deaths"],
@@ -128,7 +128,7 @@ def upload_worldometers():
 				["#main_table_countries_today", 0],
 				{
 					"datapoint": {
-						"admin0": ["Country,  Other"],
+						"country": ["Country,  Other"],
 						"total": ["Total  Cases", "::number"],
 						"deaths": ["Total  Deaths", "::number"],
 						"serious": ["Serious,  Critical", "::number"],
@@ -160,7 +160,7 @@ def upload_live_usa_testing():
 			source_link="https://covidtracking.com",
 			table_labels={
 				"datapoint": {
-					"admin0": "United States",
+					"country": "United States",
 					"admin1": ["state", "::us_state_code"],
 					"tests": ["totalTestResults"],
 					"hospitalized": ["hospitalizedCurrently"],
@@ -180,17 +180,17 @@ def upload_netherlands_counties():
 			"https://services.arcgis.com/nSZVuSZjHpEZZbRo/arcgis/rest/services/Coronavirus_RIVM_vlakken_actueel/FeatureServer/0//",
 			table_labels={
 				"datapoint": {
-					"admin0": "Netherlands",
+					"country": "Netherlands",
 					"admin1": ["Provincie"],
-					"admin2": ["Gemeentenaam"],
+					"county": ["Gemeentenaam"],
 					"total": ["Meldingen"],
 					"hospitalized": ["Ziekenhuisopnamen"],
 					"deaths": ["Overleden"]
 				},
 				"location": {
-					"admin0": "Netherlands",
+					"country": "Netherlands",
 					"admin1": ["Provincie"],
-					"admin2": ["Gemeentenaam"],
+					"county": ["Gemeentenaam"],
 					"population": ["Bevolkingsaantal", "::dividethousands"]
 				}
 			}
@@ -209,7 +209,7 @@ def upload_china_provinces_yesterday():
 			source_link="https://ncov.dxy.cn/ncovh5/view/en_pneumonia",
 			table_labels={
 				"datapoint": {
-					"admin0": "China",
+					"country": "China",
 					"admin1": ["properties", "省份", "::china_province_eng"],
 					"total": ["properties", "累计确诊"],
 					"deaths": ["properties", "累计死亡"],
@@ -231,7 +231,7 @@ def upload_historical_usa_testing():
 			table_labels={
 				"datapoint": {
 					"entry_date": ["date", "::str", "::ymd"],
-					"admin0": "United States",
+					"country": "United States",
 					"admin1": ["state", "::us_state_code"],
 					"tests": ["total"],
 					"hospitalized": ["hospitalized"],
@@ -249,7 +249,7 @@ def upload_india_states():
 		gis_url="https://utility.arcgis.com/usrsvcs/servers/83b36886c90942ab9f67e7a212e515c8/rest/services/Corona/DailyCasesMoHUA/MapServer/0/",
 		table_labels={
 			"datapoint": {
-				"admin0": "India",
+				"country": "India",
 				"admin1": ["state_name"],
 				"total": ["confirmedcases"],
 				"recovered": ["cured_discharged_migrated"],

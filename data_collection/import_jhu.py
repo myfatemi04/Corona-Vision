@@ -12,16 +12,16 @@ def import_csv_data(csv_text, entry_date):
 	
 	# define the columns
 	lat_col = lng_col = ""
-	admin0_col = admin1_col = admin2_col = ""
+	country_col = admin1_col = county_col = ""
 	total_col = death_col = recovered_col = ""
 	
 	# future-proofing
 	for col in df.columns:
 		if 'lat' in col.lower(): lat_col = col
 		elif 'long' in col.lower(): lng_col = col
-		elif 'country' in col.lower(): admin0_col = col
+		elif 'country' in col.lower(): country_col = col
 		elif 'province' in col.lower(): admin1_col = col
-		elif 'admin2' in col.lower(): admin2_col = col
+		elif 'county' in col.lower(): county_col = col
 		elif "death" in col.lower(): death_col = col
 		elif "dead" in col.lower(): death_col = col
 		elif "confirm" in col.lower(): total_col = col
@@ -33,7 +33,7 @@ def import_csv_data(csv_text, entry_date):
 		'source_link': "https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports"
 	}
 
-	df.sort_values(by=[col for col in [admin2_col, admin1_col, admin0_col] if col], ascending=False)
+	df.sort_values(by=[col for col in [county_col, admin1_col, country_col] if col], ascending=False)
 	
 	for _, row in df.iterrows():
 		# Steps
@@ -42,9 +42,9 @@ def import_csv_data(csv_text, entry_date):
 		# 3. Estimate the location if we can
 
 		# STEP 1 #
-		admin0 = row[admin0_col]
+		country = row[country_col]
 		admin1 = row[admin1_col] if not pd.isnull(row[admin1_col]) else ''
-		admin2 = row[admin2_col] if admin2_col else ''
+		county = row[county_col] if county_col else ''
 
 		# STEP 2 #
 		total = row[total_col]
@@ -60,17 +60,17 @@ def import_csv_data(csv_text, entry_date):
 
 		if admin1 == 'Recovered':
 			datapoint_row = {
-				"admin0": admin0,
+				"country": country,
 				"recovered": recovered,
 				"entry_date": entry_date
 			}
 
-			location_row = { "admin0": admin0 }
+			location_row = { "country": country }
 		else:
 			datapoint_row = {
-				"admin0": admin0,
+				"country": country,
 				"admin1": admin1,
-				"admin2": admin2,
+				"county": county,
 				"total": total,
 				"deaths": deaths,
 				"recovered": recovered,
@@ -78,9 +78,9 @@ def import_csv_data(csv_text, entry_date):
 			}
 
 			location_row = {
-				"admin0": admin0,
+				"country": country,
 				"admin1": admin1,
-				"admin2": admin2
+				"county": county
 			}
 
 		# Save the primary location data if we can

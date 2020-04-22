@@ -1,4 +1,4 @@
-let by_admin0 = {};
+let by_country = {};
 let by_us_state = {};
 
 function filter_table() {
@@ -16,43 +16,43 @@ function filter_table() {
     }
 }
 
-function set_admin0(admin0) {
-    $("#admin0-selector").val(admin0);
-    $("#admin0-selector").trigger("change");
+function set_country(country) {
+    $("#country-selector").val(country);
+    $("#country-selector").trigger("change");
 }
 function set_admin1(admin1) {
     $("#admin1-selector").val(admin1);
     $("#admin1-selector").trigger("change");
 }
 
-function set_admin2(admin2) {
-    $("#admin2-selector").val(admin2);
-    $("#admin2-selector").trigger("change");
+function set_county(county) {
+    $("#county-selector").val(county);
+    $("#county-selector").trigger("change");
 }
 
 function reload_data() {
     let entry_date = $("#date")[0].value;
     let params = {
-        admin0: CORONA_GLOBALS.admin0,
+        country: CORONA_GLOBALS.country,
         admin1: CORONA_GLOBALS.admin1,
-        admin2: CORONA_GLOBALS.admin2,
+        county: CORONA_GLOBALS.county,
         date: entry_date
     };
 
     // if any are unspecified, set to all (highest level only, so else if)
-    if (params.admin0 == '') {
-        params.admin0 = 'all';
-    } else if (params.admin1 == '' && params.admin0 != '') {
+    if (params.country == '') {
+        params.country = 'all';
+    } else if (params.admin1 == '' && params.country != '') {
         params.admin1 = 'all';
-    } else if (params.admin2 == '') {
-        params.admin2 = 'all';
+    } else if (params.county == '') {
+        params.county = 'all';
     }
     $.get(
         "/cases/totals_table",
         params,
         function(result) {
             $("#tablebody")[0].innerHTML = result;
-            //by_admin0[entry_date] = result;
+            //by_country[entry_date] = result;
             //show_data(result, level, def);
         }
     );

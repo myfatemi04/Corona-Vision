@@ -16,23 +16,38 @@
 			); --}}
 		</script>
 		<script>
+			let country = "{{country}}";
+			let admin1 = "{{admin1}}";
+			let county = "{{county}}";
 			function init() {
-				chart = new_chart("chart");
-				init_chart_options("{{admin0}}", "{{admin1}}", "{{admin2}}");
-				load_chart("{{admin0}}", "{{admin1}}", "{{admin2}}");
+				let chart = new_chart("chart");
+				chart.smoothing = 0;
+				chart.dataType = "total";
+				initChartOptions(chart);
 				$("#date").val("{{entry_date}}");
+
+				let label = country || "World";
+				if (admin1) label = admin1 + ", " + label;
+				if (county) label = county + ", " + label;
+
+				$.getJSON(
+					"/cases/totals_sequence",
+					{
+						country: country,
+						admin1: admin1,
+						county: county
+					},
+					function(data) {
+						chart.originalData = data;
+						chart.options.title.text = 'Cases in ' + label;
+						chart.data.labels = data.entry_date;
+						redrawChart(chart);
+					}
+				)
 			}
 
 			function update_date() {
-				let win_loc = "?country={{admin0}}";
-				{{#if admin1}}
-					win_loc += "&province={{admin1}}";
-				{{/if}}
-				{{#if admin2}}
-					win_loc += "&admin2={{admin2}}";
-				{{/if}}
-				win_loc += "&date=" + $("#date").val();
-				window.location = win_loc;
+				window.location = "?country={{country}}&province={{admin1}}&county={{county}}&date=" + $("#date").val();
 			}
 		</script>
 		<style type="text/css">
@@ -189,7 +204,7 @@
 						</button>
 						{{>chart_options}}
 						<div>
-							<a href="/charts_info">More info about the charts</a>
+							<a href="/charts_info">More info about the charts</a><br/>
 							<a href="/disclaimer">Disclaimer about predictions</a>
 						</div>
 					</div>
@@ -216,13 +231,9 @@
 								<th style="flex: 2;">Updated</th>
 								<th style="flex: 4;">Location</th>
 								<th style="flex: 4;">Total</th>
-								{{!-- <th style="flex: 1;">New</th> --}}
 								<th style="flex: 2;">Recovered</th>
 								<th style="flex: 2;">Deaths</th>
-								{{!-- <th style="flex: 1;">New</th> --}}
-								{{!-- <th style="flex: 1;">Tests</th> --}}
 								<th style="flex: 2;">Severe</th>
-								{{!-- <th style="flex: 1;">Source</th> --}}
 							</tr>
 						</thead>
 						<tbody id="tablebody">
