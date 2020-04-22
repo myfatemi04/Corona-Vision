@@ -136,7 +136,11 @@ app.get("/heatmap", (req, res) => {
     res.render("heatmap");
 });
 
-
+/* Disclaimer lol
+ */
+app.get("/disclaimer", (req, res) => {
+    res.render("disclaimer");
+});
 
 /* Totals Table (backend)
  * Provides an HTML table that can be inserted into the main page */

@@ -6,44 +6,31 @@
 	</button>
 	<div class="collapse navbar-collapse" id="navbar-content">
 		<ul class="navbar-nav mr-auto">
-			<li class="nav-item dropdown">
-				<a class="nav-link dropdown-toggle" href="#" id="dataDropdown" role="button" data-toggle="dropdown" aria-haspopup=true aria-expanded=false>
-					Coronavirus Statistics
-				</a>
-				<div class="custom-nav-color dropdown-menu" aria-labelledby="dataDropdown">
-					<a class="dropdown-item" href="/">Live Stats</a>
-					<a class="dropdown-item" href="/circlemap">Circle Map</a>
-					<a class="dropdown-item" href="/heatmap">Heat Map</a>
-					{{!-- <a class="dropdown-item" href="/charts">Charts</a> --}}
-					{{!-- <a class="dropdown-item" href="/history">History of spread</a> --}}
-				</div>
+			<li class="nav-item">
+				<a class="nav-link" href="/">Live Stats</a>
 			</li>
 			<li class="nav-item">
-				<a class="nav-link" href="/whattodo">
-					How to help
-				</a>
+				<a class="nav-link" href="/circlemap">Cases Circle Map</a>
 			</li>
 			<li class="nav-item">
-				<a class="nav-link" href="/news">
-					News
-				</a>
+				<a class="nav-link" href="/heatmap">Cases Heatmap</a>
 			</li>
-			{{!-- <li class="nav-item">
-				<a class="nav-link" href="/simulate/curve">
-					Simulate the Curve
-				</a>
-			</li> --}}
+			<li class="nav-item">
+				<a class="nav-link" href="/whattodo">How to help</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/news">News</a>
+			</li>
 		</ul>
 		<ul class="navbar-nav ml-auto">
 			<li class="nav-item">
-				<a class="nav-link" href="/sources">
-					Sources
-				</a>
+				<a href="/disclaimer" class="nav-link">Disclaimer</a>
 			</li>
 			<li class="nav-item">
-				<a class="nav-link" href="/contact">
-					Contact us
-				</a>
+				<a class="nav-link" href="/sources">Sources</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/contact">Contact us</a>
 			</li>
 		</ul>
 	</div>
