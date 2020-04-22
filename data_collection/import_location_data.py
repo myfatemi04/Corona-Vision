@@ -117,9 +117,27 @@ def import_population():
 
 def import_all():
     import_countries()
-    # import_states()
-    # import_counties()
-    # import_population()
+    import_states()
+    import_counties()
+    import_population()
 
 if __name__ == "__main__":
-    import_all()
+    import sys
+
+    d = {
+        "countries": import_countries,
+        "states": import_states,
+        "counties": import_counties,
+        "population": import_population,
+        "all": import_all
+    }
+
+    if len(sys.argv) == 1:
+        import_all()
+    else:
+        if sys.argv[1] in d:
+            d[sys.argv[1]]()
+        else:
+            print("That's not a valid command!")
+            print("Valid commands are: ")
+            print(*d.keys(), sep='\n')

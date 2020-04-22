@@ -373,7 +373,9 @@ app.get("/geojson", (req, res) => {
             datapoints.dtotal,
             datapoints.recovered,
             datapoints.deaths,
-            locations.geometry
+            locations.geometry,
+            locations.latitude,
+            locations.longitude
         from datapoints
         inner join locations
         on
@@ -414,9 +416,10 @@ function geojson(content) {
                 name: name,
                 total: datapoint.total,
                 deaths: datapoint.deaths,
-                recovered: datapoint.recovered
+                recovered: datapoint.recovered,
+                center: [datapoint.longitude, datapoint.latitude]
             },
-            geometry: datapoint.geometry
+            geometry: JSON.parse(datapoint.geometry)
         });
     }
     return {
