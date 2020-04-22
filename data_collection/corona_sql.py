@@ -231,15 +231,28 @@ class Datapoint(Base):
 	def update_data(self, data, source_link):
 		change = False
 		
+		def _update(label, new_val):
+			setattr(self, label, new_val)
+			if label in stat_labels:
+				setattr(self, "source_" + label, source_link)
+
 		for label in stat_labels:
 			if label not in data:
 				continue
+			
 			my_val = getattr(self, label)
-			if my_val is None or data[label] != my_val:
-				setattr(self, label, data[label])
-				if label in stat_labels:
-					setattr(self, "source_" + label, source_link)
+
+			if my_val is None:
+				_update(label, data[label])
 				change = True
+			elif label in increase_labels:
+				if data[label] > my_val:
+					_update(label, data[label])
+					change = True
+			else:
+				if data[label] != my_val:
+					_update(label, data[label])
+					change = True
 
 		if change:
 			self.update_time = datetime.utcnow()

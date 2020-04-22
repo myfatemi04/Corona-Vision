@@ -297,8 +297,8 @@ function set_chart_data(data, admin0, admin1, admin2) {
 	if (predictor_type == "log") {
 		$.get(
 			// DEBUG MARKER
-			// "//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/log",
-			"//localhost:5050/predict/log",
+			"//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/log",
+			// "//localhost:5050/predict/log",
 			//"//coronavision-ml.herokuapp.com/predict/log",
 			{ admin0: admin0, admin1: admin1, admin2: admin2 },
 			(log_predictor_json) => {
@@ -314,8 +314,8 @@ function set_chart_data(data, admin0, admin1, admin2) {
 	else if (predictor_type == "conv") {
 		$.get(
 			// DEBUG MARKER
-			// "//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/conv",
-			"//localhost:5050/predict/conv",
+			"//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/conv",
+			// "//localhost:5050/predict/conv",
 			//"//coronavision-ml.herokuapp.com/predict/conv",
 			{ admin0: admin0, admin1: admin1, admin2: admin2 },
 			(conv_predictor_json) => {

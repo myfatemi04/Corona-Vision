@@ -373,7 +373,6 @@ app.get("/geojson", (req, res) => {
             datapoints.drecovered,
             datapoints.deaths,
             datapoints.ddeaths,
-            locations.geometry,
             locations.latitude,
             locations.longitude
         from datapoints
@@ -425,7 +424,13 @@ function geojson(content) {
                 latitude: datapoint.latitude,
                 longitude: datapoint.longitude
             },
-            geometry: JSON.parse(datapoint.geometry)
+            geometry: {
+                "type": "Point",
+                "coordinates": [
+                    datapoint.longitude, datapoint.latitude
+                ]
+            }
+                //JSON.parse(datapoint.geometry)
         });
     }
     return {

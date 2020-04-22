@@ -105,16 +105,13 @@
 					});
 					map.addLayer({
 						'id': 'cases-layer',
-						'type': 'fill',
+						'type': 'circle',
 						'source': 'cases',
 						'paint': {
-							'fill-color': circle_colors.total
-						}
-						{{!-- 'paint': {
 							'circle-color': circle_colors.total,
 							'circle-radius': ['*', 2, ['log10', ['get', 'total']]],
 							'circle-opacity': 0.8
-						} --}}
+						}
 					});
 				});
 

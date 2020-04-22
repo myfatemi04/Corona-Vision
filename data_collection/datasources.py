@@ -133,14 +133,14 @@ def upload_worldometers():
 		}
 	)
 
-	def delif(result, key):
-		if key in result:
-			del result[key]
+	# def delif(result, key):
+	# 	if key in result:
+	# 		del result[key]
 	
-	for result in results['datapoint']:
-		if result in worldometers_disallow_countries:
-			delif(result, 'total')
-			delif(result, 'deaths')
+	# for result in results['datapoint']:
+	# 	if result in worldometers_disallow_countries:
+	# 		delif(result, 'total')
+	# 		delif(result, 'deaths')
 
 	upload(results)
 

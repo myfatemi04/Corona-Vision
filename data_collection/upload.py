@@ -71,7 +71,7 @@ def upload_datapoints(datapoints, source_link):
             updates.update(updated_datapoint.ripples())
     
     print("\rRecounting             ", end='\r')
-    recounting.recount(updates, session=session, cache=cache)
+    recounting.recount(updates, session=session, source_link=source_link, cache=cache)
 
     print("\rCommitting             ", end='\r')
     session.commit()
