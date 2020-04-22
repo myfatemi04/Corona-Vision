@@ -300,6 +300,12 @@ def normalize_name(admin0, admin1='', admin2=''):
 		admin1 = 'Virgin Islands'
 	return admin0, admin1, admin2
 
+def cn_province_eng(admin1):
+	if admin1 in china_provinces:
+		return china_provinces[admin1]
+	else:
+		raise ValueError("Warning- Province not found- ", admin1)
+
 def get_admin2_admin1(admin0, admin1):
 	comma_index = admin1.rfind(", ")
 	admin2, admin1_code = admin1[:comma_index], admin1[comma_index + 2:]

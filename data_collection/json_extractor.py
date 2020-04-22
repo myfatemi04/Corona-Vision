@@ -23,11 +23,13 @@ json_methods = {
     "::text": lambda x: x.text,
     "::strip": lambda x: x.strip(),
     "::cap": lambda x: x.capitalize(),
-    "::dmy": lambda x: datetime.strptime(x, "%d%m%Y").strftime("%Y-%m-%d"),
-    "::ymd": lambda x: datetime.strptime(x, "%Y%m%d").strftime("%Y-%m-%d"),
+    "::dmy": lambda x: datetime.strptime(x, "%d%m%Y").date(),
+    "::ymd": lambda x: datetime.strptime(x, "%Y%m%d").date(),
     "::date_t": date_t,
     "::us_state_code": lambda x: standards.get_admin1_name("United States", x),
-    "::str": lambda x: str(x)
+    "::str": lambda x: str(x),
+    "::dividethousands": lambda x: x/1000,
+    "::china_province_eng": standards.cn_province_eng
 }
 
 def find_json(head, selectors):
@@ -40,8 +42,8 @@ def find_json(head, selectors):
             else:
                 head = head[selector]
         return head
-    except KeyError:
-        return None
+    except KeyError as e:
+        print("KeyError warning on", e, "for selectors", selectors)
 
 def extract_json_row(row, labels):
     result = {}

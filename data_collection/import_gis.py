@@ -14,7 +14,7 @@ def upload_gis(gis_url, table_labels, use_geometry=True, geometry_precision=6):
         query_url += "&returnGeometry=false"
 
     source_url = "http://www.arcgis.com/home/webmap/viewer.html?url=" + gis_url
-    upload_geojson(source_url=source_url, query_url=query_url, table_labels=table_labels, use_geometry=use_geometry, geometry_precision=3)
+    upload_geojson(source_url=source_url, query_url=query_url, table_labels=table_labels, use_geometry=use_geometry, geometry_precision=geometry_precision)
 
 def upload_geojson(source_url, query_url, table_labels, use_geometry=True, geometry_precision=3):
     print("Loading GIS data from", source_url)

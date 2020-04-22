@@ -144,13 +144,115 @@ def upload_worldometers():
 
 	upload(results)
 
+def upload_live_usa_testing():
+	print("Uploading Live USA testing")
+	results = import_json(
+		url="https://covidtracking.com/api/v1/states/current.json",
+		source_link="https://covidtracking.com",
+		table_labels={
+			"datapoint": {
+				"admin0": "United States",
+				"admin1": ["state", "::us_state_code"],
+				"tests": ["total"],
+				"hospitalized": ["hospitalizedCurrently"],
+				"recovered": ["recovered"]
+			}
+		},
+		namespace=[]
+	)
+	
+	upload(results)
+
+def upload_netherlands_counties():
+	upload_gis(
+		"https://services.arcgis.com/nSZVuSZjHpEZZbRo/arcgis/rest/services/Coronavirus_RIVM_vlakken_actueel/FeatureServer/0//",
+		table_labels={
+			"datapoint": {
+				"admin0": "Netherlands",
+				"admin1": ["Provincie"],
+				"admin2": ["Gemeentenaam"],
+				"total": ["Meldingen"],
+				"hospitalized": ["Ziekenhuisopnamen"],
+				"deaths": ["Overleden"]
+			},
+			"location": {
+				"admin0": "Netherlands",
+				"admin1": ["Provincie"],
+				"admin2": ["Gemeentenaam"],
+				"population": ["Bevolkingsaantal", "::dividethousands"]
+			}
+		}
+	)
+
+def upload_china_provinces_yesterday():
+	print("Uploading China provinces")
+	from datetime import datetime, timedelta
+	yesterday = (datetime.utcnow().date() + timedelta(days=-1))
+	url = yesterday.strftime("http://49.4.25.117/JKZX/yq_%Y%m%d.json")
+	try:
+		result = import_json(
+			url=url,
+			source_link="https://ncov.dxy.cn/ncovh5/view/en_pneumonia",
+			table_labels={
+				"datapoint": {
+					"admin0": "China",
+					"admin1": ["properties", "省份", "::china_province_eng"],
+					"total": ["properties", "累计确诊"],
+					"deaths": ["properties", "累计死亡"],
+					"entry_date": yesterday
+				}
+			},
+			namespace=["features"]
+		)
+	except:
+		print("Error loading China provinces")
+	else:
+		upload(result)
+
+def upload_historical_usa_testing():
+	print("Uploading historical USA testing")
+	result = import_json(
+		url="https://covidtracking.com/api/v1/states/daily.json",
+		source_link="https://covidtracking.com",
+		table_labels={
+			"datapoint": {
+				"entry_date": ["date", "::str", "::ymd"],
+				"admin0": "United States",
+				"admin1": ["state", "::us_state_code"],
+				"tests": ["total"],
+				"hospitalized": ["hospitalized"],
+				"recovered": ["recovered"]
+			}
+		},
+		namespace=[]
+	)
+	upload(result)
+	
+def upload_india_states():
+	upload_gis(
+		gis_url="https://utility.arcgis.com/usrsvcs/servers/83b36886c90942ab9f67e7a212e515c8/rest/services/Corona/DailyCasesMoHUA/MapServer/0/",
+		table_labels={
+			"datapoint": {
+				"admin0": "India",
+				"admin1": ["state_name"],
+				"total": ["confirmedcases"],
+				"recovered": ["cured_discharged_migrated"],
+				"deaths": ["deaths"]
+			}
+		},
+		use_geometry=False
+	)
+
 def upload_all_live():
-	upload_usa_counties()
+	upload_worldometers()
 	upload_italy_counties()
 	upload_portugal_counties()
 	upload_south_korea_provinces()
 	upload_japan_provinces()
-	upload_worldometers()
+	upload_usa_counties()
+	upload_netherlands_counties()
+	upload_india_states()
+	upload_live_usa_testing()
 
 def loop():
 	while True:
@@ -158,4 +260,3 @@ def loop():
 
 if __name__ == "__main__":
 	upload_all_live()
-	# upload_jhu_historical()
