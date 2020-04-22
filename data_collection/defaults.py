@@ -3,12 +3,12 @@ def get_defaults():
     return {
         "location": {
             "country": "",
-            "admin1": "",
+            "province": "",
             "county": ""
         },
         "datapoint": {
             "country": "",
-            "admin1": "",
+            "province": "",
             "county": "",
             "entry_date": datetime.utcnow().date()
         }

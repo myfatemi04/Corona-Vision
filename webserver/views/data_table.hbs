@@ -17,7 +17,7 @@
 		</script>
 		<script>
 			let country = "{{country}}";
-			let admin1 = "{{admin1}}";
+			let province = "{{province}}";
 			let county = "{{county}}";
 			function init() {
 				let chart = new_chart("chart");
@@ -27,14 +27,14 @@
 				$("#date").val("{{entry_date}}");
 
 				let label = country || "World";
-				if (admin1) label = admin1 + ", " + label;
+				if (province) label = province + ", " + label;
 				if (county) label = county + ", " + label;
 
 				$.getJSON(
 					"/cases/totals_sequence",
 					{
 						country: country,
-						admin1: admin1,
+						province: province,
 						county: county
 					},
 					function(data) {
@@ -47,7 +47,7 @@
 			}
 
 			function update_date() {
-				window.location = "?country={{country}}&province={{admin1}}&county={{county}}&date=" + $("#date").val();
+				window.location = "?country={{country}}&province={{province}}&county={{county}}&date=" + $("#date").val();
 			}
 		</script>
 		<style type="text/css">

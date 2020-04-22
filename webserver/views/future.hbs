@@ -97,7 +97,7 @@
 					options: chartStyles
 				});
 
-				let locationData = {country: "{{country}}", admin1: "{{admin1}}", county: "{{county}}"};
+				let locationData = {country: "{{country}}", province: "{{province}}", county: "{{county}}"};
 
 				$.getJSON(
 					"/cases/totals_sequence",
@@ -114,7 +114,7 @@
 
 			function addData(chart, data, locationData) {
 				let label = locationData.country || "the World";
-				if (locationData.admin1) label = locationData.admin1 + ", " + label;
+				if (locationData.province) label = locationData.province + ", " + label;
 				if (locationData.county) label = locationData.county + ", " + label;
 				chart.options.title.text = "Logistic predictions for " + label;
 				let datasets = ['total', 'recovered', 'deaths'];

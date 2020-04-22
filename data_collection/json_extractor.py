@@ -26,7 +26,7 @@ json_methods = {
     "::dmy": lambda x: datetime.strptime(x, "%d%m%Y").date(),
     "::ymd": lambda x: datetime.strptime(x, "%Y%m%d").date(),
     "::date_t": date_t,
-    "::us_state_code": lambda x: standards.get_admin1_name("United States", x),
+    "::us_state_code": lambda x: standards.get_province_name("United States", x),
     "::str": lambda x: str(x),
     "::dividethousands": lambda x: x/1000,
     "::china_province_eng": standards.cn_province_eng

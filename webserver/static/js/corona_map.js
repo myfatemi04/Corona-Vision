@@ -213,13 +213,13 @@ function calibrate_zoomins(entry_date) {
 	);
 }
 
-function generate_name(country, admin1, county) {
+function generate_name(country, province, county) {
 	let l = '';
 	if (county) {
 		l += county + ", ";
 	}
-	if (admin1) {
-		l += admin1 + ", ";
+	if (province) {
+		l += province + ", ";
 	}
 	if (country) {
 		l += country;
@@ -262,7 +262,7 @@ function reload_cases() {
 					new_marker.addListener('click', function(ev) {
 						let entry_date = $("#date")[0].value;
 						most_recent_person = person;
-						infowindow.setContent(`<div class="text-dark">${format_infowindow_data(generate_name(person.country, person.admin1, person.county), person)}</div>`);
+						infowindow.setContent(`<div class="text-dark">${format_infowindow_data(generate_name(person.country, person.province, person.county), person)}</div>`);
 						infowindow.setPosition(ev.latLng);
 						infowindow.open(map);
 						calibrate_zoomins(entry_date);

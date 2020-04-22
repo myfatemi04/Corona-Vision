@@ -13,7 +13,7 @@ function add_data(data) {
     let last_loc_cell = null;
     let last_entry_date = null;
     for (let result of data) {
-        if (result.county == '' && result.admin1 == '' && result.country != '') {
+        if (result.county == '' && result.province == '' && result.country != '') {
             let new_row = tbody.insertRow(-1);
             if (last_entry_date && last_entry_date == result.entry_date) {
                 last_loc_cell.innerHTML += "<br/>" + result.country;

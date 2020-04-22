@@ -13,8 +13,8 @@ def prepare_datapoint_data(datapoint_data):
         if type(datapoint_data[key]) == float and np.isnan(datapoint_data[key]):
             del datapoint_data[key]
 
-    datapoint_data = {"country": "", "admin1": "", "county": "", "entry_date": datetime.utcnow().date(), **datapoint_data}
-    datapoint_data['country'], datapoint_data['admin1'], datapoint_data['county'] = standards.normalize_name(datapoint_data['country'], datapoint_data['admin1'], datapoint_data['county'])
+    datapoint_data = {"country": "", "province": "", "county": "", "entry_date": datetime.utcnow().date(), **datapoint_data}
+    datapoint_data['country'], datapoint_data['province'], datapoint_data['county'] = standards.normalize_name(datapoint_data['country'], datapoint_data['province'], datapoint_data['county'])
 
     return datapoint_data
 
@@ -22,8 +22,8 @@ def prepare_location_data(location_data):
     import standards
     from geometry import compress_geo, get_center_long_lat, generate_point_geometry, get_precision
 
-    location_data = {"country": "", "admin1": "", "county": "", **location_data}
-    location_data['country'], location_data['admin1'], location_data['county'] = standards.normalize_name(location_data['country'], location_data['admin1'], location_data['county'])
+    location_data = {"country": "", "province": "", "county": "", **location_data}
+    location_data['country'], location_data['province'], location_data['county'] = standards.normalize_name(location_data['country'], location_data['province'], location_data['county'])
     continent = standards.get_continent(location_data['country'])
     if continent:
         location_data['group'] = continent

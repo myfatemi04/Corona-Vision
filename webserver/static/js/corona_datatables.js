@@ -20,9 +20,9 @@ function set_country(country) {
     $("#country-selector").val(country);
     $("#country-selector").trigger("change");
 }
-function set_admin1(admin1) {
-    $("#admin1-selector").val(admin1);
-    $("#admin1-selector").trigger("change");
+function set_province(province) {
+    $("#province-selector").val(province);
+    $("#province-selector").trigger("change");
 }
 
 function set_county(county) {
@@ -34,7 +34,7 @@ function reload_data() {
     let entry_date = $("#date")[0].value;
     let params = {
         country: CORONA_GLOBALS.country,
-        admin1: CORONA_GLOBALS.admin1,
+        province: CORONA_GLOBALS.province,
         county: CORONA_GLOBALS.county,
         date: entry_date
     };
@@ -42,8 +42,8 @@ function reload_data() {
     // if any are unspecified, set to all (highest level only, so else if)
     if (params.country == '') {
         params.country = 'all';
-    } else if (params.admin1 == '' && params.country != '') {
-        params.admin1 = 'all';
+    } else if (params.province == '' && params.country != '') {
+        params.province = 'all';
     } else if (params.county == '') {
         params.county = 'all';
     }

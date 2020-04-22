@@ -32,7 +32,7 @@
 			"args": {
 				"url": "https://covid19.isciii.es/resources/ccaa.csv",
 				"labels": {
-					"admin1": "CCAA",
+					"province": "CCAA",
 					"total": "Casos",
 					"dtotal": "Ultimas 24h"
 				}
@@ -48,7 +48,7 @@
 			"args": {
 				"url": "https://services6.arcgis.com/L1SotImj1AAZY1eK/arcgis/rest/services/dpc_regioni_covid19/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=totale_casi%20desc&resultOffset=0",
 				"labels": {
-					"admin1": ["attributes", "denominazione_regione"],
+					"province": ["attributes", "denominazione_regione"],
 					"latitude": ["attributes", "latitudine"],
 					"longitude": ["attributes", "longitudine"],
 					"total": ["attributes", "totale_casi"],
@@ -67,7 +67,7 @@
 			"args": {
 				"url": "https://services6.arcgis.com/L1SotImj1AAZY1eK/arcgis/rest/services/dpc_province_covid19/FeatureServer/0/query?f=json&where=totale_casi%20%3E%200&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=totale_casi",
 				"labels": {
-					"admin1": ["attributes", "denominazione_regione"],
+					"province": ["attributes", "denominazione_regione"],
 					"county": ["attributes", "denominazione_provincia"],
 					"latitude": ["attributes", "latitudine"],
 					"longitude": ["attributes", "longitudine"],
@@ -86,7 +86,7 @@
 			"args": {
 				"url": "https://services.arcgis.com/CCZiGSEQbAxxFVh3/ArcGIS/rest/services/COVID19_Concelhos_V/FeatureServer/0/query?where=1%3D1&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&resultType=standard&distance=0.0&units=esriSRUnit_Meter&returnGeodetic=false&outFields=*&returnGeometry=false&returnCentroid=false&featureEncoding=esriDefault&multipatchOption=xyFootprint&maxAllowableOffset=&geometryPrecision=&outSR=&datumTransformation=&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=Distrito&outStatistics=%5B%7B%22statisticType%22%3A+%22sum%22%2C+%22onStatisticField%22%3A+%22ConfirmadosAcumulado_Conc%22%2C+%22outStatisticField%22%3A+%22Confirmed%22%7D%5D&having=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&returnExceededLimitFeatures=true&quantizationParameters=&sqlFormat=none&f=pjson&token=",
 				"labels": {
-					"admin1": ["attributes", "Distrito", "::cap"],
+					"province": ["attributes", "Distrito", "::cap"],
 					"total": ["attributes", "SUM_ConfirmadosAcumulado_Conc"]
 				},
 				"namespace": ["features"]
@@ -102,7 +102,7 @@
 			"args": {
 				"url": "https://services.arcgis.com/CCZiGSEQbAxxFVh3/arcgis/rest/services/COVID19_Concelhos_V/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=ConfirmadosAcumulado_Conc%20desc",
 				"labels": {
-					"admin1": ["attributes", "Distrito", "::cap"],
+					"province": ["attributes", "Distrito", "::cap"],
 					"county": ["attributes", "Concelho", "::cap"],
 					"total": ["attributes", "ConfirmadosAcumulado_Conc"]
 				},
@@ -121,7 +121,7 @@
 				"labels": {
 					"total": ["attributes", "발생자수"],
 					"deaths": ["attributes", "사망자수"],
-					"admin1": ["attributes", "CTP_ENG_NM"]
+					"province": ["attributes", "CTP_ENG_NM"]
 				},
 				"namespace": ["features"]
 			},
@@ -136,7 +136,7 @@
 			"args": {
 				"url": "https://data.covid19japan.com/summary/latest.json",
 				"labels": {
-					"admin1": ["name"],
+					"province": ["name"],
 					"total": ["confirmed"],
 					"deaths": ["deaths"],
 					"recovered": ["recovered"]	
@@ -154,7 +154,7 @@
 			"args": {
 				"url": "https://services7.arcgis.com/mOBPykOjAyBO2ZKk/arcgis/rest/services/Coronaf%C3%A4lle_in_den_Bundesl%C3%A4ndern/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Fallzahl%20desc&resultOffset=0",
 				"labels": {
-					"admin1": ["attributes", "LAN_ew_GEN"],
+					"province": ["attributes", "LAN_ew_GEN"],
 					"total": ["attributes", "Fallzahl"],
 					"deaths": ["attributes", "Death"]
 				},
@@ -171,7 +171,7 @@
 			"args": {
 				"url": "https://covidtracking.com/api/v1/states/current.json",
 				"labels": {
-					"admin1": ["state", "::us_state_code"],
+					"province": ["state", "::us_state_code"],
 					"tests": ["total"]
 				},
 				"namespace": []
@@ -187,7 +187,7 @@
 			"args": {
 				"url": "https://services9.arcgis.com/pJENMVYPQqZZe20v/arcgis/rest/services/Join_Features_to_Enriched_Population_Case_Data_By_Province_Polygon/FeatureServer/0/query?f=json&where=Case_Total%3E0&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Case_Total%20desc&resultOffset=0",
 				"labels": {
-					"admin1": ["attributes", "NAME"],
+					"province": ["attributes", "NAME"],
 					"total": ["attributes", "Case_Total"],
 					"deaths": ["attributes", "Deaths"],
 					"active": ["attributes", "ActiveCases"],
@@ -208,7 +208,7 @@
 			"args": {
 				"url": "https://www.worldometers.info/coronavirus/country/us/",
 				"labels": {
-					"admin1": "USA  State",
+					"province": "USA  State",
 					"total": ["Total  Cases", "::number"],
 					"deaths": ["Total  Deaths", "::number"],
 					"active": ["Active  Cases", "::number"]
@@ -218,8 +218,8 @@
 			"method": "table",
 			"label": "Worldometers USA",
 			"disallow": [
-				{"admin1": "USA Total"},
-				{"admin1": "Total:"}
+				{"province": "USA Total"},
+				{"province": "Total:"}
 			]
 		},
 		{
@@ -232,7 +232,7 @@
             },
             "defaults": {
                 "country": "United States",
-                "admin1": "Virginia"
+                "province": "Virginia"
             },
             "source_link": "http://www.vdh.virginia.gov/coronavirus/",
             "method": "csv",
@@ -250,7 +250,7 @@
             },
             "defaults": {
                 "country": "United States",
-                "admin1": "Alabama"
+                "province": "Alabama"
             },
             "source_link": "https://alabamapublichealth.gov/infectiousdiseases/2019-coronavirus.html",
             "method": "json",
@@ -270,7 +270,7 @@
             },
             "defaults": {
                 "country": "United States",
-                "admin1": "Alaska"
+                "province": "Alaska"
             },
             "source_link": "https://coronavirus-response-alaska-dhss.hub.arcgis.com/datasets/daily-cases-hospitalizations-and-deaths-1?page=2&selectedAttribute=Local_Cases_Cumulative",
             "method": "json",
@@ -281,7 +281,7 @@
 			"args": {
 				"url": "https://services.arcgis.com/nSZVuSZjHpEZZbRo/arcgis/rest/services/Coronavirus_RIVM_vlakken_actueel/FeatureServer/0//query?where=1%3D1&geometryType=esriGeometryEnvelope&outFields=*&returnGeometry=false&returnCentroid=true&outSR=4326&datumTransformation=&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&returnExceededLimitFeatures=true&quantizationParameters=&sqlFormat=none&f=pjson&token=",
 				"labels": {
-					"admin1": ["attributes", "Provincie"],
+					"province": ["attributes", "Provincie"],
 					"county": ["attributes", "Gemeentenaam"],
 					"hospitalized": ["attributes", "Ziekenhuisopnamen"],
 					"deaths": ["attributes", "Overleden"],
@@ -303,7 +303,7 @@
 			"args": {
 				"url": "https://opendata.arcgis.com/datasets/628578697fb24d8ea4c32fa0c5ae1843_0.geojson",
 				"labels": {
-					"admin1": ["properties", "Province_State"],
+					"province": ["properties", "Province_State"],
 					"country": ["properties", "Country_Region"],
 					"county": ["properties", "Admin2"],
 					"latitude": ["properties", "Lat"],
@@ -328,7 +328,7 @@
 			"args": {
 				"url": "http://49.4.25.117/JKZX/yq_%Y%m%d.json",
 				"labels": {
-					"admin1": ["properties", "省份"],
+					"province": ["properties", "省份"],
 					"total": ["properties", "累计确诊"],
 					"deaths": ["properties", "累计死亡"]
 				},
@@ -346,8 +346,8 @@
 			"args": {
 				"url": "https://utility.arcgis.com/usrsvcs/servers/83b36886c90942ab9f67e7a212e515c8/rest/services/Corona/DailyCasesMoHUA/MapServer/0/query?f=pjson&where=1%3D1&returnGeometry=false&returnCentroid=true&spatialRel=esriSpatialRelIntersects&geometryType=esriGeometryEnvelope&inSR=102100&outFields=*&outSR=4326",
 				"labels": {
-					"admin1": ["attributes", "state_name"],
-					"admin1_code": ["attributes", "state_char_code"],
+					"province": ["attributes", "state_name"],
+					"province_code": ["attributes", "state_char_code"],
 					"total": ["attributes", "confirmedcases"],
 					"recovered": ["attributes", "cured_discharged_migrated"],
 					"deaths": ["attributes", "deaths"]
@@ -368,7 +368,7 @@
 				"url": "https://covidtracking.com/api/v1/states/daily.json",
 				"labels": {
 					"entry_date": ["date", "::str", "::ymd"],
-					"admin1": ["state", "::us_state_code"],
+					"province": ["state", "::us_state_code"],
 					"tests": ["total"],
 					"hospitalized": ["hospitalized"],
 					"recovered": ["recovered"]
@@ -407,7 +407,7 @@
 				"url": "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-regioni.json",
 				"labels": {
 					"entry_date": ["data", "::date_t"],
-					"admin1": ["denominazione_regione"],
+					"province": ["denominazione_regione"],
 					"serious": ["terapia_intensiva"],
 					"total": ["totale_casi"],
 					"recovered": ["dimessi_guariti"],
@@ -430,7 +430,7 @@
 				"url": "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-province.json",
 				"labels": {
 					"entry_date": ["data", "::date_t"],
-					"admin1": ["denominazione_regione"],
+					"province": ["denominazione_regione"],
 					"county": ["denominazione_provincia"],
 					"total": ["totale_casi"]
 				},
@@ -446,7 +446,7 @@
 			"method": "jhu_range",
 			"label": "Johns Hopkins University Historical Data",
 			"disallow": [
-				{"admin1": "Recovered"}
+				{"province": "Recovered"}
 			]
 		},
 		{
@@ -456,7 +456,7 @@
 				"url": "https://raw.githubusercontent.com/datasets/covid-19/master/data/us_confirmed.csv",
 				"labels": {
 					"country": "Country/Region",
-					"admin1": "Province/State",
+					"province": "Province/State",
 					"county": "Admin2",
 					"latitude": "Lat",
 					"longitude": "Long",
@@ -474,7 +474,7 @@
 				"labels": {
 					"entry_date": "Date",
 					"country": "Country/Region",
-					"admin1": "Province/State",
+					"province": "Province/State",
 					"latitude": "Lat",
 					"longitude": "Long",
 					"total": "Confirmed",

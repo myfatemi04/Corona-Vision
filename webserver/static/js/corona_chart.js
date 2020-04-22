@@ -220,7 +220,7 @@ function add_conv_predictor({y}) {
 // 	$.get(
 // 		"//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/conv",
 // 		// "//localhost:5050/predict/conv",
-// 		{ country: country, admin1: admin1, county: county },
+// 		{ country: country, province: province, county: county },
 // 		(conv_predictor_json) => {
 // 			// make sure they didn't change the settings
 // 			if (predictor_type == "conv") {

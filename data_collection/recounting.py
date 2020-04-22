@@ -20,41 +20,41 @@ def recount(updated, source_link, session, cache=None):
 
     print("\rRecounting...", end="\r")
 
-    for country, admin1, county, entry_date in sorted(updated, reverse=True):
+    for country, province, county, entry_date in sorted(updated, reverse=True):
         i += 1
         if type(entry_date) == str:
             entry_date = datetime.strptime(entry_date, "%Y-%m-%d").date()
 
         unique_days.add(entry_date)
         if county == '':
-            print(f"Recounting {i}/{len(updated)}", end='\r')#" {(country, admin1, county)} {entry_date}                              ", end='\r')
-            update_overall(country, admin1, county, entry_date, source_link, session)
-            Location.add_location_data({"country": country, "admin1": admin1, "county": county}, cache=location_cache, session=session)
+            print(f"Recounting {i}/{len(updated)}", end='\r')#" {(country, province, county)} {entry_date}                              ", end='\r')
+            update_overall(country, province, county, entry_date, source_link, session)
+            Location.add_location_data({"country": country, "province": province, "county": county}, cache=location_cache, session=session)
 
     for day in sorted(unique_days):
         # we tell it what was updated so we can skip things that weren't
         update_deltas(day, updated)
 
-def filter_children(results, country, admin1, county):
+def filter_children(results, country, province, county):
     if not country: # sum entire world
-        results = results.filter(Datapoint.country != '', Datapoint.admin1 == '', Datapoint.county == '')
-    elif not admin1: # sum entire country
-        results = results.filter(Datapoint.country == country, Datapoint.admin1 != '', Datapoint.county == '')
+        results = results.filter(Datapoint.country != '', Datapoint.province == '', Datapoint.county == '')
+    elif not province: # sum entire country
+        results = results.filter(Datapoint.country == country, Datapoint.province != '', Datapoint.county == '')
     else: # sum entire state
-        results = results.filter(Datapoint.country == country, Datapoint.admin1 == admin1, Datapoint.county != '')
+        results = results.filter(Datapoint.country == country, Datapoint.province == province, Datapoint.county != '')
     return results
 
 stat_labels = ['total', 'deaths', 'recovered', 'serious', 'tests', 'hospitalized']
 sums = tuple(func.sum(getattr(Datapoint, label)) for label in stat_labels)
-def update_overall(country, admin1, county, entry_date, source_link, session):
+def update_overall(country, province, county, entry_date, source_link, session):
     results = session.query(*sums).filter_by(entry_date=entry_date)
-    results = filter_children(results, country, admin1, county)
+    results = filter_children(results, country, province, county)
     result = results.first()
     if not result or not any(result):
         return
     
     labelled = {x[0]: x[1] for x in zip(stat_labels, result)}
-    _filter = {"country": country, "admin1": admin1, "county": '', "entry_date": entry_date}
+    _filter = {"country": country, "province": province, "county": '', "entry_date": entry_date}
 
     overall_dp = session.query(Datapoint).filter_by(**_filter).first()
     if not overall_dp:
@@ -88,9 +88,9 @@ def update_deltas(day, updated=None):
         if today_dp.active != active:
             today_dp.active = active
 
-        country, admin1, county, _ = data_tuple
-        if (country, admin1, county) in yesterday_dict:
-            yesterday_dp = yesterday_dict[country, admin1, county]
+        country, province, county, _ = data_tuple
+        if (country, province, county) in yesterday_dict:
+            yesterday_dp = yesterday_dict[country, province, county]
         else:
             yesterday_dp = None
         

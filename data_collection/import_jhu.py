@@ -12,7 +12,7 @@ def import_csv_data(csv_text, entry_date):
 	
 	# define the columns
 	lat_col = lng_col = ""
-	country_col = admin1_col = county_col = ""
+	country_col = province_col = county_col = ""
 	total_col = death_col = recovered_col = ""
 	
 	# future-proofing
@@ -20,7 +20,7 @@ def import_csv_data(csv_text, entry_date):
 		if 'lat' in col.lower(): lat_col = col
 		elif 'long' in col.lower(): lng_col = col
 		elif 'country' in col.lower(): country_col = col
-		elif 'province' in col.lower(): admin1_col = col
+		elif 'province' in col.lower(): province_col = col
 		elif 'county' in col.lower(): county_col = col
 		elif "death" in col.lower(): death_col = col
 		elif "dead" in col.lower(): death_col = col
@@ -33,7 +33,7 @@ def import_csv_data(csv_text, entry_date):
 		'source_link': "https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports"
 	}
 
-	df.sort_values(by=[col for col in [county_col, admin1_col, country_col] if col], ascending=False)
+	df.sort_values(by=[col for col in [county_col, province_col, country_col] if col], ascending=False)
 	
 	for _, row in df.iterrows():
 		# Steps
@@ -43,7 +43,7 @@ def import_csv_data(csv_text, entry_date):
 
 		# STEP 1 #
 		country = row[country_col]
-		admin1 = row[admin1_col] if not pd.isnull(row[admin1_col]) else ''
+		province = row[province_col] if not pd.isnull(row[province_col]) else ''
 		county = row[county_col] if county_col else ''
 
 		# STEP 2 #
@@ -58,7 +58,7 @@ def import_csv_data(csv_text, entry_date):
 		location_row = {}
 		datapoint_row = {}
 
-		if admin1 == 'Recovered':
+		if province == 'Recovered':
 			datapoint_row = {
 				"country": country,
 				"recovered": recovered,
@@ -69,7 +69,7 @@ def import_csv_data(csv_text, entry_date):
 		else:
 			datapoint_row = {
 				"country": country,
-				"admin1": admin1,
+				"province": province,
 				"county": county,
 				"total": total,
 				"deaths": deaths,
@@ -79,7 +79,7 @@ def import_csv_data(csv_text, entry_date):
 
 			location_row = {
 				"country": country,
-				"admin1": admin1,
+				"province": province,
 				"county": county
 			}
 

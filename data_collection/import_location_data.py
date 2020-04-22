@@ -1,7 +1,7 @@
 import pandas as pd
 import json
 from corona_sql import Location, Session
-from location_data import get_admin1_name
+from location_data import get_province_name
 
 def na(val, sub):
     if pd.isna(val):
@@ -41,8 +41,8 @@ def import_states():
         state = {}
         state['latitude'] = lat or None
         state['longitude'] = lng or None
-        state['admin1_code'] = state_code
-        state['admin1'] = state_name
+        state['province_code'] = state_code
+        state['province'] = state_name
         state['country'] = 'United States'
         state['country_code'] = 'US'
         
@@ -74,8 +74,8 @@ def import_counties():
         if row['COUNTY_NAME'] in seen_counties:
             continue
         seen_counties.add(row['COUNTY_NAME'])
-        admin1_name = get_admin1_name("United States", row['STATE_ALPHA'])
-        if not admin1_name:
+        province_name = get_province_name("United States", row['STATE_ALPHA'])
+        if not province_name:
             continue
         if row.isna().values.any() or row.isnull().values.any():
             print("Found NaN row", end='\r')
@@ -84,8 +84,8 @@ def import_counties():
         county['county_code'] = row['CENSUS_CODE']
         county['latitude'] = row['PRIMARY_LATITUDE']
         county['longitude'] = row['PRIMARY_LONGITUDE']
-        county['admin1'] = admin1_name
-        county['admin1_code'] = row['STATE_ALPHA']
+        county['province'] = province_name
+        county['province_code'] = row['STATE_ALPHA']
         county['country'] = "United States"
         county['country_code'] = "US"
         skip = False

@@ -12,14 +12,14 @@ def upload_usa_counties():
 		table_labels={
 			"location": {
 				"country": ["Country_Region"],
-				"admin1": ["Province_State"],
+				"province": ["Province_State"],
 				"county": ["Admin2"],
 				"latitude": ["Lat"],
 				"longitude": ["Long_"]
 			},
 			"datapoint": {
 				"country": ["Country_Region"],
-				"admin1": ["Province_State"],
+				"province": ["Province_State"],
 				"county": ["Admin2"],
 				"total": ["Confirmed"],
 				"recovered": ["Recovered"],
@@ -34,13 +34,13 @@ def upload_italy_counties():
 		{
 			"location" :{
 				"country": "Italy",
-				"admin1": ["denominazione_regione"],
+				"province": ["denominazione_regione"],
 				"latitude": ["latitudine"],
 				"longitude": ["longitudine"],
 			},
 			"datapoint": {
 				"country": "Italy",
-				"admin1": ["denominazione_regione"],
+				"province": ["denominazione_regione"],
 				"total": ["totale_casi"],
 				"deaths": ["deceduti"]
 			}
@@ -53,12 +53,12 @@ def upload_portugal_counties():
 		{
 			"location": {
 				"country": "Portugal",
-				"admin1": ["Distrito", "::cap"],
+				"province": ["Distrito", "::cap"],
 				"county": ["Concelho", "::cap"]
 			},
 			"datapoint": {
 				"country": "Portugal",
-				"admin1": ["Distrito", "::cap"],
+				"province": ["Distrito", "::cap"],
 				"county": ["Concelho", "::cap"],
 				"deaths": ["Obitos_Conc"],
 				"recovered": ["Recuperados_Conc"],
@@ -73,11 +73,11 @@ def upload_south_korea_provinces():
 		{
 			"location": {
 				"country": "South Korea",
-				"admin1": ["CTP_ENG_NM"]
+				"province": ["CTP_ENG_NM"]
 			},
 			"datapoint": {
 				"country": "South Korea",
-				"admin1": ["CTP_ENG_NM"],
+				"province": ["CTP_ENG_NM"],
 				"total": ["발생자수"],
 				"deaths": ["사망자수"],
 			}
@@ -93,7 +93,7 @@ def upload_japan_provinces():
 				table_labels={
 					"datapoint": {
 						"country": "Japan",
-						"admin1": ["name"],
+						"province": ["name"],
 						"total": ["confirmed"],
 						"deaths": ["deaths"],
 						"recovered": ["recovered"]
@@ -161,7 +161,7 @@ def upload_live_usa_testing():
 			table_labels={
 				"datapoint": {
 					"country": "United States",
-					"admin1": ["state", "::us_state_code"],
+					"province": ["state", "::us_state_code"],
 					"tests": ["totalTestResults"],
 					"hospitalized": ["hospitalizedCurrently"],
 					"recovered": ["recovered"]
@@ -181,7 +181,7 @@ def upload_netherlands_counties():
 			table_labels={
 				"datapoint": {
 					"country": "Netherlands",
-					"admin1": ["Provincie"],
+					"province": ["Provincie"],
 					"county": ["Gemeentenaam"],
 					"total": ["Meldingen"],
 					"hospitalized": ["Ziekenhuisopnamen"],
@@ -189,7 +189,7 @@ def upload_netherlands_counties():
 				},
 				"location": {
 					"country": "Netherlands",
-					"admin1": ["Provincie"],
+					"province": ["Provincie"],
 					"county": ["Gemeentenaam"],
 					"population": ["Bevolkingsaantal", "::dividethousands"]
 				}
@@ -210,7 +210,7 @@ def upload_china_provinces_yesterday():
 			table_labels={
 				"datapoint": {
 					"country": "China",
-					"admin1": ["properties", "省份", "::china_province_eng"],
+					"province": ["properties", "省份", "::china_province_eng"],
 					"total": ["properties", "累计确诊"],
 					"deaths": ["properties", "累计死亡"],
 					"entry_date": yesterday
@@ -232,7 +232,7 @@ def upload_historical_usa_testing():
 				"datapoint": {
 					"entry_date": ["date", "::str", "::ymd"],
 					"country": "United States",
-					"admin1": ["state", "::us_state_code"],
+					"province": ["state", "::us_state_code"],
 					"tests": ["total"],
 					"hospitalized": ["hospitalized"],
 					"recovered": ["recovered"]
@@ -250,7 +250,7 @@ def upload_india_states():
 		table_labels={
 			"datapoint": {
 				"country": "India",
-				"admin1": ["state_name"],
+				"province": ["state_name"],
 				"total": ["confirmedcases"],
 				"recovered": ["cured_discharged_migrated"],
 				"deaths": ["deaths"]
