@@ -153,7 +153,7 @@ def upload_live_usa_testing():
 			"datapoint": {
 				"admin0": "United States",
 				"admin1": ["state", "::us_state_code"],
-				"tests": ["total"],
+				"tests": ["totalTestResults"],
 				"hospitalized": ["hospitalizedCurrently"],
 				"recovered": ["recovered"]
 			}
@@ -258,5 +258,7 @@ def loop():
 	while True:
 		upload_all_live()
 
+upload_live_usa_testing()
+exit()
 if __name__ == "__main__":
 	upload_all_live()
