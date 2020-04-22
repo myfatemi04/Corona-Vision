@@ -92,7 +92,26 @@ const data_table_page = async (req, res) => {
 	if (!admin0) label = "World";
 
     data = await get_sql(query);
-    location_datapoint = await get_sql(query2)
+    location_datapoints = await get_sql(query2)
+
+    if (location_datapoints.length == 0) {
+        res.render("data_table", {error: "Location not found"});
+        return;
+    }
+
+    let location_datapoint = location_datapoints[0];
+
+    let cases_hr = "";
+    let hrs_elapsed = 24;
+    if ((entry_date == utc_iso(new Date())) && location_datapoint.dtotal) {
+        hrs_elapsed = (new Date() - new Date(entry_date)) / (1000 * 60 * 60);
+    }
+    
+    if (hrs_elapsed >= 1) {
+        cases_hr = (location_datapoint.dtotal / hrs_elapsed).toFixed(0) + " cases/hr";
+    }
+    
+    location_datapoint.cases_hr = cases_hr;
 
     res.render("data_table", {
         ...datatables.make_rows(data, admin0, admin1, admin2, entry_date),
@@ -101,11 +120,11 @@ const data_table_page = async (req, res) => {
         admin1: admin1,
         admin2: admin2,
         label: label,
-        location_datapoint: location_datapoint[0],
+        location_datapoint: location_datapoint,
+        entry_date: entry_date,
         entry_dates: entry_dates,
         next_day_link: (last_available_day == entry_date) ? "" : make_next_day_link(admin0, admin1, admin2, entry_date),
-        prev_day_link: (first_available_day == entry_date) ? "" : make_prev_day_link(admin0, admin1, admin2, entry_date),
-        entry_date: entry_date
+        prev_day_link: (first_available_day == entry_date) ? "" : make_prev_day_link(admin0, admin1, admin2, entry_date)
     });
 }
 
