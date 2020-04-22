@@ -116,10 +116,10 @@ def import_population():
     session.commit()
 
 def import_all():
-    # import_countries()
+    import_countries()
     # import_states()
     # import_counties()
-    import_population()
+    # import_population()
 
 if __name__ == "__main__":
     import_all()

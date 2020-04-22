@@ -28,8 +28,7 @@ stat_labels = ['total', 'deaths', 'recovered', 'serious', 'tests', 'hospitalized
 increase_labels = {'total', 'deaths', 'recovered', 'tests'}
 
 class Location(Base):
-	__tablename__ = "test_locations"
-	# __tablename__ = "locations"
+	__tablename__ = "locations"
 
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
@@ -167,10 +166,7 @@ class Location(Base):
 			return f"<Location {self.combined_key}>"
 
 class Datapoint(Base):
-	# DEBUG MARKER
-	__tablename__ = "test_datapoints"
-	# __tablename__ = "datapoints"
-	# __tablename__ = "datapoints_reload"
+	__tablename__ = "datapoints"
 
 	def __init__(self, data, source_link):
 		super().__init__(**data)

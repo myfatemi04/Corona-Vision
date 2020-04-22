@@ -79,7 +79,7 @@ const data_table_page = async (req, res) => {
 
     let entry_dates_result = await get_sql("select distinct entry_date from datapoints where" + loc_where + " order by entry_date desc");
     // console.log(entry_dates_result);
-    let entry_dates = entry_dates_result.map(x => x['entry_date']);
+    let entry_dates = entry_dates_result.map(x => utc_iso(x['entry_date']));
 
     let first_available_day = entry_dates[entry_dates.length - 1];
     let last_available_day = entry_dates[0];
@@ -194,6 +194,9 @@ app.get("/cases/totals", (req, res) => {
 });
 
 function utc_iso(date) {
+    if (typeof date == "string") {
+        return date;
+    }
     let year = date.getUTCFullYear();
     let month = `${date.getUTCMonth() + 1}`;
     let day = `${date.getUTCDate()}`;
@@ -360,6 +363,7 @@ geojson_cache = {};
 geojson_max_age = 1000 * 60 * 15; // 15-minute caching
 app.get("/geojson", (req, res) => {
     let entry_date = req.query['date'] || utc_iso(new Date());
+    console.log(entry_date);
     let query = sqlstring.format(`
         select
             datapoints.admin0,
@@ -369,13 +373,13 @@ app.get("/geojson", (req, res) => {
             datapoints.dtotal,
             datapoints.recovered,
             datapoints.deaths,
-            test_locations.geometry
+            locations.geometry
         from datapoints
-        inner join test_locations
+        inner join locations
         on
-            test_locations.admin0 = datapoints.admin0 and
-            test_locations.admin1 = datapoints.admin1 and
-            test_locations.admin2 = datapoints.admin2
+            locations.admin0 = datapoints.admin0 and
+            locations.admin1 = datapoints.admin1 and
+            locations.admin2 = datapoints.admin2
         where
             datapoints.entry_date=? and
             datapoints.admin0!='';
