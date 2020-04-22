@@ -8,7 +8,6 @@ app = Flask(__name__)
 def hello():
 	return "Data import server"
 
-exit()
 if __name__ == "__main__":
 	using_server = "coronavision_import_data_use_server" not in os.environ
 	Thread(name="Data downloader", target=datasources.loop, daemon=not using_server).start()
