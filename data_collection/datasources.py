@@ -103,7 +103,7 @@ def upload_japan_provinces():
 
 def upload_jhu_today():
 	print("Uploading today's JHU data")
-	upload(import_jhu_date(date.today()))
+	upload(import_jhu_date(datetime.utcnow().date()))
 
 def upload_jhu_historical():
 	for data in import_jhu_historical():

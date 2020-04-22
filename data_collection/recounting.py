@@ -18,6 +18,8 @@ def recount(updated, source_link, session, cache=None):
     unique_days = set()
     location_cache = data_caching.get_location_cache(updated, session=session)
 
+    print("\rRecounting...", end="\r")
+
     for admin0, admin1, admin2, entry_date in sorted(updated, reverse=True):
         i += 1
         if type(entry_date) == str:
@@ -25,7 +27,7 @@ def recount(updated, source_link, session, cache=None):
 
         unique_days.add(entry_date)
         if admin2 == '':
-            print(f"Recounting {i}/{len(updated)}", end='\r')#" {(admin0, admin1, admin2)} {entry_date}                              ", end='\r')
+            # print(f"Recounting {i}/{len(updated)}", end='\r')#" {(admin0, admin1, admin2)} {entry_date}                              ", end='\r')
             update_overall(admin0, admin1, admin2, entry_date, source_link, session)
             Location.add_location_data({"admin0": admin0, "admin1": admin1, "admin2": admin2}, cache=location_cache, session=session)
 

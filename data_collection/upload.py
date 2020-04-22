@@ -34,6 +34,7 @@ def upload(data):
     print("\rDone uploading          ", end='\r')
 
 def upload_locations(locations):
+    print("\rUploading locations", end="\r")
     session = Session()
     locations = prepare_data.prepare_locations(locations)
     cache = data_caching.get_location_cache(locations, session)
@@ -41,10 +42,11 @@ def upload_locations(locations):
     i = 0
     for location_row in locations:
         i += 1
-        print(f"\rUploading locations [{i}/{len(locations)}]          ", end='\r')
+        # print(f"\rUploading locations [{i}/{len(locations)}]          ", end='\r')
         t = location_row['admin0'], location_row['admin1'], location_row['admin2']
         if t in seen:
-            print("already seen [loc]:", t)
+            pass
+            # print("already seen [loc]:", t)
         else:
             seen.add(t)
             Location.add_location_data(location_row, cache, session)
@@ -55,7 +57,7 @@ def upload_locations(locations):
 def upload_datapoints(datapoints, source_link):
     import recounting
     print("\rUploading datapoints...             ", end='\r')
-
+    
     session = Session()
     datapoints = prepare_data.prepare_datapoints(datapoints)
     cache = data_caching.get_datapoint_cache(datapoints, session)
@@ -64,7 +66,8 @@ def upload_datapoints(datapoints, source_link):
     for datapoint_data in datapoints:
         t = datapoint_data['admin0'], datapoint_data['admin1'], datapoint_data['admin2'], datapoint_data['entry_date'].isoformat()
         if t in seen:
-            print("already seen [data]:", t)
+            pass
+            # print("already seen [data]:", t)
         else:
             seen.add(t)
             updated_datapoint = Datapoint.add_datapoint_data(datapoint_data=datapoint_data, source_link=source_link, session=session, cache=cache)

@@ -47,7 +47,7 @@ def get_datapoint_cache(rows, session):
     max_entry_date = rows[0]['entry_date']
     for row in rows:
         if type(row) == dict:
-            row = {'admin0': '', 'admin1': '', 'admin2': '', 'entry_date': date.today(), **row}
+            row = {'admin0': '', 'admin1': '', 'admin2': '', 'entry_date': datetime.utcnow().date(), **row}
             row_admin0 = row['admin0']
             row_admin1 = row['admin1']
             row_admin2 = row['admin2']
