@@ -25,16 +25,16 @@
                     Here's a good explanation: <a href="http://youtu.be/Kas0tIxDvrg">video</a><br/>
                     To fit to the curve, we used <code style="color: #f5f5f5">scipy</code>'s function <code style="color: #f5f5f5">scipy.optimize.curve_fit</code>. X = number of days since the first case, Y = number of cases. The function form is MAX/(1 + e^(-(x - inflection_x)/time_to_rise).<br/>
                     Because it takes a long time to train, we cached the data.<br/>
-                    Code on <a href="http://github.com/o-wth/Corona-Vision">Github</a> in the file "corona_predictor.py".<br/>
+                    Code on <a href="http://github.com/o-wth/Corona-Vision">Github</a> in the file "/prediction/web_app.py".<br/>
                     Credits: Michael Fatemi
                 </li>
                 <li>
-                    Prediction method 2: <i>1-Diminsion Convolutional Neural Network (1D CNN)</i><br/>
+                    Prediction method 2: <i>1-Dimension Convolutional Neural Network (1D CNN)</i><br/>
                     This is a method of machine learning that can features trends in segments. We chose a 1D CNN due to its relative speed compared to other models and its ability to derive features from a segment of data using matrix convolution. The input data is the past n days of cases and the output is the amount of cases on the next day. This method of prediction has been tested by chinese researchers who tested a similar model on wuhan confirmed cases data. <br/>
                     We used <code>pandas</code>, <code>numpy</code>, <code>scikit-learn</code>, and <code>Keras</code> for the 1d CNN.<br/>
                     To get to article about the 1D CNN on wuhan cases, look here: <a href="https://www.medrxiv.org/content/10.1101/2020.03.23.20041608v1.full.pdf">article</a><br/>
                     Because it takes a somewhat long time to train, we cached the data.<br/>
-                    Code on <a href="http://github.com/o-wth/Corona-Vision">Github</a> in the file "corona_predictor.py".<br/>
+                    Code on <a href="http://github.com/o-wth/Corona-Vision">Github</a> in the file "/prediction/better_predictor.py".<br/>
                     Credits: Suhas Nandiraju
                 </li>
             </ul>
