@@ -181,6 +181,24 @@
 				do_animation = true;
 				animate();
 			}
+			
+			function generateGeoJSONCircle(center, radius, numSides){
+				var points = [],
+					degreeStep = 360 / numSides;
+
+				for(var i = 0; i < numSides; i++){
+					var gpos = google.maps.geometry.spherical.computeOffset(center, radius, degreeStep * i);
+					points.push([gpos.lng(), gpos.lat()]);
+				};
+
+				// Duplicate the last point to close the geojson ring
+				points.push(points[0]);
+
+				return {
+					type: 'Polygon',
+					coordinates: [ points ]
+				};
+			}
 
 			/* recursive function to animate */
 			function animate() {

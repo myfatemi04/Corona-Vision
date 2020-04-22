@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Corona Vision - Coronavirus Map</title>
+		{{>styles}}
+
+		<script async defer
+		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAMm-5SUX6ELt2KfUfEF49RpvgRIj8J6w4&callback=init">
+		</script>
+
+		<script>
+			let dark_mode_style = [
+				{elementType: 'geometry', stylers: [{color: '#242f3e'}]},
+				{elementType: 'labels.text.stroke', stylers: [{color: '#242f3e'}]},
+				{elementType: 'labels.text.fill', stylers: [{color: '#746855'}]},
+				{
+					featureType: 'administrative.locality',
+					elementType: 'labels.text.fill',
+					stylers: [{color: '#d59563'}]
+				},
+				{
+					featureType: 'poi',
+					elementType: 'labels.text.fill',
+					stylers: [{color: '#d59563'}]
+				},
+				{
+					featureType: 'poi.park',
+					elementType: 'geometry',
+					stylers: [{color: '#263c3f'}]
+				},
+				{
+					featureType: 'poi.park',
+					elementType: 'labels.text.fill',
+					stylers: [{color: '#6b9a76'}]
+				},
+				{
+					featureType: 'road',
+					elementType: 'geometry',
+					stylers: [{color: '#38414e'}]
+				},
+				{
+					featureType: 'road',
+					elementType: 'geometry.stroke',
+					stylers: [{color: '#212a37'}]
+				},
+				{
+					featureType: 'road',
+					elementType: 'labels.text.fill',
+					stylers: [{color: '#9ca5b3'}]
+				},
+				{
+					featureType: 'road.highway',
+					elementType: 'geometry',
+					stylers: [{color: '#746855'}]
+				},
+				{
+					featureType: 'road.highway',
+					elementType: 'geometry.stroke',
+					stylers: [{color: '#1f2835'}]
+				},
+				{
+					featureType: 'road.highway',
+					elementType: 'labels.text.fill',
+					stylers: [{color: '#f3d19c'}]
+				},
+				{
+					featureType: 'transit',
+					elementType: 'geometry',
+					stylers: [{color: '#2f3948'}]
+				},
+				{
+					featureType: 'transit.station',
+					elementType: 'labels.text.fill',
+					stylers: [{color: '#d59563'}]
+				},
+				{
+					featureType: 'water',
+					elementType: 'geometry',
+					stylers: [{color: '#17263c'}]
+				},
+				{
+					featureType: 'water',
+					elementType: 'labels.text.fill',
+					stylers: [{color: '#515c6d'}]
+				},
+				{
+					featureType: 'water',
+					elementType: 'labels.text.stroke',
+					stylers: [{color: '#17263c'}]
+				}
+			];
+		</script>
+
+
+		<script>
+
+			let map = null;
+			let hasDates = false;
+			let currentFeature = "total";
+
+			let circle_colors = {
+				total: ['#ffff00', '#ffff00'],
+				dtotal: ['#ffff00', '#ff0000'],
+				deaths: ['#ffaa00', '#ff0000'],
+				recovered: ['#00ff00', '#00ff00']
+			};
+
+			function setDate(date) {
+				map.data.forEach(feature => {
+					if (feature.circle)
+						feature.circle.setMap(null);
+					map.data.remove(feature);
+				});
+				map.data.loadGeoJson('/geojson?date=' + date);
+				google.maps.event.trigger(map, 'resize');
+			}
+
+			function setFeature(feature) {
+				currentFeature = feature;
+			}
+
+			function init()  {
+				map = new google.maps.Map(document.getElementById('map'), {
+					zoom: 2,
+					minZoom: 1,
+					streetViewControl: false,
+					styles: dark_mode_style,
+					center: {lat: 0, lng: 0}
+				});
+
+				$("select[name=map-date]").change(() => setDate($("select[name=map-date]").val()));
+				$("select[name=map-feature]").change(() => setFeature($("select[name=map-feature]").val()));
+
+				$("select#fpsChange").change(function() {
+					fps = $("select#fpsChange").val();
+				});	
+
+				map.data.loadGeoJson(
+					'/geojson'
+				);
+
+				map.data.setStyle(function(feature) {
+					if (feature.getProperty(currentFeature) > 10) {
+						feature.circle = new google.maps.Circle({
+							map: map,
+							center: {
+								lat: feature.getProperty('latitude'),
+								lng: feature.getProperty('longitude')
+							},
+							radius: 10000 * Math.log10(feature.getProperty(currentFeature)),
+							fillColor: "#ff0000",//circle_colors[currentFeature][0],
+							strokeColor: "#ff0000",
+							fillOpacity: 0.5,
+						});
+					}
+					return {visible: false}
+					
+					{{!-- return {
+						icon: {
+							path: google.maps.SymbolPath.CIRCLE,
+							scale: Math.log10(feature.getProperty(currentFeature)),
+							fillColor: "#ff0000",//circle_colors[currentFeature][0],
+							strokeColor: "#ff0000",
+							fillOpacity: 0.5,
+							strokeOpacity: 0.5
+						}
+					} --}}
+				});
+
+				init_dates();
+			}
+
+			function init_dates() {
+				$.getJSON(
+					"/list/dates",
+					{},
+					(data) => {
+						if (!hasDates) {
+							for (let result of data) {
+								let datestr = result.entry_date.substring(0, 10)
+								$("#date")[0].innerHTML += `<option value="${datestr}">${datestr}</option>`;
+							}
+							hasDates = true;
+						}
+					}
+				)
+			}
+
+			let do_animation = false;
+			let fps = 1;
+
+			function set_start_date() {
+				let select = $("select[name=map-date]")[0];
+				select.selectedIndex = select.options.length-1;
+			}
+
+			function start_animation() {
+				do_animation = true;
+				set_start_date();
+				animate();
+			}
+
+			/* recursive function to animate */
+			function animate() {
+				if (!do_animation) return;
+				let select = $("select[name=map-date]")[0];
+				if (select.selectedIndex > 0) {
+					select.selectedIndex--;
+					$("select[name=map-date]").trigger("change");
+					setTimeout(
+						() => {
+							animate();
+						},
+						1000/fps
+					);
+				}
+			}
+
+			function stop_animation() {
+				do_animation = false;
+			}
+		</script>
+	</head>
+	<body onload="init()">
+		{{>navbar}}
+		<div class="scroll box">
+			<h3>Map</h3>
+			Source: Local government websites, Worldometers, publicly-available location data.
+			<div class="d-flex flex-column">
+				<noscript>
+					This website requires JavaScript to run.
+				</noscript>
+				<select name="map-feature" class="custom-input-color form-control my-2">
+					<option value="total">Total cases</option>
+					<option value="recovered">Recovered cases</option>
+					<option value="deaths">Deaths</option>
+					<option value="dtotal">24H Change in total cases</option>
+				</select>
+				<select name="map-date" class="custom-input-color form-control my-2" id="date" >
+				</select>
+				<div class="column-container">
+					<button style="flex: 1;" class="btn custom-button-color mx-1 my-1" id="animate" onclick="animate()">
+						Start animation from selected date to today
+					</button>
+					<button style="flex: 1;" class="btn custom-button-color mx-1 my-1" id="animate" onclick="start_animation()">
+						Start animation from first day to today
+					</button>
+					<button style="flex: 1;" class="btn custom-button-color mx-1 my-1" id="stopAnimate" onclick="stop_animation()">
+						Stop animation
+					</button>
+					<select style="flex: 1;" class="custom-input-color form-control my-1" id="fpsChange">
+						<option value="4">4x Speed</option>
+						<option value="2">2x Speed</option>
+						<option value="1" selected>1x Speed</option>
+						<option value="0.5">0.5x Speed</option>
+						<option value="0.25">0.25x Speed</option>
+					</select>
+				</div>
+			</div>
+			<div id="map" class="map my-2"></div>
+		</div>
+	</body>
+</html>

@@ -125,10 +125,18 @@ app.get("/charts_info", (req, res) => {
 });
 
 /* Map Page
- * The Map Page includes a map of the most recent cases, to the state level. */
-app.get("/map", (req, res) => {
-    res.render("map");
+ * The Map Page includes a map of the most recent cases, to the county level. */
+app.get("/circlemap", (req, res) => {
+    res.render("circlemap");
 });
+
+/* Map Page
+ * The Map Page includes a map of the most recent cases, to the county level. */
+app.get("/heatmap", (req, res) => {
+    res.render("heatmap");
+});
+
+
 
 /* Totals Table (backend)
  * Provides an HTML table that can be inserted into the main page */
