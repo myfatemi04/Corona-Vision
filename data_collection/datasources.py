@@ -259,4 +259,4 @@ def loop():
 		upload_all_live()
 
 if __name__ == "__main__":
-	upload_all_live()
+	upload_india_states()

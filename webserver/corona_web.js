@@ -21,6 +21,9 @@ Handlebars.registerHelper('ifeq', function (a, b, options) {
     if (a == b) { return options.fn(this); }
     return options.inverse(this);
 });
+Handlebars.registerHelper('percent', function(a, b) {
+    return (100 * a/b).toFixed(2) + "%";
+});
 // Handlebars.registerPartial("map_panel", fs.readFileSync("views/map_panel.hbs", "utf-8"));
 
 app = express();

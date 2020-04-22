@@ -1,4 +1,5 @@
 import re
+import sys
 import json
 import json_extractor
 import upload
@@ -18,26 +19,29 @@ def upload_gis(gis_url, table_labels, use_geometry=True, geometry_precision=6):
 
 def upload_geojson(source_url, query_url, table_labels, use_geometry=True, geometry_precision=3):
     print("Loading GIS data from", source_url)
-    content = {}
-    content['source_link'] = source_url
+    try:
+        content = {}
+        content['source_link'] = source_url
 
-    geojson = requests.get(query_url).json()
+        geojson = requests.get(query_url).json()
 
-    defaults = get_defaults()
-    for table in table_labels.keys():
-        content[table] = []
-        labels = {**defaults[table], **table_labels[table]}
-        for feature in geojson['features']:
-            row = json_extractor.extract_json_row(feature['properties'], labels)
+        defaults = get_defaults()
+        for table in table_labels.keys():
+            content[table] = []
+            labels = {**defaults[table], **table_labels[table]}
+            for feature in geojson['features']:
+                row = json_extractor.extract_json_row(feature['properties'], labels)
 
-            if use_geometry and table == 'location':
-                if feature['geometry']:
-                    row['geometry'] = feature['geometry']
-                    row['geometry_precision'] = geometry_precision
+                if use_geometry and table == 'location':
+                    if feature['geometry']:
+                        row['geometry'] = feature['geometry']
+                        row['geometry_precision'] = geometry_precision
 
-            content[table].append(row)
+                content[table].append(row)
 
-    upload.upload(content)
+        upload.upload(content)
+    except Exception as e:
+        sys.stderr.write("Error during GIS download: ", e, type(e), source_url, query_url, table_labels, use_geometry)
 
 if __name__ == "__main__":
     pass

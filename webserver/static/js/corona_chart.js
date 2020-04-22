@@ -113,7 +113,16 @@ function new_chart(canvas_id) {
 				lineTension: 0
 			},
 			{
-				label: 'Predicted Cases',
+				label: 'Logistic prediction',
+				backgroundColor: 'grey',
+				borderColor: 'grey',
+				fill: false,
+				data: [],
+				lineTension: 0,
+				hidden: false
+			},
+			{
+				label: 'Conv. prediction',
 				backgroundColor: 'grey',
 				borderColor: 'grey',
 				fill: false,
@@ -186,13 +195,6 @@ function reset_chart() {
 	chart.update();
 }
 
-function fix_data(data, extra_days) {
-	new_days = date_range(data.entry_date[0], data.entry_date.length * (extra_days ? 2 : 1));
-	new_data = data;
-
-	return {days: new_days, data: new_data};
-}
- 
 let last_added_data = {};
 
 function reset_predicted_data_datapoints() {
@@ -231,7 +233,7 @@ function reset_chart_data() {
 }
 
 function redraw_chart(admin0, admin1, admin2) {
-	set_chart_data({...last_added_data.data, entry_date: last_added_data.days.slice(0, last_added_data.data.total.length)}, admin0, admin1, admin2);
+	set_chart_data({...last_added_data, entry_date: last_added_data.entry_date.slice(0, last_added_data.total.length)}, admin0, admin1, admin2);
 }
 
 function set_chart_data(data, admin0, admin1, admin2) {
@@ -239,23 +241,22 @@ function set_chart_data(data, admin0, admin1, admin2) {
 	let datasets = chart.data.datasets;
 
 	// now, we go through each date and fill in any missing dates with a filler
-	let show_predictions = predictor_type != "none";
-	let fixed = fix_data(data, show_predictions);
-	last_added_data = fixed;
-
-	chart.data.labels = fixed.days;
-
-	let props = ['total', 'deaths', 'recovered'];
-	if (chart_type == "daily-change") {
-		props = ['dtotal', 'ddeaths', 'drecovered'];
+	if (predictor_type != "none") {
+		data.entry_date = date_range(data.entry_date[0], data.entry_date.length * 2);
 	}
+
+	console.log(data);
+
+	last_added_data = data;
+
+	let props = [];
+	if (chart_type == "daily-change") props = ['dtotal', 'ddeaths', 'drecovered'];
+	else props = ['total', 'deaths', 'recovered'];
 
 	if (predictor_type == "log") {
 		$.get(
-			// DEBUG MARKER
 			"//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/log",
 			// "//localhost:5050/predict/log",
-			//"//coronavision-ml.herokuapp.com/predict/log",
 			{ admin0: admin0, admin1: admin1, admin2: admin2 },
 			(log_predictor_json) => {
 				// make sure they didn't change the settings
@@ -269,10 +270,8 @@ function set_chart_data(data, admin0, admin1, admin2) {
 	} 
 	else if (predictor_type == "conv") {
 		$.get(
-			// DEBUG MARKER
 			"//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/conv",
 			// "//localhost:5050/predict/conv",
-			//"//coronavision-ml.herokuapp.com/predict/conv",
 			{ admin0: admin0, admin1: admin1, admin2: admin2 },
 			(conv_predictor_json) => {
 				// make sure they didn't change the settings
@@ -285,8 +284,9 @@ function set_chart_data(data, admin0, admin1, admin2) {
 		);
 	}
 	
+	chart.data.labels = data.entry_date;
 	for (let i in props) {
-		datasets[i].data = smooth_data(fixed.data[props[i]], chart_smoothing);
+		datasets[i].data = smooth_data(data[props[i]], chart_smoothing);
 	}
 
 	chart.update()
@@ -297,7 +297,7 @@ function date_range(start_date, num_days) {
 	let d = new Date(start_date);
 	for (let i = 0; i < num_days; i++) {
 		ret.push(d.toISOString().substring(0, 10));
-		d.setTime(d.getTime() + 1000 * 60 * 60 * 24);
+		d.setUTCDate(d.getUTCDate() + 1);
 	}
 	return ret;
 }
@@ -341,10 +341,9 @@ function smooth_data(array, smoothing) {
 }
 
 function load_chart(admin0, admin1, admin2) {
-	let label = admin2;
-	if (!admin2) label = admin1;
-	if (!admin1) label = admin0;
-	if (!admin0) label = "World";
+	let label = admin0 || "World";
+	if (admin1) label = admin1 + ", " + label;
+	if (admin2) label = admin2 + ", " + label;
 	$.getJSON(
 		"/cases/totals_sequence",
 		{
@@ -354,7 +353,7 @@ function load_chart(admin0, admin1, admin2) {
 		},
 		function(data) {
 			set_chart_data(data, admin0, admin1, admin2);
-			chart.options.title.text = 'Cases in: ' + label;
+			chart.options.title.text = 'Cases in ' + label;
 			chart.update();
 		}
 	)
