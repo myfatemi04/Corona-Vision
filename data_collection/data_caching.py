@@ -1,6 +1,6 @@
 from corona_sql import Session, Datapoint, Location, Hospital
 from sqlalchemy import or_, between, func
-from datetime import date
+from datetime import date, datetime
 
 def get_location_cache(rows, session):
     if not rows: return {}

@@ -4,6 +4,7 @@ from datetime import date
 import data_caching
 import location_data
 import prepare_data
+import traceback
 
 """
 
