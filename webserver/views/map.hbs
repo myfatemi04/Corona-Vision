@@ -72,7 +72,7 @@
 
 			function update_date() {
 				let date = options.date;
-				map.getSource('total').setData(`/geojson?date=${date}`);
+				map.getSource('cases-layer').setData(`/geojson?date=${date}`);
 			}
 
 			function popup_html(data) {
@@ -115,28 +115,26 @@
 					});
 				});
 
-				map.on('mouseenter', 'cases-layer', (e) => {
+				let add_popup = (features) => {
+					console.log(features);
+					feature = features[0];
 					map.getCanvas().style.cursor = 'pointer';
-					let feature = e.features[0];
 					popup
-						.setLngLat(feature.geometry.coordinates)
+						.setLngLat([feature.properties.longitude, feature.properties.latitude])
 						.setHTML(popup_html(feature.properties))
 						.addTo(map);
-				});
+				};
 
-				map.on('mouseleave', 'cases-layer', (e) => {
+				let hide_popup = () => {
 					map.getCanvas().style.cursor = '';
 					popup.remove();
-				});
+				}
 
-				map.on('click', 'cases-layer', (e) => {
-					map.getCanvas().style.cursor = 'pointer';
-					let feature = e.features[0];
-					popup
-						.setLngLat(feature.geometry.coordinates)
-						.setHTML(popup_html(feature.properties))
-						.addTo(map);
-				});
+				map.on('mouseenter', 'cases-layer', (e) => add_popup(e.features));
+
+				map.on('mouseleave', 'cases-layer', hide_popup);
+
+				map.on('click', 'cases-layer', (e) => add_popup(e.features));
 
 				$("select[name=map-date]").change(function() {
 					options.date = $("select[name=map-date]").val();

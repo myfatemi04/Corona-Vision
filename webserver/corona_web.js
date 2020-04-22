@@ -78,7 +78,6 @@ const data_table_page = async (req, res) => {
     last_update = last_update_result[0]['update_time'];
 
     let entry_dates_result = await get_sql("select distinct entry_date from datapoints where" + loc_where + " order by entry_date desc");
-    // console.log(entry_dates_result);
     let entry_dates = entry_dates_result.map(x => utc_iso(x['entry_date']));
 
     let first_available_day = entry_dates[entry_dates.length - 1];
@@ -363,7 +362,6 @@ geojson_cache = {};
 geojson_max_age = 1000 * 60 * 15; // 15-minute caching
 app.get("/geojson", (req, res) => {
     let entry_date = req.query['date'] || utc_iso(new Date());
-    console.log(entry_date);
     let query = sqlstring.format(`
         select
             datapoints.admin0,
@@ -372,7 +370,9 @@ app.get("/geojson", (req, res) => {
             datapoints.total,
             datapoints.dtotal,
             datapoints.recovered,
+            datapoints.drecovered,
             datapoints.deaths,
+            datapoints.ddeaths,
             locations.geometry,
             locations.latitude,
             locations.longitude
@@ -417,7 +417,11 @@ function geojson(content) {
                 total: datapoint.total,
                 deaths: datapoint.deaths,
                 recovered: datapoint.recovered,
-                center: [datapoint.longitude, datapoint.latitude]
+                dtotal: datapoint.dtotal,
+                ddeaths: datapoint.ddeaths,
+                drecovered: datapoint.drecovered,
+                latitude: datapoint.latitude,
+                longitude: datapoint.longitude
             },
             geometry: JSON.parse(datapoint.geometry)
         });
