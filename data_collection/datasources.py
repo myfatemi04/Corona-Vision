@@ -258,7 +258,5 @@ def loop():
 	while True:
 		upload_all_live()
 
-upload_live_usa_testing()
-exit()
 if __name__ == "__main__":
 	upload_all_live()

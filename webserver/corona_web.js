@@ -587,6 +587,8 @@ function get(params, field) {
     else return null;
 }
 
+const sql_cache = {};
+const sql_cache_age = 60000;
 function get_sql(query, key = query) {
     return new Promise(function(resolve, reject) {
         // if this query is in the cache, and it was updated less than a minute ago, return the cached version
@@ -605,8 +607,5 @@ function get_sql(query, key = query) {
     });
     
 }
-
-const sql_cache = {};
-const sql_cache_age = 60000;
 
 app.listen(port, () => console.log(`Server started at ${hostname}:${port}!`));
