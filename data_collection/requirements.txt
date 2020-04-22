@@ -7,3 +7,5 @@ sqlalchemy
 chardet
 mysqlclient
 html5lib
+lxml
+html5lib
