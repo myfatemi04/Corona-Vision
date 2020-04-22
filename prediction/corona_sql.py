@@ -67,6 +67,12 @@ def time_series(admin0, admin1, admin2):
 		return [], []
 	min_date = rows[0].entry_date
 	max_date = rows[-1].entry_date
+
+	if type(min_date) == str:
+		min_date = datetime.strptime(min_date, "%Y-%m-%d").date()
+	if type(max_date) == str:
+		max_date = datetime.strptime(max_date, "%Y-%m-%d").date()
+
 	d = min_date
 	i = 0
 	while d < max_date:

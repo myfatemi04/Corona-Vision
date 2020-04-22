@@ -405,12 +405,14 @@ app.get("/geojson", (req, res) => {
 
 function geojson(content) {
     let feature_list = [];
+    let i = 0;
     for (let datapoint of content) {
         let name = datapoint.admin0 || "World";
+        i += 1;
         if (datapoint.admin1) name = datapoint.admin1 + ", " + name;
         if (datapoint.admin2) name = datapoint.admin2 + ", " + name;
         feature_list.push({
-            id: name,
+            id: i,
             type: "Feature",
             properties: {
                 name: name,

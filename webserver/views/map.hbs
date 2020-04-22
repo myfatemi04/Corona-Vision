@@ -72,7 +72,7 @@
 
 			function update_date() {
 				let date = options.date;
-				map.getSource('cases-layer').setData(`/geojson?date=${date}`);
+				map.getSource('cases').setData(`/geojson?date=${date}`);
 			}
 
 			function popup_html(data) {
@@ -105,18 +105,22 @@
 					});
 					map.addLayer({
 						'id': 'cases-layer',
-						'type': 'circle',
+						'type': 'fill',
 						'source': 'cases',
 						'paint': {
+							'fill-color': circle_colors.total
+						}
+						{{!-- 'paint': {
 							'circle-color': circle_colors.total,
 							'circle-radius': ['*', 2, ['log10', ['get', 'total']]],
 							'circle-opacity': 0.8
-						}
+						} --}}
 					});
 				});
 
-				let add_popup = (features) => {
-					console.log(features);
+				let add_popup = (e) => {
+					{{!-- console.log(e); --}}
+					let features = map.queryRenderedFeatures(e.point);
 					feature = features[0];
 					map.getCanvas().style.cursor = 'pointer';
 					popup
@@ -128,13 +132,11 @@
 				let hide_popup = () => {
 					map.getCanvas().style.cursor = '';
 					popup.remove();
-				}
+				};
 
-				map.on('mouseenter', 'cases-layer', (e) => add_popup(e.features));
-
+				map.on('mouseenter', 'cases-layer', add_popup);
 				map.on('mouseleave', 'cases-layer', hide_popup);
-
-				map.on('click', 'cases-layer', (e) => add_popup(e.features));
+				map.on('click', 'cases-layer', add_popup);
 
 				$("select[name=map-date]").change(function() {
 					options.date = $("select[name=map-date]").val();

@@ -120,6 +120,7 @@ class Location(Base):
 						self.geometry_precision = new_data['geometry_precision']
 				else:
 					if new_data['geometry_precision'] > self.geometry_precision:
+						print("updating because of precision")
 						self.geometry = new_data['geometry']
 						self.geometry_precision = new_data['geometry_precision']
 

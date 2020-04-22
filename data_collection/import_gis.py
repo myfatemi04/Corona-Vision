@@ -5,7 +5,7 @@ import upload
 import requests
 from defaults import get_defaults
 
-def upload_gis(gis_url, table_labels, use_geometry=True, geometry_precision=3):
+def upload_gis(gis_url, table_labels, use_geometry=True, geometry_precision=6):
     query_url = gis_url + "/query?f=geojson&outFields=*&where=1%3D1"
 
     if use_geometry == True:
