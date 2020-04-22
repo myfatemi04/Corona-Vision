@@ -116,7 +116,6 @@
 				});
 
 				let add_popup = (e) => {
-					{{!-- console.log(e); --}}
 					let features = map.queryRenderedFeatures(e.point);
 					feature = features[0];
 					map.getCanvas().style.cursor = 'pointer';
@@ -131,7 +130,7 @@
 					popup.remove();
 				};
 
-				map.on('click', 'cases-layer', add_popup);
+				{{!-- map.on('click', 'cases-layer', add_popup); --}}
 
 				$("select[name=map-date]").change(function() {
 					options.date = $("select[name=map-date]").val();
