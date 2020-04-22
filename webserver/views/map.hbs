@@ -4,152 +4,163 @@
 		<title>Corona Vision - Coronavirus Map</title>
 		{{>styles}}
 
-		{{!-- Mapbox --}}
-		<link href='https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css' rel='stylesheet' />
-		<script src='https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js'></script>
+		<script async defer
+		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAMm-5SUX6ELt2KfUfEF49RpvgRIj8J6w4&callback=init&libraries=visualization">
+		</script>
 
 		<script>
-			let isTouchDevice = 'ontouchstart' in document.documentElement;
-			let circle_colors = {
-				total: {
-					property: 'total',
-					type: 'exponential',
-					stops: [
-						[1e0, '#ffff00'],
-						[1e3, '#ffaa00'],
-						[1e6, '#ff6600'],
-						[1e9, '#ff0000'],
-					]
+			let dark_mode_style = [
+				{elementType: 'geometry', stylers: [{color: '#242f3e'}]},
+				{elementType: 'labels.text.stroke', stylers: [{color: '#242f3e'}]},
+				{elementType: 'labels.text.fill', stylers: [{color: '#746855'}]},
+				{
+					featureType: 'administrative.locality',
+					elementType: 'labels.text.fill',
+					stylers: [{color: '#d59563'}]
 				},
-				dtotal: {
-					property: 'dtotal',
-					type: 'exponential',
-					stops: [
-						[1e0, '#ffff00'],
-						[1e3, '#ffaa00'],
-						[1e6, '#ff6600'],
-						[1e9, '#ff0000'],
-					]
+				{
+					featureType: 'poi',
+					elementType: 'labels.text.fill',
+					stylers: [{color: '#d59563'}]
 				},
-				deaths: {
-					property: 'deaths',
-					type: 'exponential',
-					stops: [
-						[1e0, '#ffaa00'],
-						[1e3, '#ff6600'],
-						[1e6, '#ff3300'],
-						[1e9, '#ff0000'],
-					]
+				{
+					featureType: 'poi.park',
+					elementType: 'geometry',
+					stylers: [{color: '#263c3f'}]
 				},
-				recovered: {
-					property: 'recovered',
-					type: 'exponential',
-					stops: [
-						[1e0, 'rgba(0, 255, 0, 0.5)'],
-						[1e3, 'rgba(0, 255, 0, 0.75)'],
-						[1e6, 'rgba(0, 255, 0, 1)'],
-						[1e9, 'rgba(0, 255, 0, 1)'],
-					]
+				{
+					featureType: 'poi.park',
+					elementType: 'labels.text.fill',
+					stylers: [{color: '#6b9a76'}]
+				},
+				{
+					featureType: 'road',
+					elementType: 'geometry',
+					stylers: [{color: '#38414e'}]
+				},
+				{
+					featureType: 'road',
+					elementType: 'geometry.stroke',
+					stylers: [{color: '#212a37'}]
+				},
+				{
+					featureType: 'road',
+					elementType: 'labels.text.fill',
+					stylers: [{color: '#9ca5b3'}]
+				},
+				{
+					featureType: 'road.highway',
+					elementType: 'geometry',
+					stylers: [{color: '#746855'}]
+				},
+				{
+					featureType: 'road.highway',
+					elementType: 'geometry.stroke',
+					stylers: [{color: '#1f2835'}]
+				},
+				{
+					featureType: 'road.highway',
+					elementType: 'labels.text.fill',
+					stylers: [{color: '#f3d19c'}]
+				},
+				{
+					featureType: 'transit',
+					elementType: 'geometry',
+					stylers: [{color: '#2f3948'}]
+				},
+				{
+					featureType: 'transit.station',
+					elementType: 'labels.text.fill',
+					stylers: [{color: '#d59563'}]
+				},
+				{
+					featureType: 'water',
+					elementType: 'geometry',
+					stylers: [{color: '#17263c'}]
+				},
+				{
+					featureType: 'water',
+					elementType: 'labels.text.fill',
+					stylers: [{color: '#515c6d'}]
+				},
+				{
+					featureType: 'water',
+					elementType: 'labels.text.stroke',
+					stylers: [{color: '#17263c'}]
 				}
-			};
+			];
+		</script>
 
-			let options = {
-				date: "live",
-				feature: "total"
-			};
+
+		<script>
 
 			let map = null;
-			let popup = new mapboxgl.Popup({
-				closeButton: true,
-				closeOnClick: true
-			});
-
-			function update_feature() {
-				let feature = options.feature;
-				map.setPaintProperty('cases-layer', 'circle-color', circle_colors[feature]);
-				map.setPaintProperty('cases-layer', 'circle-radius', ['*', 2, ['log10', ['get', feature]]]);
-			}
-
-			function update_date() {
-				let date = options.date;
-				map.getSource('cases').setData(`/geojson?date=${date}`);
-			}
-
-			function popup_html(data) {
-				let formatted = `
-				<div class="lato infowindow">
-					<code><b>${data.name}</b></code><br/>
-					<code><b>Total:</b> ${data.total} (+${data.dtotal})</code><br/>
-					<code><b>Deaths:</b> ${data.deaths} (+${data.ddeaths})</code><br/>
-					<code><b>Recoveries:</b> ${data.recovered} (+${data.drecovered})</code><br/>
-				</div>
-				`;
-				return formatted;
-			}
+			let hasDates = false;
+			let heatmapFeature = "total";
 
 			function init()  {
-				mapboxgl.accessToken = 'pk.eyJ1IjoibXlmYXRlbWkwNCIsImEiOiJjazkwZ2podXQwMWtnM21ucGNmOHp0Z2F2In0.ug8iItUIT1dWaoHaYY2B3A';
-				map = new mapboxgl.Map({
-					container: 'map',
-					style: 'mapbox://styles/myfatemi04/ck90gnq0z07ha1iqvvzjfflbm',
-					interactive: true,
-					center: [0, 0],
-					zoom: 1,
-					minZoom: 0
-				})
-				
-				map.on('load', () => {
-					map.addSource('cases', {
-						type: 'geojson',
-						data: '/geojson'
-					});
-					map.addLayer({
-						'id': 'cases-layer',
-						'type': 'circle',
-						'source': 'cases',
-						'paint': {
-							'circle-color': circle_colors.total,
-							'circle-radius': ['*', 2, ['log10', ['get', 'total']]],
-							'circle-opacity': 0.8
-						}
-					});
+				map = new google.maps.Map(document.getElementById('map'), {
+					zoom: 2,
+					minZoom: 1,
+					streetViewControl: false,
+					styles: dark_mode_style,
+					center: {lat: 0, lng: 0}
 				});
 
-				let add_popup = (e) => {
-					{{!-- console.log(e); --}}
-					let features = map.queryRenderedFeatures(e.point);
-					feature = features[0];
-					map.getCanvas().style.cursor = 'pointer';
-					popup
-						.setLngLat([feature.properties.longitude, feature.properties.latitude])
-						.setHTML(popup_html(feature.properties))
-						.addTo(map);
-				};
+				$("select[name=map-date]").change(load_heatmaps);
 
-				let hide_popup = () => {
-					map.getCanvas().style.cursor = '';
-					popup.remove();
-				};
-
-				map.on('mouseenter', 'cases-layer', add_popup);
-				map.on('mouseleave', 'cases-layer', hide_popup);
-				map.on('click', 'cases-layer', add_popup);
-
-				$("select[name=map-date]").change(function() {
-					options.date = $("select[name=map-date]").val();
-					update_date();
-				});
-
-				$("select[name=map-feature]").change(function() {
-					options.feature = $("select[name=map-feature]").val();
-					update_feature();
+				$("select[name=map-feature]").change(() => {
+					let newFeature = $("select[name=map-feature]").val();
+					heatmaps[heatmapFeature].setMap(null);
+					heatmaps[newFeature].setMap(map);
+					heatmapFeature = $("select[name=map-feature]").val();
 				});
 
 				$("select#fpsChange").change(function() {
 					fps = $("select#fpsChange").val();
-				});
+				});	
+
+				{{!-- map.data.loadGeoJson(
+					'/geojson'
+				);
+
+				map.data.setStyle(function(feature) {
+					var total = feature.getProperty('total');
+				}); --}}
 
 				init_dates();
+				load_heatmaps();
+			}
+
+			let heatmaps = {};
+			function load_heatmaps() {
+				let date = $("#date").val();
+				$.getJSON(
+					"/heatmap",
+					{date: date},
+					format_heatmap_data
+				);
+			}
+
+			function format_heatmap_data(features) {
+				for (let label of ['total', 'dtotal', 'recovered', 'drecovered', 'deaths', 'deaths']) {
+					heatmapData = [];
+					for (let feature of features) {
+						if (feature[label] > 10) {
+							heatmapData.push(
+								{
+									location: new google.maps.LatLng(feature.latitude, feature.longitude),
+									weight: Math.log10(feature[label])
+								}
+							);
+						}
+					}
+					if (heatmaps[label]) heatmaps[label].setMap(null);
+					heatmaps[label] = new google.maps.visualization.HeatmapLayer({
+						data: heatmapData
+					});
+				}
+				heatmaps.total.setMap(map);
 			}
 
 			function init_dates() {
@@ -157,9 +168,12 @@
 					"/list/dates",
 					{},
 					(data) => {
-						for (let result of data) {
-							let datestr = result.entry_date.substring(0, 10)
-							$("#date")[0].innerHTML += `<option value="${datestr}">${datestr}</option>`;
+						if (!hasDates) {
+							for (let result of data) {
+								let datestr = result.entry_date.substring(0, 10)
+								$("#date")[0].innerHTML += `<option value="${datestr}">${datestr}</option>`;
+							}
+							hasDates = true;
 						}
 					}
 				)
@@ -204,7 +218,7 @@
 		{{>navbar}}
 		<div class="scroll box">
 			<h3>Map</h3>
-			Source: BNO News, Worldometers, local government websites. This is <b>not</b> a duplicate of the JHU map.
+			Source: Local government websites, Worldometers, publicly-available location data.
 			<div class="d-flex flex-column">
 				<noscript>
 					This website requires JavaScript to run.

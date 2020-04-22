@@ -383,7 +383,8 @@ app.get("/geojson", (req, res) => {
             locations.admin2 = datapoints.admin2
         where
             datapoints.entry_date=? and
-            datapoints.admin0!='';
+            datapoints.admin0!='' and
+            locations.latitude is not null
     `, entry_date);
     if (query in geojson_cache) {
         let {data, update_time} = geojson_cache[query];
@@ -439,6 +440,49 @@ function geojson(content) {
     };
 
 }
+
+/* Heatmap API - returns a list of lat/longs, and various properties. */
+let heatmap_cache = {};
+let heatmap_max_age = 1000 * 60 * 15;
+app.get("/heatmap", (req, res) => {
+    let entry_date = req.query['date'] || utc_iso(new Date());
+    let query = sqlstring.format(`
+        select
+            datapoints.total,
+            datapoints.dtotal,
+            datapoints.recovered,
+            datapoints.drecovered,
+            datapoints.deaths,
+            datapoints.ddeaths,
+            locations.latitude,
+            locations.longitude
+        from datapoints
+        inner join locations
+        on
+            locations.admin0 = datapoints.admin0 and
+            locations.admin1 = datapoints.admin1 and
+            locations.admin2 = datapoints.admin2
+        where
+            datapoints.entry_date=? and
+            datapoints.admin0!='' and
+            locations.latitude is not null
+    `, entry_date);
+    if (query in heatmap_cache) {
+        let {data, update_time} = heatmap_cache[query];
+        if (Date.now() - update_time < heatmap_max_age) {
+            res.json(data);
+            return;
+        }
+    }
+
+    get_sql(query).then(
+        heatmap_result => {
+            heatmap_cache[query] = {data: heatmap_result, update_time: Date.now()};
+            res.json(heatmap_result);
+        }
+    );
+});
+
 
 /* What To Do Page - gives information about how to make homemade masks, general social distancing tips,
  * and organizations that you can donate to to help healthcare workers. */
