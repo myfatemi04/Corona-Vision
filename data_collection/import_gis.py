@@ -41,7 +41,7 @@ def upload_geojson(source_url, query_url, table_labels, use_geometry=True, geome
 
         upload.upload(content)
     except Exception as e:
-        sys.stderr.write("Error during GIS download: ", e, type(e), source_url, query_url, table_labels, use_geometry)
+        sys.stderr.write("Error during GIS download: {} {} {} {} {} {}".format(e, type(e), source_url, query_url, table_labels, use_geometry))
 
 if __name__ == "__main__":
     pass

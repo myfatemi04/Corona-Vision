@@ -3,6 +3,7 @@ from import_jhu import import_jhu_date, import_jhu_historical
 from upload import upload
 from datetime import datetime, date
 from data_parser import import_table, import_json
+import sys
 
 def upload_usa_counties():
 	upload_geojson(
@@ -84,22 +85,25 @@ def upload_south_korea_provinces():
 	)
 
 def upload_japan_provinces():
-	upload(
-		import_json(
-			url="https://data.covid19japan.com/summary/latest.json",
-			source_link="https://covid19japan.com",
-			table_labels={
-				"datapoint": {
-					"admin0": "Japan",
-					"admin1": ["name"],
-					"total": ["confirmed"],
-					"deaths": ["deaths"],
-					"recovered": ["recovered"]
-				}
-			},
-			namespace=["prefectures"]
+	try:
+		upload(
+			import_json(
+				url="https://data.covid19japan.com/summary/latest.json",
+				source_link="https://covid19japan.com",
+				table_labels={
+					"datapoint": {
+						"admin0": "Japan",
+						"admin1": ["name"],
+						"total": ["confirmed"],
+						"deaths": ["deaths"],
+						"recovered": ["recovered"]
+					}
+				},
+				namespace=["prefectures"]
+			)
 		)
-	)
+	except Exception as e:
+		sys.stderr.write("Error during Japan provinces download: {} {}".format(type(e), e))
 
 def upload_jhu_today():
 	print("Uploading today's JHU data")
@@ -118,20 +122,24 @@ worldometers_disallow_countries = [
 ]
 def upload_worldometers():
 	print("Uploading live Worldometers data")
-	results = import_table(
-		"http://www.worldometers.info/coronavirus",
-		["#main_table_countries_today", 0],
-		{
-			"datapoint": {
-				"admin0": ["Country,  Other"],
-				"total": ["Total  Cases", "::number"],
-				"deaths": ["Total  Deaths", "::number"],
-				"serious": ["Serious,  Critical", "::number"],
-				"tests": ["Total  Tests", "::number"],
-				"recovered": ["Total  Recovered", "::number"]
-			}
-		}
-	)
+	try:
+		upload(import_table(
+				"http://www.worldometers.info/coronavirus",
+				["#main_table_countries_today", 0],
+				{
+					"datapoint": {
+						"admin0": ["Country,  Other"],
+						"total": ["Total  Cases", "::number"],
+						"deaths": ["Total  Deaths", "::number"],
+						"serious": ["Serious,  Critical", "::number"],
+						"tests": ["Total  Tests", "::number"],
+						"recovered": ["Total  Recovered", "::number"]
+					}
+				}
+			)
+		)
+	except Exception as e:
+		sys.stderr.write("Error during Worldometers download {} {}!".format(e, type(e)))
 
 	# def delif(result, key):
 	# 	if key in result:
@@ -142,47 +150,53 @@ def upload_worldometers():
 	# 		delif(result, 'total')
 	# 		delif(result, 'deaths')
 
-	upload(results)
+	# upload(results)
 
 def upload_live_usa_testing():
 	print("Uploading Live USA testing")
-	results = import_json(
-		url="https://covidtracking.com/api/v1/states/current.json",
-		source_link="https://covidtracking.com",
-		table_labels={
-			"datapoint": {
-				"admin0": "United States",
-				"admin1": ["state", "::us_state_code"],
-				"tests": ["totalTestResults"],
-				"hospitalized": ["hospitalizedCurrently"],
-				"recovered": ["recovered"]
-			}
-		},
-		namespace=[]
-	)
-	
-	upload(results)
+	try:
+		results = import_json(
+			url="https://covidtracking.com/api/v1/states/current.json",
+			source_link="https://covidtracking.com",
+			table_labels={
+				"datapoint": {
+					"admin0": "United States",
+					"admin1": ["state", "::us_state_code"],
+					"tests": ["totalTestResults"],
+					"hospitalized": ["hospitalizedCurrently"],
+					"recovered": ["recovered"]
+				}
+			},
+			namespace=[]
+		)
+		
+		upload(results)
+	except Exception as e:
+		sys.stderr.write("Error during USA Testing download!".format(e, type(e)))
 
 def upload_netherlands_counties():
-	upload_gis(
-		"https://services.arcgis.com/nSZVuSZjHpEZZbRo/arcgis/rest/services/Coronavirus_RIVM_vlakken_actueel/FeatureServer/0//",
-		table_labels={
-			"datapoint": {
-				"admin0": "Netherlands",
-				"admin1": ["Provincie"],
-				"admin2": ["Gemeentenaam"],
-				"total": ["Meldingen"],
-				"hospitalized": ["Ziekenhuisopnamen"],
-				"deaths": ["Overleden"]
-			},
-			"location": {
-				"admin0": "Netherlands",
-				"admin1": ["Provincie"],
-				"admin2": ["Gemeentenaam"],
-				"population": ["Bevolkingsaantal", "::dividethousands"]
+	try:
+		upload_gis(
+			"https://services.arcgis.com/nSZVuSZjHpEZZbRo/arcgis/rest/services/Coronavirus_RIVM_vlakken_actueel/FeatureServer/0//",
+			table_labels={
+				"datapoint": {
+					"admin0": "Netherlands",
+					"admin1": ["Provincie"],
+					"admin2": ["Gemeentenaam"],
+					"total": ["Meldingen"],
+					"hospitalized": ["Ziekenhuisopnamen"],
+					"deaths": ["Overleden"]
+				},
+				"location": {
+					"admin0": "Netherlands",
+					"admin1": ["Provincie"],
+					"admin2": ["Gemeentenaam"],
+					"population": ["Bevolkingsaantal", "::dividethousands"]
+				}
 			}
-		}
-	)
+		)
+	except Exception as e:
+		sys.stderr.write("Error during Netherlands upload!".format(e, type(e)))
 
 def upload_china_provinces_yesterday():
 	print("Uploading China provinces")
@@ -204,29 +218,31 @@ def upload_china_provinces_yesterday():
 			},
 			namespace=["features"]
 		)
-	except:
-		print("Error loading China provinces")
-	else:
 		upload(result)
+	except Exception as e:
+		sys.stderr.write("Error loading China provinces: {} {}".format(type(e), e))
 
 def upload_historical_usa_testing():
 	print("Uploading historical USA testing")
-	result = import_json(
-		url="https://covidtracking.com/api/v1/states/daily.json",
-		source_link="https://covidtracking.com",
-		table_labels={
-			"datapoint": {
-				"entry_date": ["date", "::str", "::ymd"],
-				"admin0": "United States",
-				"admin1": ["state", "::us_state_code"],
-				"tests": ["total"],
-				"hospitalized": ["hospitalized"],
-				"recovered": ["recovered"]
-			}
-		},
-		namespace=[]
-	)
-	upload(result)
+	try:
+		result = import_json(
+			url="https://covidtracking.com/api/v1/states/daily.json",
+			source_link="https://covidtracking.com",
+			table_labels={
+				"datapoint": {
+					"entry_date": ["date", "::str", "::ymd"],
+					"admin0": "United States",
+					"admin1": ["state", "::us_state_code"],
+					"tests": ["total"],
+					"hospitalized": ["hospitalized"],
+					"recovered": ["recovered"]
+				}
+			},
+			namespace=[]
+		)
+		upload(result)
+	except Exception as e:
+		sys.stderr.write("Error during historical USA testing: {} {}".format(e, type(e)))
 	
 def upload_india_states():
 	upload_gis(
