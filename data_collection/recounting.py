@@ -25,7 +25,7 @@ def recount(updated, session, cache=None):
 
         unique_days.add(entry_date)
         if admin2 == '':
-            print(f"Recounting {i}/{len(updated)} {(admin0, admin1, admin2)} {entry_date}                              ", end='\r')
+            print(f"Recounting {i}/{len(updated)}", end='\r')#" {(admin0, admin1, admin2)} {entry_date}                              ", end='\r')
             update_overall(admin0, admin1, admin2, entry_date, session)
             Location.add_location_data({"admin0": admin0, "admin1": admin1, "admin2": admin2}, cache=location_cache, session=session)
 

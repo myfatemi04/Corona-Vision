@@ -89,11 +89,13 @@ def upload_japan_provinces():
 			url="https://data.covid19japan.com/summary/latest.json",
 			source_link="https://covid19japan.com",
 			table_labels={
-				"admin0": "Japan",
-				"admin1": ["name"],
-				"total": ["confirmed"],
-				"deaths": ["deaths"],
-				"recovered": ["recovered"]	
+				"datapoint": {
+					"admin0": "Japan",
+					"admin1": ["name"],
+					"total": ["confirmed"],
+					"deaths": ["deaths"],
+					"recovered": ["recovered"]
+				}
 			},
 			namespace=["prefectures"]
 		)
@@ -135,17 +137,19 @@ def upload_worldometers():
 		if key in result:
 			del result[key]
 	
-	for result in results:
+	for result in results['datapoint']:
 		if result in worldometers_disallow_countries:
 			delif(result, 'total')
 			delif(result, 'deaths')
 
+	upload(results)
+
 def upload_all_live():
-	upload_usa_counties()
-	upload_italy_counties()
-	upload_portugal_counties()
-	upload_south_korea_provinces()
-	upload_japan_provinces()
+	# upload_usa_counties()
+	# upload_italy_counties()
+	# upload_portugal_counties()
+	# upload_south_korea_provinces()
+	# upload_japan_provinces()
 	upload_worldometers()
 
 def loop():

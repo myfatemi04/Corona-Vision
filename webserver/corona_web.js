@@ -416,7 +416,7 @@ function geojson(content) {
                 deaths: datapoint.deaths,
                 recovered: datapoint.recovered
             },
-            geometry: datapoint.geometry
+            geometry: JSON.parse(datapoint.geometry)
         });
     }
     return {
