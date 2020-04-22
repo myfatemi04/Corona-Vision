@@ -45,8 +45,6 @@ def compress_geo(geo):
 
     if geo['type'] == "GeometryCollection":
         return {'type': "GeometryCollection", "geometries": [compress_geo(geometry) for geometry in geo['geometries']]}
-
-    # print(len(json.dumps(geo)), len(json.dumps(new_geo)))
     
     return {'type': geo['type'], 'coordinates': new_geo}
 
@@ -76,9 +74,7 @@ def get_center_long_lat(geo):
 
 def generate_point_geometry(lng, lat):
     import json
-    return json.dumps(
-        {"type": "Point", "coordinates": [lng, lat]}
-    )
+    return {"type": "Point", "coordinates": [lng, lat]}
 
 def get_precision(lng, lat):
     import decimal

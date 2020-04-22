@@ -145,11 +145,11 @@ def upload_worldometers():
 	upload(results)
 
 def upload_all_live():
-	# upload_usa_counties()
-	# upload_italy_counties()
-	# upload_portugal_counties()
-	# upload_south_korea_provinces()
-	# upload_japan_provinces()
+	upload_usa_counties()
+	upload_italy_counties()
+	upload_portugal_counties()
+	upload_south_korea_provinces()
+	upload_japan_provinces()
 	upload_worldometers()
 
 def loop():
