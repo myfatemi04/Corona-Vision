@@ -75,7 +75,7 @@
 				map.getSource('cases').setData(`/geojson?date=${date}`);
 			}
 
-			function popup_html(data) {
+			{{!-- function popup_html(data) {
 				let formatted = `
 				<div class="lato infowindow">
 					<code><b>${data.name}</b></code><br/>
@@ -85,7 +85,7 @@
 				</div>
 				`;
 				return formatted;
-			}
+			} --}}
 
 			function init()  {
 				mapboxgl.accessToken = 'pk.eyJ1IjoibXlmYXRlbWkwNCIsImEiOiJjazkwZ2podXQwMWtnM21ucGNmOHp0Z2F2In0.ug8iItUIT1dWaoHaYY2B3A';
@@ -169,14 +169,18 @@
 			}
 
 			function start_animation() {
-				do_animation = true;
-				set_start_date();
-				animate();
+				if (!do_animation) {
+					do_animation = true;
+					set_start_date();
+					animate();
+				}
 			}
 
 			function animate_now() {
-				do_animation = true;
-				animate();
+				if (!do_animation) {
+					do_animation = true;
+					animate();
+				}
 			}
 			
 			function generateGeoJSONCircle(center, radius, numSides){
@@ -210,6 +214,8 @@
 						},
 						1000/fps
 					);
+				} else {
+					do_animation = false;
 				}
 			}
 

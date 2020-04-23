@@ -656,8 +656,8 @@ app.get("/api/heatmap", (req, res) => {
 
 /* What To Do Page - gives information about how to make homemade masks, general social distancing tips,
  * and organizations that you can donate to to help healthcare workers. */
-app.get("/whattodo", (req, res) => {
-    res.render("whattodo");
+app.get("/howtohelp", (req, res) => {
+    res.render("howtohelp");
 });
 
 function removeDuplicateArticles(articles) {

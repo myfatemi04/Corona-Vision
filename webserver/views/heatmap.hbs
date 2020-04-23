@@ -111,8 +111,8 @@
 
 				$("select[name=map-feature]").change(() => {
 					let newFeature = $("select[name=map-feature]").val();
-					heatmaps[heatmapFeature].setMap(null);
 					heatmaps[newFeature].setMap(map);
+					heatmaps[heatmapFeature].setMap(null);
 					heatmapFeature = $("select[name=map-feature]").val();
 				});
 
@@ -135,6 +135,7 @@
 			}
 
 			function format_heatmap_data(features) {
+				let prevSelectedLayer = null;
 				for (let label of ['total', 'dtotal', 'recovered', 'drecovered', 'deaths', 'deaths']) {
 					heatmapData = [];
 					for (let feature of features) {
@@ -147,12 +148,17 @@
 							);
 						}
 					}
-					if (heatmaps[label]) heatmaps[label].setMap(null);
+					let old_layer = heatmaps[label];
+					if (old_layer && old_layer.getMap() != null) {
+						prevSelectedLayer = old_layer;
+					}
 					heatmaps[label] = new google.maps.visualization.HeatmapLayer({
 						data: heatmapData
 					});
 				}
 				heatmaps.total.setMap(map);
+				if (prevSelectedLayer)
+					prevSelectedLayer.setMap(null);
 			}
 
 			function init_dates() {
@@ -180,9 +186,18 @@
 			}
 
 			function start_animation() {
-				do_animation = true;
-				set_start_date();
-				animate();
+				if (!do_animation) {
+					do_animation = true;
+					set_start_date();
+					animate();
+				}
+			}
+
+			function start_from_now() {
+				if (!do_animation) {
+					do_animation = true;
+					animate();
+				}
 			}
 
 			/* recursive function to animate */
@@ -198,6 +213,8 @@
 						},
 						1000/fps
 					);
+				} else {
+					do_animation = false;
 				}
 			}
 
@@ -224,7 +241,7 @@
 				<select name="map-date" class="custom-input-color form-control my-2" id="date" >
 				</select>
 				<div class="column-container">
-					<button style="flex: 1;" class="btn custom-button-color mx-1 my-1" id="animate" onclick="animate()">
+					<button style="flex: 1;" class="btn custom-button-color mx-1 my-1" id="animate" onclick="start_from_now()">
 						Start animation from selected date to today
 					</button>
 					<button style="flex: 1;" class="btn custom-button-color mx-1 my-1" id="animate" onclick="start_animation()">
