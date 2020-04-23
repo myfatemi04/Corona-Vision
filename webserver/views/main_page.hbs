@@ -191,6 +191,12 @@
 									<span id="stats-dtests" class="font-weight-bold" style="color: #3d87ff">{{dtests}}</span>
 								</div>
 								{{/if}}
+
+								<div class="stats-row">
+									<span class="stats-label">Data changed</span>
+									<i class="fas fa-hourglass-half"></i>
+									<span class="font-weight-bold">{{last_update}}</span>
+								</div>
 							{{/with}}
 						</div>
 					</div>
@@ -202,7 +208,21 @@
 						<button class="btn custom-button-color my-2" onclick="download_canvas()">
 							Save Image
 						</button>
-						{{>chart_options}}
+						<div>Scale <small>(change Y-axis type)</small></div>
+						<select name="scale-type" class="custom-input-color form-control my-2">
+							<option value="linear">Linear</option>
+							<option value="logarithmic">Logarithmic</option>
+						</select>
+						<div>Data type <small>(display daily change of each statistic or total)</small></div>
+						<select name="chart-type" class="custom-input-color form-control my-2">
+							<option value="total">Total</option>
+							<option value="daily-change">Daily change</option>
+						</select>
+						<div>Smoothing factor <small>(average N days to the left and right, filling in blanks with nearest value)</small></div>
+						<input type="number" id="smoothing" class="custom-input-color form-control my-2" value=0>
+						<span>
+							To see predictions for this country, click <a href="/future?country={{country}}&province={{province}}&county={{county}}">here</a>.
+						</span>
 						<div>
 							<a href="/charts_info">More info about the charts</a><br/>
 							<a href="/disclaimer">Disclaimer about predictions</a>
@@ -215,7 +235,7 @@
 									Click on any stat to see its source.
 								</th>
 								<th>
-									Last updated: {{last_update}}.
+									Data changed: {{last_update}}.
 								</th>
 								<th>
 									Daily counts reset at UTC-0.

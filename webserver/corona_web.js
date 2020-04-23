@@ -15,8 +15,6 @@ const datatables = require('./corona_datatable_back');
 /* Register the "partials" - handlebars templates that can be included in other templates */
 Handlebars.registerPartial("navbar", fs.readFileSync("views/navbar.hbs", "utf-8"));
 Handlebars.registerPartial("styles", fs.readFileSync("views/styles.hbs", "utf-8"));
-Handlebars.registerPartial("selectors", fs.readFileSync("views/selectors.hbs", "utf-8"));
-Handlebars.registerPartial("chart_options", fs.readFileSync("views/chart_options.hbs", "utf-8"));
 Handlebars.registerHelper('ifeq', function (a, b, options) {
     if (a == b) { return options.fn(this); }
     return options.inverse(this);
@@ -123,10 +121,10 @@ const data_table_page = async (req, res) => {
     let datapoint_response = await get_datapoint(country, province, county, group, entry_date);
 
     if (!datapoint_response) {
-        res.render("data_table", {error: "Location not found"});
+        res.render("main_page", {error: "Location not found"});
         return;
     } else if (datapoint_response.error) {
-        res.render("data_table", {error: datapoint_response.error});
+        res.render("main_page", {error: datapoint_response.error});
         return;
     }
 
@@ -134,10 +132,10 @@ const data_table_page = async (req, res) => {
 
     let date_response = await get_all_dates(loc_where);
     if (!date_response) {
-        res.render("data_table", {error: "Dates couldn't be loaded"});
+        res.render("main_page", {error: "Dates couldn't be loaded"});
         return;
     } else if (date_response.error) {
-        res.render("data_table", {error: date_response.error});
+        res.render("main_page", {error: date_response.error});
         return;
     }
 
@@ -148,11 +146,13 @@ const data_table_page = async (req, res) => {
         hrs_elapsed = (new Date() - new Date(entry_date)) / (1000 * 60 * 60);
     }
     
-    if (hrs_elapsed >= 1) {
+    if (hrs_elapsed > 0) {
         location_datapoint.cases_hr = (location_datapoint.dtotal / hrs_elapsed).toFixed(0) + " cases/hr";
     }
+
+    location_datapoint.last_update = datatables.format_update_time(location_datapoint.update_time);
     
-    res.render("data_table", {
+    res.render("main_page", {
         ...datatables.make_rows(data, country, province, county, entry_date),
         last_update: datatables.format_update_time(last_update),
         country: country,
@@ -172,7 +172,6 @@ app.get("/calculated", (req, res) => {
 });
 
 app.get("/", data_table_page);
-app.get("/data", data_table_page);
 
 /* Chart Page
  * The Chart Page includes customizable chart with LSTM and Logistic predictions */

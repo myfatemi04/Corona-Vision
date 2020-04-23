@@ -3,6 +3,7 @@ from import_jhu import import_jhu_date, import_jhu_historical
 from upload import upload
 from datetime import datetime, date
 from data_parser import import_table, import_json
+import standards
 import sys
 
 def upload_usa_counties():
@@ -113,44 +114,40 @@ def upload_jhu_historical():
 	for data in import_jhu_historical():
 		upload(data)
 
-worldometers_disallow_countries = [
-	'United States',
-	'Italy',
-	'Portugal',
-	'South Korea',
-	'Japan'
-]
+worldometers_disallow_countries = {
+	"United States": ["tests"]
+}
 def upload_worldometers():
 	print("Uploading live Worldometers data")
 	try:
-		upload(import_table(
-				"http://www.worldometers.info/coronavirus",
-				["#main_table_countries_today", 0],
-				{
-					"datapoint": {
-						"country": ["Country,  Other"],
-						"total": ["Total  Cases", "::number"],
-						"deaths": ["Total  Deaths", "::number"],
-						"serious": ["Serious,  Critical", "::number"],
-						"tests": ["Total  Tests", "::number"],
-						"recovered": ["Total  Recovered", "::number"]
-					}
+		results = import_table(
+			"http://www.worldometers.info/coronavirus",
+			["#main_table_countries_today", 0],
+			{
+				"datapoint": {
+					"country": ["Country,  Other"],
+					"total": ["Total  Cases", "::number"],
+					"deaths": ["Total  Deaths", "::number"],
+					"serious": ["Serious,  Critical", "::number"],
+					"tests": ["Total  Tests", "::number"],
+					"recovered": ["Total  Recovered", "::number"]
 				}
-			)
+			}
 		)
 	except Exception as e:
 		sys.stderr.write("Error during Worldometers download {} {}!".format(e, type(e)))
 
-	# def delif(result, key):
-	# 	if key in result:
-	# 		del result[key]
+	def delif(result, key):
+		if key in result:
+			del result[key]
 	
-	# for result in results['datapoint']:
-	# 	if result in worldometers_disallow_countries:
-	# 		delif(result, 'total')
-	# 		delif(result, 'deaths')
+	for result in results['datapoint']:
+		result['country'], _, _ = standards.normalize_name(result['country'], '', '')
+		if result['country'] in worldometers_disallow_countries:
+			for feature in worldometers_disallow_countries[result['country']]:
+				delif(result, feature)
 
-	# upload(results)
+	upload(results)
 
 def upload_live_usa_testing():
 	print("Uploading Live USA testing")
@@ -172,7 +169,7 @@ def upload_live_usa_testing():
 		
 		upload(results)
 	except Exception as e:
-		sys.stderr.write("Error during USA Testing download!".format(e, type(e)))
+		sys.stderr.write("Error during USA Testing download! {} {}".format(e, type(e)))
 
 def upload_netherlands_counties():
 	try:
@@ -196,7 +193,7 @@ def upload_netherlands_counties():
 			}
 		)
 	except Exception as e:
-		sys.stderr.write("Error during Netherlands upload!".format(e, type(e)))
+		sys.stderr.write("Error during Netherlands upload! {} {}".format(e, type(e)))
 
 def upload_china_provinces_yesterday():
 	print("Uploading China provinces")
