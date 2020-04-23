@@ -535,34 +535,44 @@ app.get("/cases/date", (req, res) => {
     );
 });
 
+const geojson_query = `
+select
+    datapoints.country,
+    datapoints.province,
+    datapoints.county,
+    datapoints.total,
+    datapoints.dtotal,
+    datapoints.recovered,
+    datapoints.drecovered,
+    datapoints.deaths,
+    datapoints.ddeaths,
+    locations.latitude,
+    locations.longitude
+from datapoints
+inner join locations
+on
+    locations.country = datapoints.country and
+    locations.province = datapoints.province and
+    locations.county = datapoints.county
+where
+    datapoints.entry_date=? and
+    datapoints.country!='' and
+    (
+        datapoints.county!='' or
+        (
+            datapoints.country!='United States' and
+            datapoints.country!='Portugal' and
+            datapoints.country!='Netherlands'
+        )
+    ) and
+    locations.latitude is not null
+`;
+
 geojson_cache = {};
 geojson_max_age = 1000 * 60 * 15; // 15-minute caching
 app.get("/geojson", (req, res) => {
     let entry_date = req.query['date'] || utc_iso(new Date());
-    let query = sqlstring.format(`
-        select
-            datapoints.country,
-            datapoints.province,
-            datapoints.county,
-            datapoints.total,
-            datapoints.dtotal,
-            datapoints.recovered,
-            datapoints.drecovered,
-            datapoints.deaths,
-            datapoints.ddeaths,
-            locations.latitude,
-            locations.longitude
-        from datapoints
-        inner join locations
-        on
-            locations.country = datapoints.country and
-            locations.province = datapoints.province and
-            locations.county = datapoints.county
-        where
-            datapoints.entry_date=? and
-            datapoints.country!='' and
-            locations.latitude is not null
-    `, entry_date);
+    let query = sqlstring.format(geojson_query, entry_date);
     if (query in geojson_cache) {
         let {data, update_time} = geojson_cache[query];
         if (Date.now() - update_time < geojson_max_age) {
@@ -623,27 +633,7 @@ let heatmap_cache = {};
 let heatmap_max_age = 1000 * 60 * 15;
 app.get("/api/heatmap", (req, res) => {
     let entry_date = req.query['date'] || utc_iso(new Date());
-    let query = sqlstring.format(`
-        select
-            datapoints.total,
-            datapoints.dtotal,
-            datapoints.recovered,
-            datapoints.drecovered,
-            datapoints.deaths,
-            datapoints.ddeaths,
-            locations.latitude,
-            locations.longitude
-        from datapoints
-        inner join locations
-        on
-            locations.country = datapoints.country and
-            locations.province = datapoints.province and
-            locations.county = datapoints.county
-        where
-            datapoints.entry_date=? and
-            datapoints.country!='' and
-            locations.latitude is not null
-    `, entry_date);
+    let query = sqlstring.format(geojson_query, entry_date);
     if (query in heatmap_cache) {
         let {data, update_time} = heatmap_cache[query];
         if (Date.now() - update_time < heatmap_max_age) {
@@ -654,6 +644,7 @@ app.get("/api/heatmap", (req, res) => {
 
     get_sql(query).then(
         heatmap_result => {
+            heatmap_result = heatmap_result.filter(row => !(row.country == 'United States' && row.county == ''));
             heatmap_cache[query] = {data: heatmap_result, update_time: Date.now()};
             res.json(heatmap_result);
         }

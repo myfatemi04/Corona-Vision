@@ -143,7 +143,7 @@
 							heatmapData.push(
 								{
 									location: new google.maps.LatLng(feature.latitude, feature.longitude),
-									weight: Math.log10(feature[label])
+									weight: Math.sqrt(feature[label])
 								}
 							);
 						}

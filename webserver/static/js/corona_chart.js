@@ -71,6 +71,7 @@ function redrawChart(chart) {
 		chart.data.datasets[i].data = smoothData(chart.originalData[props[i]], chart.smoothing);
 	}
 	chart.update();
+	setTimeout(chart.update, 250); // for some reason, the charts don't load immediately on mobile
 }
 
 function initChartOptions(chart) {
