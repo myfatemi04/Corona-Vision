@@ -68,6 +68,7 @@ const get_datapoint = async(country, province, county, group, entry_date) => {
         if(country) query += " and country=" + sqlstring.escape(country);
         if(!country || province) query += " and province=" + sqlstring.escape(province);
         if(!province || county) query += " and county=" + sqlstring.escape(county);
+        query += " and total > 10";
 
         let query2 = "select * from datapoints where "
         query2 += " entry_date=" + sqlstring.escape(entry_date) + " and";
@@ -75,6 +76,7 @@ const get_datapoint = async(country, province, county, group, entry_date) => {
         loc_where += " country=" + sqlstring.escape(country);
         loc_where += " and province=" + sqlstring.escape(province);
         loc_where += " and county=" + sqlstring.escape(county);
+        loc_where += " and total > 10";
         query2 += loc_where;
 
         last_update_result = await get_sql("select MAX(update_time) as update_time from datapoints where entry_date=" + sqlstring.escape(entry_date) + ";");
@@ -85,7 +87,7 @@ const get_datapoint = async(country, province, county, group, entry_date) => {
         if (!province) label = country;
         if (!country) label = "World";
 
-        data = await get_sql(query);
+        let data = await get_sql(query);
         location_datapoints = await get_sql(query2)
 
         if (location_datapoints.length == 0) {
@@ -95,7 +97,8 @@ const get_datapoint = async(country, province, county, group, entry_date) => {
         return {
             location_datapoint: location_datapoints[0],
             loc_where: loc_where,
-            label: label
+            label: label,
+            data: data
         };
     } catch (err) {
         console.error("Error while querying for datapoints at that location!");
@@ -135,7 +138,7 @@ const data_table_page = async (req, res) => {
         return;
     }
 
-    let {location_datapoint, loc_where, label} = datapoint_response;
+    let {location_datapoint, loc_where, label, data} = datapoint_response;
 
     let date_response = await get_all_dates(loc_where);
     if (!date_response) {
@@ -158,7 +161,7 @@ const data_table_page = async (req, res) => {
     }
 
     location_datapoint.last_update = datatables.format_update_time(location_datapoint.update_time);
-    
+
     res.render("main_page", {
         ...datatables.make_rows(data, country, province, county, entry_date),
         last_update: datatables.format_update_time(last_update),
