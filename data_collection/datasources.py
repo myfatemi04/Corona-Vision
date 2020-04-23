@@ -222,7 +222,7 @@ def upload_china_provinces_yesterday():
 def upload_historical_usa_testing():
 	print("Uploading historical USA testing")
 	try:
-		result = import_json(
+		results = import_json(
 			url="https://covidtracking.com/api/v1/states/daily.json",
 			source_link="https://covidtracking.com",
 			table_labels={
@@ -237,7 +237,8 @@ def upload_historical_usa_testing():
 			},
 			namespace=[]
 		)
-		upload(result)
+		results['datapoint'] = [result for result in results['datapoint'] if result['entry_date'] == date(2020, 4, 22)]
+		upload(results)
 	except Exception as e:
 		sys.stderr.write("Error during historical USA testing: {} {}".format(e, type(e)))
 	
@@ -272,4 +273,4 @@ def loop():
 		upload_all_live()
 
 if __name__ == "__main__":
-	upload_india_states()
+	upload_historical_usa_testing()

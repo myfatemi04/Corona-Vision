@@ -125,24 +125,6 @@ function new_chart(canvas_id) {
 				fill: false,
 				data: [],
 				lineTension: 0
-			},
-			{
-				label: 'Logistic prediction',
-				backgroundColor: 'grey',
-				borderColor: 'grey',
-				fill: false,
-				data: [],
-				lineTension: 0,
-				hidden: false
-			},
-			{
-				label: 'Conv. prediction',
-				backgroundColor: 'grey',
-				borderColor: 'grey',
-				fill: false,
-				data: [],
-				lineTension: 0,
-				hidden: false
 			}
 		]
 	};

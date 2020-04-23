@@ -22,6 +22,13 @@ Handlebars.registerHelper('ifeq', function (a, b, options) {
 Handlebars.registerHelper('percent', function(a, b) {
     return (100 * a/b).toFixed(2) + "%";
 });
+Handlebars.registerHelper('pos', function(conditional, options) {
+    if (conditional > 0) {
+        return options.fn(this);
+    } else {
+        return options.inverse(this);
+    }
+});
 // Handlebars.registerPartial("map_panel", fs.readFileSync("views/map_panel.hbs", "utf-8"));
 
 app = express();
@@ -146,7 +153,7 @@ const data_table_page = async (req, res) => {
         hrs_elapsed = (new Date() - new Date(entry_date)) / (1000 * 60 * 60);
     }
     
-    if (hrs_elapsed > 0) {
+    if (hrs_elapsed > 0 && location_datapoint.dtotal >= 0) {
         location_datapoint.cases_hr = (location_datapoint.dtotal / hrs_elapsed).toFixed(0) + " cases/hr";
     }
 

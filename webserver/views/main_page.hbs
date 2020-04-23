@@ -108,18 +108,20 @@
 								<div style="text-align: center; font-size: 0.5em;">{{{go_back_link}}}</div>
 							{{/if}}
 							{{#with location_datapoint}}
-								{{#if total}}
+								{{#pos total}}
 								<div class="stats-row">
 									<span class="stats-label">Cases</span>
 									<i class="fas fa-viruses"></i>
 									<span id="stats-total" class="font-weight-bold" style="color: #f3a513">
 										<a href="{{source_total}}">{{total}}</a>
-										<span class="stats-detail">({{cases_hr}})</span>
+										{{#if cases_hr}}
+											<span class="stats-detail">({{cases_hr}})</span>
+										{{/if}}
 									</span>
 								</div>
-								{{/if}}
+								{{/pos}}
 								
-								{{#if dtotal}}
+								{{#pos dtotal}}
 								<div class="stats-row">
 									<span class="stats-label">Cases today</span>
 									<i class="fas fa-clock"></i>
@@ -127,9 +129,9 @@
 										{{dtotal}}
 									</span>
 								</div>
-								{{/if}}
+								{{/pos}}
 
-								{{#if active}}
+								{{#pos active}}
 								<div class="stats-row">
 									<span class="stats-label">Active</span>
 									<i class="fas fa-head-side-cough"></i>
@@ -138,9 +140,9 @@
 										<span class="stats-detail">({{ percent active total }})</span>
 									</span>
 								</div>
-								{{/if}}
+								{{/pos}}
 
-								{{#if serious}}
+								{{#pos serious}}
 								<div class="stats-row">
 									<span class="stats-label">Severe</span>
 									<i class="fas fa-hospital-user"></i>
@@ -149,9 +151,9 @@
 										<span class="stats-detail">({{ percent serious total }})</span>
 									</span>
 								</div>
-								{{/if}}
+								{{/pos}}
 
-								{{#if deaths}}
+								{{#pos deaths}}
 								<div class="stats-row">
 									<span class="stats-label">Deaths</span>
 									<i class="fas fa-skull"></i>
@@ -160,9 +162,9 @@
 										<span class="stats-detail">({{ percent deaths total }})</span>
 									</span>
 								</div>
-								{{/if}}
+								{{/pos}}
 
-								{{#if recovered}}
+								{{#pos recovered}}
 								<div class="stats-row">
 									<span class="stats-label">Recoveries</span>
 									<i class="far fa-smile"></i>
@@ -171,9 +173,9 @@
 										<span class="stats-detail">({{ percent recovered total }})</span>
 									</span>
 								</div>
-								{{/if}}
+								{{/pos}}
 
-								{{#if tests}}
+								{{#pos tests}}
 								<div class="stats-row">
 									<span class="stats-label">Tests</span>
 									<i class="fas fa-vials"></i>
@@ -182,20 +184,20 @@
 										<span class="stats-detail">({{ percent total tests }} positive)</span>
 									</span>
 								</div>
-								{{/if}}
+								{{/pos}}
 
-								{{#if dtests}}
+								{{#pos dtests}}
 								<div class="stats-row">
 									<span class="stats-label">Tests Today</span>
 									<i class="fas fa-clock"></i>
 									<span id="stats-dtests" class="font-weight-bold" style="color: #3d87ff">{{dtests}}</span>
 								</div>
-								{{/if}}
+								{{/pos}}
 
 								<div class="stats-row">
 									<span class="stats-label">Data changed</span>
 									<i class="fas fa-hourglass-half"></i>
-									<span class="font-weight-bold">{{last_update}}</span>
+									<span class="font-weight-bold" >{{last_update}}</span>
 								</div>
 							{{/with}}
 						</div>
