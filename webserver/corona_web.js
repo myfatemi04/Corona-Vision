@@ -200,7 +200,7 @@ function noneUndefined(row) {
 
 const getCountries = async() => {
     try {
-        let query = "select distinct country from datapoints";
+        let query = "select distinct country from datapoints and total > 10";
         let countriesResult = await get_sql(query);
         return countriesResult.filter(noneUndefined).map(row => {
             return `<a href="?country=${row.country}">${row.country}</a>`
@@ -213,7 +213,7 @@ const getCountries = async() => {
 
 const getProvinces = async(country) => {
     try {
-        let query = sqlstring.format("select distinct province from datapoints where country = ?", [country]);
+        let query = sqlstring.format("select distinct province from datapoints where country = ? and total > 10", [country]);
         let provincesResult = await get_sql(query);
         return provincesResult.filter(noneUndefined).map(row => {
             return `<a href="?country=${country}&province=${row.province}">${row.province}</a>`
@@ -226,10 +226,10 @@ const getProvinces = async(country) => {
 
 const getCounties = async(country, province) => {
     try {
-        let query = sqlstring.format("select distinct county from datapoints where country = ? and province = ?", [country, province]);
+        let query = sqlstring.format("select distinct county from datapoints where country = ? and province = ? and total > 10", [country, province]);
         let countiesResult = await get_sql(query);
         return countiesResult.filter(noneUndefined).map(row => {
-            return `<a href="?country=${country}&province=${province}&country=${row.county}">${row.county}</a>`
+            return `<a href="?country=${country}&province=${province}&county=${row.county}">${row.county}</a>`
         });
     } catch (err) {
         console.error("Error when retrieving county list!", err);
@@ -242,6 +242,9 @@ app.get("/future", async(req, res) => {
     let country = params.country || "";
     let province = params.province || "";
     let county = params.county || "";
+    if (typeof country == "object") { country = country[0]; }
+    if (typeof province == "object") { province = province[0]; }
+    if (typeof county == "object") { county = county[0]; }
     let choices = [];
     let back = "";
     if (!country) {
@@ -314,6 +317,7 @@ app.get("/cases/totals_table", (req, res) => {
     if (country != 'all') where_conds.push("country = " + sqlstring.escape(country));
     if (province != 'all') where_conds.push("province = " + sqlstring.escape(province));
     if (county != 'all') where_conds.push("county = " + sqlstring.escape(county));
+    where_conds.push("total > 10");
 
     if (where_conds.length > 0) {
         query += " where " + where_conds.join(" and ");
