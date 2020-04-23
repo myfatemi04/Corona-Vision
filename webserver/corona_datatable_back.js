@@ -122,7 +122,7 @@ module.exports = {
         
         let deselect_country_link = `<a href="?date=${entry_date}"><i class="fas fa-angle-double-left"></i> Go back</a>`;
         let deselect_province_link = `<a href="?date=${entry_date}&country=${country}"><i class="fas fa-angle-double-left"></i> Go back</a>`;
-        let deselect_county_link = `<a href="?date=${entry_date}^country=${country}&province=${province}"><i class="fas fa-angle-double-left"></i> Go back</a>`;
+        let deselect_county_link = `<a href="?date=${entry_date}&country=${country}&province=${province}"><i class="fas fa-angle-double-left"></i> Go back</a>`;
 
         let html = "";
         let go_back_link = '';
