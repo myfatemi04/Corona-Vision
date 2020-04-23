@@ -92,8 +92,7 @@ def predict_better(raw, adv):
         predArr.append(predval)
         predArr = predArr[1:]
     
-    y = raw[:look_back] + [i[0] for i in y if "list" in str(type(i))]
-    return y + predicted
+    return numpy.concatenate((raw[:look_back], [i[0] for i in y if "list" in str(type(i))], predicted), axis=0)
 
 if __name__ == "__main__":
     belarus = "1.0, 1.0, 1.0, 1.0, 1.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 9.0, 9.0, 12.0, 27.0, 27.0, 27.0, 36.0, 36.0, 51.0, 51.0, 69.0, 76.0, 76.0, 81.0, 81.0, 86.0, 86.0, 94.0, 94.0, 94.0, 152.0, 152.0, 163.0, 304.0, 351.0, 440.0, 562.0, 700.0, 861.0, 1066.0, 1486.0, 1981.0, 2226.0, 2578.0".split(", ")
