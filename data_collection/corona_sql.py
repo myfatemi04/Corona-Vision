@@ -16,7 +16,7 @@ import location_data
 
 # Keep the actual SQL URL private
 sql_uri = os.environ['DATABASE_URL']
-engine = create_engine(sql_uri)
+engine = create_engine(sql_uri, encoding='utf-8')
 
 # Scoped_session is important here
 Session = scoped_session(sessionmaker(bind=engine, autocommit=False))
@@ -210,6 +210,13 @@ class Datapoint(Base):
 	source_serious = Column(String())
 	source_tests = Column(String())
 	source_hospitalized = Column(String())
+
+	retail_change = Column(Integer)
+	grocery_change = Column(Integer)
+	parks_change = Column(Integer)
+	transit_change = Column(Integer)
+	workplaces_change = Column(Integer)
+	residential_change = Column(Integer)
 
 	def location_labelled(self):
 		return self.latitude != None and self.longitude != None

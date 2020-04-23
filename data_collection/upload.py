@@ -55,8 +55,10 @@ def upload_locations(locations):
     print("\rCommitting locations             ", end='\r')
     session.commit()
 
-def upload_datapoints(datapoints, source_link):
+def upload_datapoints(datapoints, source_link, recount=True):
     import recounting
+    if not recount:
+        print("Not recounting datapoints")
     print("\rUploading datapoints...             ", end='\r')
     
     session = Session()
@@ -66,16 +68,14 @@ def upload_datapoints(datapoints, source_link):
     seen = set()
     for datapoint_data in datapoints:
         t = datapoint_data['country'], datapoint_data['province'], datapoint_data['county'], datapoint_data['entry_date'].isoformat()
-        if t in seen:
-            pass
-            # print("already seen [data]:", t)
-        else:
+        if t not in seen:
             seen.add(t)
             updated_datapoint = Datapoint.add_datapoint_data(datapoint_data=datapoint_data, source_link=source_link, session=session, cache=cache)
             updates.update(updated_datapoint.ripples())
     
-    print("\rRecounting             ", end='\r')
-    recounting.recount(updates, session=session, source_link=source_link, cache=cache)
+    if recount:
+        print("\rRecounting             ", end='\r')
+        recounting.recount(updates, session=session, source_link=source_link, cache=cache)
 
     print("\rCommitting             ", end='\r')
     session.commit()

@@ -36,6 +36,13 @@ create table datapoints (
 	source_tests TEXT,
 	source_hospitalized TEXT,
 
+	retail_change int(4),
+	grocery_change int(4),
+	parks_change int(4),
+	transit_change int(4),
+	workplaces_change int(4),
+	residential_change int(4),
+
 	PRIMARY KEY(country, province, county, entry_date)
 ) COLLATE utf8_bin;
 

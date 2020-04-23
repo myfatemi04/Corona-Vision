@@ -256,3 +256,5 @@ dist
 .yarn/unplugged
 .yarn/build-state.yml
 .pnp.*
+data_collection/social-distancing.json
+Global_Mobility_Report.csv

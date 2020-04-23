@@ -1,10 +1,13 @@
 from import_gis import upload_geojson, upload_gis
 from import_jhu import import_jhu_date, import_jhu_historical
-from upload import upload
+from upload import upload, upload_datapoints
 from datetime import datetime, date
 from data_parser import import_table, import_json
+import requests
 import standards
+import time
 import sys
+import io
 
 def upload_usa_counties():
 	upload_geojson(
@@ -268,9 +271,51 @@ def upload_all_live():
 	upload_india_states()
 	upload_live_usa_testing()
 
+def upload_social_distancing():
+	import pandas as pd
+	import json
+
+	response = requests.get("https://www.gstatic.com/covid19/mobility/Global_Mobility_Report.csv")
+	if response.status_code == 200:
+		csv_data = response.text
+		df = pd.read_csv(io.StringIO(csv_data), keep_default_na=False, na_values=[])
+		content = []
+		content2 = []
+		i = 0
+		for _, row in df.iterrows():
+			i += 1
+			print(f"\rLoading {i}/{len(df)}...", end='\r')
+			new_datapoint = {
+				'entry_date': datetime.strptime(row['date'], "%Y-%m-%d").date(),
+				# 'country': (row['country_region']),
+				# 'province': (row['sub_region_1']),
+				# 'county': (row['sub_region_2']),
+				'country': fix_name(row['country_region']),
+				'province': fix_name(row['sub_region_1']),
+				'county': fix_name(row['sub_region_2']),
+				'retail_change': row['retail_and_recreation_percent_change_from_baseline'] or 0,
+				'grocery_change': row['grocery_and_pharmacy_percent_change_from_baseline'] or 0,
+				'parks_change': row['parks_percent_change_from_baseline'] or 0,
+				'transit_change': row['transit_stations_percent_change_from_baseline'] or 0,
+				'workplaces_change': row['workplaces_percent_change_from_baseline'] or 0,
+				'residential_change': row['residential_percent_change_from_baseline'] or 0
+			}
+			content.append(new_datapoint)
+			content2.append({**new_datapoint, "entry_date": new_datapoint['entry_date'].strftime("%Y-%m-%d")})
+		upload_datapoints(content, source_link='', recount=False)
+		json.dump(content2, open("social-distancing.json", "w"))
+		
+def fix_name(s):
+	return s.encode("cp1252", errors='replace').decode("cp1252")
+
+def socdist_loop():
+	while True:
+		upload_social_distancing()
+		time.sleep(60 * 60 * 4)
+
 def loop():
 	while True:
 		upload_all_live()
 
 if __name__ == "__main__":
-	upload_historical_usa_testing()
+	upload_social_distancing()
