@@ -271,48 +271,37 @@ app.get("/future", async(req, res) => {
     if (typeof country == "object") { country = country[0]; }
     if (typeof province == "object") { province = province[0]; }
     if (typeof county == "object") { county = county[0]; }
-    let choices = [];
-    let back = "";
-    if (!country) {
-        try {
-            choices = await getCountries();
-            choices = choices.map(row => {
-                return `<a href="?country=${row.country}">${row.country}</a>`
-            });
-        } catch (err) {
-            console.error("Error when retrieving country list!", err);
-        }
+    
+    countries = [];
+    provinces = [];
+    counties = [];
+    try {
+        countries = await getCountries();
+    } catch (err) {
+        console.error("Error when retrieving country list!", err);
     }
-    else if (!province) {
+    if (country) {
         try {
-            choices = await getProvinces(country);
-            choices = choices.map(row => {
-                return `<a href="?country=${country}&province=${row.province}">${row.province}</a>`
-            });
+            provinces = await getProvinces(country);
         } catch (err) {
             console.error("Error when retrieving province list!", err);
         }
-        back = `<a href="?"><i class="fas fa-angle-double-left"></i> Go back</a>`
     }
-    else if (!county) {
+    if (province) {
         try {
-            choices = await getCounties(country, province);
-            choices = choices.map(row => {
-                return `<a href="?country=${country}&province=${province}&county=${row.county}">${row.county}</a>`
-            });
+            counties = await getCounties(country, province);
         } catch (err) {
             console.error("Error when retrieving county list!", err);
         }
-        back = `<a href="?country=${country}"><i class="fas fa-angle-double-left"></i> Go back</a>`
-    } else {
-        back = `<a href="?country=${country}&province=${province}"><i class="fas fa-angle-double-left"></i> Go back</a>`
     }
+
     res.render("future", {
         country: country,
         province: province,
         county: county,
-        choices: choices,
-        back: back
+        countries: countries,
+        provinces: provinces,
+        counties: counties
     });
 });
 

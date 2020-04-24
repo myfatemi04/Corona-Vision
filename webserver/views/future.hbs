@@ -6,7 +6,13 @@
 		<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
 		<script src="/js/chart.min.js"></script>
 		<script>
+			let country = "{{country}}";
+			let province = "{{province}}";
+			let county = "{{county}}";
 			function init() {
+				$("#countrySelector").val(country);
+				$("#provinceSelector").val(province);
+				$("#countySelector").val(county);
 				let chartStyles = {
 					responsive: true,
 					title: {
@@ -155,6 +161,18 @@
 				}
 				return dates;
 			}
+
+			function setCountry() {
+				window.location = "?country=" + $("#countrySelector").val() + "&date={{entry_date}}";
+			}
+
+			function setProvince() {
+				window.location = "?country=" + country + "&province=" + $("#provinceSelector").val() + "&date={{entry_date}}";
+			}
+
+			function setCounty() {
+				window.location = "?country=" + country + "&province=" + province + "&county=" + $("#countySelector").val() + "&date={{entry_date}}";
+			}
 		</script>
 	</head>
 	<body onload="init()">
@@ -168,15 +186,29 @@
 					<a href="/disclaimer">Disclaimer about predictions</a>
 				</div>
 			</div>
-			<div class="box d-flex flex-column">
-				{{{back}}}
-				{{#if choices}}
-					<div class="scroll" style="height: 30em;">
-						<span class="pos-sticky" style="background-color: var(--color-bg-dark, #212121);">Or, pick another location:</span><br/>
-						{{#each choices}}
-							{{{this}}}<br/>
+			<div class="d-flex flex-column">
+				Select a location:
+				<select id="countrySelector" class="custom-input-color form-control m-2" onchange="setCountry()">
+					<option value="">Worldwide</option>
+					{{#each countries}}
+						<option value="{{this.country}}">{{this.country}}</option>
+					{{/each}}
+				</select>
+				{{#if provinces}}
+					<select id="provinceSelector" class="custom-input-color form-control m-2" onchange="setProvince()">
+						<option value="">Nationwide</option>
+						{{#each provinces}}
+							<option value="{{this.province}}">{{this.province}}</option>
 						{{/each}}
-					</div>
+					</select>
+				{{/if}}
+				{{#if counties}}
+					<select id="countySelector" class="custom-input-color form-control m-2" onchange="setCounty()">
+						<option value="">Statewide</option>
+						{{#each counties}}
+							<option value="{{this.county}}">{{this.county}}</option>
+						{{/each}}
+					</select>
 				{{/if}}
 			</div>
 		</div>
