@@ -203,7 +203,7 @@ function noneUndefined(row) {
 
 const getCountries = async() => {
     try {
-        let query = "select distinct country from datapoints and total > 10";
+        let query = "select distinct country from datapoints where total > 10";
         let countriesResult = await get_sql(query);
         return countriesResult.filter(noneUndefined).map(row => {
             return `<a href="?country=${row.country}">${row.country}</a>`
