@@ -171,4 +171,6 @@ def timeSeriesAll(country, province, county):
 
 def getLocationObject(country, province, county):
 	session = Session()
-	return session.query(Location).filter_by(country=country, province=province, county=county).first()
+	result = session.query(Location).filter_by(country=country, province=province, county=county).first()
+	session.close()
+	return result

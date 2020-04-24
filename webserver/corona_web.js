@@ -162,6 +162,29 @@ const data_table_page = async (req, res) => {
 
     location_datapoint.last_update = datatables.format_update_time(location_datapoint.update_time);
 
+    countries = [];
+    provinces = [];
+    counties = [];
+    try {
+        countries = await getCountries(entry_date);
+    } catch (err) {
+        console.error("Error when retrieving country list!", err);
+    }
+    if (country) {
+        try {
+            provinces = await getProvinces(country, entry_date);
+        } catch (err) {
+            console.error("Error when retrieving province list!", err);
+        }
+    }
+    if (province) {
+        try {
+            counties = await getCounties(country, province, entry_date);
+        } catch (err) {
+            console.error("Error when retrieving county list!", err);
+        }
+    }
+        
     res.render("main_page", {
         ...datatables.make_rows(data, country, province, county, entry_date),
         last_update: datatables.format_update_time(last_update),
@@ -173,7 +196,10 @@ const data_table_page = async (req, res) => {
         entry_date: entry_date,
         entry_dates: entry_dates,
         next_day_link: (last_available_day == entry_date) ? "" : make_next_day_link(country, province, county, entry_date),
-        prev_day_link: (first_available_day == entry_date) ? "" : make_prev_day_link(country, province, county, entry_date)
+        prev_day_link: (first_available_day == entry_date) ? "" : make_prev_day_link(country, province, county, entry_date),
+        countries: countries,
+        provinces: provinces,
+        counties: counties
     });
 }
 
@@ -201,39 +227,36 @@ function noneUndefined(row) {
     return true;
 }
 
-const getCountries = async() => {
+const getCountries = async(entryDate) => {
     try {
         let query = "select distinct country from datapoints where total > 10";
+        if (typeof entryDate != "undefined") query += " and entry_date = " + sqlstring.escape(entryDate);
         let countriesResult = await get_sql(query);
-        return countriesResult.filter(noneUndefined).map(row => {
-            return `<a href="?country=${row.country}">${row.country}</a>`
-        });
+        return countriesResult.filter(noneUndefined);
     } catch (err) {
         console.error("Error when retrieving country list!", err);
         return [];
     }
 }
 
-const getProvinces = async(country) => {
+const getProvinces = async(country, entryDate) => {
     try {
         let query = sqlstring.format("select distinct province from datapoints where country = ? and total > 10", [country]);
+        if (typeof entryDate != "undefined") query += " and entry_date = " + sqlstring.escape(entryDate);
         let provincesResult = await get_sql(query);
-        return provincesResult.filter(noneUndefined).map(row => {
-            return `<a href="?country=${country}&province=${row.province}">${row.province}</a>`
-        });
+        return provincesResult.filter(noneUndefined);
     } catch (err) {
         console.error("Error when retrieving province list!", err);
         return [];
     }
 }
 
-const getCounties = async(country, province) => {
+const getCounties = async(country, province, entryDate) => {
     try {
         let query = sqlstring.format("select distinct county from datapoints where country = ? and province = ? and total > 10", [country, province]);
+        if (typeof entryDate != "undefined") query += " and entry_date = " + sqlstring.escape(entryDate);
         let countiesResult = await get_sql(query);
-        return countiesResult.filter(noneUndefined).map(row => {
-            return `<a href="?country=${country}&province=${province}&county=${row.county}">${row.county}</a>`
-        });
+        return countiesResult.filter(noneUndefined);
     } catch (err) {
         console.error("Error when retrieving county list!", err);
         return [];
@@ -253,6 +276,9 @@ app.get("/future", async(req, res) => {
     if (!country) {
         try {
             choices = await getCountries();
+            choices = choices.map(row => {
+                return `<a href="?country=${row.country}">${row.country}</a>`
+            });
         } catch (err) {
             console.error("Error when retrieving country list!", err);
         }
@@ -260,6 +286,9 @@ app.get("/future", async(req, res) => {
     else if (!province) {
         try {
             choices = await getProvinces(country);
+            choices = choices.map(row => {
+                return `<a href="?country=${country}&province=${row.province}">${row.province}</a>`
+            });
         } catch (err) {
             console.error("Error when retrieving province list!", err);
         }
@@ -268,6 +297,9 @@ app.get("/future", async(req, res) => {
     else if (!county) {
         try {
             choices = await getCounties(country, province);
+            choices = choices.map(row => {
+                return `<a href="?country=${country}&province=${province}&county=${row.county}">${row.county}</a>`
+            });
         } catch (err) {
             console.error("Error when retrieving county list!", err);
         }

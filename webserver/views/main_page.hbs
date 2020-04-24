@@ -20,6 +20,10 @@
 			let province = "{{province}}";
 			let county = "{{county}}";
 			function init() {
+				$("#countrySelector").val(country);
+				$("#provinceSelector").val(province);
+				$("#countySelector").val(county);
+
 				let chart = new_chart("chart");
 				chart.smoothing = 0;
 				chart.dataType = "total";
@@ -48,6 +52,18 @@
 
 			function update_date() {
 				window.location = "?country={{country}}&province={{province}}&county={{county}}&date=" + $("#date").val();
+			}
+
+			function setCountry() {
+				window.location = "?country=" + $("#countrySelector").val() + "&date={{entry_date}}";
+			}
+
+			function setProvince() {
+				window.location = "?country=" + country + "&province=" + $("#provinceSelector").val() + "&date={{entry_date}}";
+			}
+
+			function setCounty() {
+				window.location = "?country=" + country + "&province=" + province + "&county=" + $("#countySelector").val() + "&date={{entry_date}}";
 			}
 		</script>
 		<style type="text/css">
@@ -230,38 +246,64 @@
 							<a href="/disclaimer">Disclaimer about predictions</a>
 						</div>
 					</div>
-					<table id="datatable" class="data-container" style="flex: 1;">
-						<thead class="border-bottom pos-sticky datatable-head custom-bg">
-							<tr>
-								<th>
-									Click on any stat to see its source.
-								</th>
-								<th>
-									Data changed: {{last_update}}.
-								</th>
-								<th>
-									Daily counts reset at UTC-0.
-								</th>
-							</tr>
-							<tr class="d-flex py-2" style="display: flex; align-items: center; text-align: center;">
-								<th style="flex: 2;">
-									<input type="text" onkeyup="filter_table()" class="custom-input-color form-control" placeholder="Search for location" id="locationSearch">
-								</th>
-							</tr>
-							<tr class="d-flex py-2" style="font-size: 0.9rem;">
-								<th style="flex: 1;">#</th>
-								<th style="flex: 2;">Updated</th>
-								<th style="flex: 4;">Location</th>
-								<th style="flex: 4;">Total</th>
-								<th style="flex: 2;">Recovered</th>
-								<th style="flex: 2;">Deaths</th>
-								<th style="flex: 2;">Severe</th>
-							</tr>
-						</thead>
-						<tbody id="tablebody">
-							{{{table_rows}}}
-						</tbody>
-					</table>
+					<div class="d-flex flex-column">
+						Select a location:
+						<select id="countrySelector" class="custom-input-color form-control m-2" onchange="setCountry()">
+							<option value="">Worldwide</option>
+							{{#each countries}}
+								<option value="{{this.country}}">{{this.country}}</option>
+							{{/each}}
+						</select>
+						{{#if provinces}}
+							<select id="provinceSelector" class="custom-input-color form-control m-2" onchange="setProvince()">
+								<option value="">Nationwide</option>
+								{{#each provinces}}
+									<option value="{{this.province}}">{{this.province}}</option>
+								{{/each}}
+							</select>
+						{{/if}}
+						{{#if counties}}
+							<select id="countySelector" class="custom-input-color form-control m-2" onchange="setCounty()">
+								<option value="">Statewide</option>
+								{{#each counties}}
+									<option value="{{this.county}}">{{this.county}}</option>
+								{{/each}}
+							</select>
+						{{/if}}
+						
+						<table id="datatable" class="data-container" style="flex: 1;">
+							<thead class="border-bottom pos-sticky datatable-head custom-bg">
+								<tr>
+									<th>
+										Click on any stat to see its source.
+									</th>
+									<th>
+										Data changed: {{last_update}}.
+									</th>
+									<th>
+										Daily counts reset at UTC-0.
+									</th>
+								</tr>
+								<tr class="d-flex py-2" style="display: flex; align-items: center; text-align: center;">
+									<th style="flex: 2;">
+										<input type="text" onkeyup="filter_table()" class="custom-input-color form-control" placeholder="Search for location" id="locationSearch">
+									</th>
+								</tr>
+								<tr class="d-flex py-2" style="font-size: 0.9rem;">
+									<th style="flex: 1;">#</th>
+									<th style="flex: 2;">Updated</th>
+									<th style="flex: 4;">Location</th>
+									<th style="flex: 4;">Total</th>
+									<th style="flex: 2;">Recovered</th>
+									<th style="flex: 2;">Deaths</th>
+									<th style="flex: 2;">Severe</th>
+								</tr>
+							</thead>
+							<tbody id="tablebody">
+								{{{table_rows}}}
+							</tbody>
+						</table>
+					</div>
 				</div>
 			{{/if}}
 		</div>
