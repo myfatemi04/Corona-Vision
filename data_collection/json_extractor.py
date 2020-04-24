@@ -1,5 +1,7 @@
 from datetime import date, timedelta, datetime
 import standards
+import traceback
+import sys
 
 def number(string):
     if type(string) == float or type(string) == int:
@@ -43,7 +45,8 @@ def find_json(head, selectors):
                 head = head[selector]
         return head
     except KeyError as e:
-        print("KeyError warning on", e, "for selectors", selectors)
+        sys.stderr.write("KeyError warning on {} for selectors {}".format(e, selectors))
+        traceback.print_tb(e.__traceback__)
 
 def extract_json_row(row, labels):
     result = {}

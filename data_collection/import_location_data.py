@@ -1,6 +1,6 @@
 import pandas as pd
 import json
-from corona_sql import Location, Session
+from corona_sql import Location, Session, try_commit
 from location_data import get_province_name
 
 def na(val, sub):
@@ -25,7 +25,7 @@ def import_countries():
         country['country'] = country_name
         
         Location.add_location_data(country, session=session, cache=cache)
-    session.commit()
+    try_commit(session)
 
 def import_states():
     session = Session()
@@ -47,7 +47,7 @@ def import_states():
         state['country_code'] = 'US'
         
         Location.add_location_data(state, session=session, cache=cache)
-    session.commit()
+    try_commit(session)
 
 def import_counties():
     session = Session()

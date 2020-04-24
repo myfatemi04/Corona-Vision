@@ -16,7 +16,7 @@ import location_data
 
 # Keep the actual SQL URL private
 sql_uri = os.environ['DATABASE_URL']
-engine = create_engine(sql_uri, encoding='utf-8')
+engine = create_engine(sql_uri, encoding='utf-8', pool_pre_ping=True)
 
 # Scoped_session is important here
 Session = scoped_session(sessionmaker(bind=engine, autocommit=False))
@@ -344,3 +344,11 @@ class Hospital(Base):
 	potential_beds_increase = Column(Integer, default=0)
 	average_ventilator_usage = Column(Integer, default=0)
 
+def try_commit(sess):
+	try:
+		sess.commit()
+		sess.close()
+	except:
+		sess.rollback()
+		sess.close()
+		raise

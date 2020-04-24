@@ -14,9 +14,8 @@ from matplotlib import pyplot as plt
 # plt.show()
 def getModel():
     model = Sequential()
-    model.add(LSTM(20, activation="tanh", input_shape=(1, 11)))
-    model.add(Dropout(0.2))
-    model.add(Dense(10, activation="tanh"))
+    model.add(LSTM(10, activation="tanh", input_shape=(1, 10)))
+    model.add(Dense(1, activation="tanh"))
 
     model.compile(optimizer="adam", loss="mean_absolute_error")
     return model
@@ -25,23 +24,24 @@ def predict():
     model = getModel()
 
     data = makeCSV.timeSeriesDF("United States", "", "")
+
+    # data columns are-
     X, Y = makeCSV.getFrames(data['day%'])
+    Xscaler = MinMaxScaler(feature_range=(-1, 1))
+    Yscaler = MinMaxScaler(feature_range=(-1, 1))
+    X = Xscaler.fit_transform(X)
+    Y = Yscaler.fit_transform(Y)
 
-    scaler = MinMaxScaler()
-    X = scaler.fit_transform(X)
-
-    print(X)
-    print(Y)
     Xtrain, Xtest, Ytrain, Ytest = train_test_split(X, Y, train_size=0.75)
 
     Xtrain = Xtrain.reshape(Xtrain.shape[0], 1, Xtrain.shape[1])
     Xtest = Xtest.reshape(Xtest.shape[0], 1, Xtest.shape[1])
 
-    model.fit(Xtrain, Ytrain, epochs=500, batch_size=10)
+    model.fit(Xtrain, Ytrain, epochs=500, batch_size=20)
     model.evaluate(Xtest, Ytest)
 
     predictions = model.predict(Xtest)
-    for pred in predictions:
-        print(pred)
+    for inp, actual, pred in zip(Xtest, Ytest, predictions):
+        print(Xscaler.inverse_transform(inp), Yscaler.inverse_transform([actual]), Yscaler.inverse_transform([pred]))
 
 predict()

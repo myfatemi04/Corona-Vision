@@ -15,7 +15,6 @@ engine = create_engine(sql_uri)
 
 # Scoped_session is important here
 Session = scoped_session(sessionmaker(bind=engine, autocommit=False))
-session = Session()
 
 # Class used to make tables
 Base = declarative_base()
@@ -171,4 +170,5 @@ def timeSeriesAll(country, province, county):
 	return X, Y
 
 def getLocationObject(country, province, county):
+	session = Session()
 	return session.query(Location).filter_by(country=country, province=province, county=county).first()

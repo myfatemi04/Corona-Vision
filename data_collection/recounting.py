@@ -1,4 +1,4 @@
-from corona_sql import Datapoint, Session
+from corona_sql import Datapoint, Session, try_commit
 from datetime import datetime, date, timedelta
 from sqlalchemy import func
 
@@ -27,7 +27,7 @@ def recount(updated, source_link, session, cache=None):
 
         unique_days.add(entry_date)
         if county == '':
-            print(f"Recounting {i}/{len(updated)}", end='\r')#" {(country, province, county)} {entry_date}                              ", end='\r')
+            # print(f"Recounting {i}/{len(updated)}", end='\r')#" {(country, province, county)} {entry_date}                              ", end='\r')
             update_overall(country, province, county, entry_date, source_link, session)
             Location.add_location_data({"country": country, "province": province, "county": county}, cache=location_cache, session=session)
 
@@ -97,5 +97,4 @@ def update_deltas(day, updated=None):
         today_dp.update_differences(yesterday_dp)
 
     print("Committing deltas", end='\r')
-
-    sess.commit()
+    try_commit(sess)

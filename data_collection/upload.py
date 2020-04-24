@@ -1,10 +1,9 @@
-from corona_sql import Session, Datapoint, Location, Hospital
+from corona_sql import Session, Datapoint, Location, Hospital, try_commit
 from sqlalchemy import or_, between, func
 from datetime import date
 import data_caching
 import location_data
 import prepare_data
-import traceback
 
 """
 
@@ -19,19 +18,19 @@ upload(data):
 
 """
 def upload(data):
+    import sys
+    import traceback
     print("\rUploading content...            ", end='\r')
     if data:
         for table, rows in data.items():
-            if table == 'location':
-                try:
+            try:
+                if table == 'location':
                     upload_locations(rows)
-                except Exception as e:
-                    print("Error during locations upload", type(e), e)
-            elif table == 'datapoint':
-                try:
+                elif table == 'datapoint':
                     upload_datapoints(rows, data['source_link'])
-                except Exception as e:
-                    print("Error during datapoints upload", type(e), e)
+            except Exception as e:
+                traceback.print_tb(e.__traceback__)
+                sys.stderr.write("Error during {}s upload {} {}".format( table, type(e), e ))
     print("\rDone uploading          ", end='\r')
 
 def upload_locations(locations):
@@ -43,17 +42,13 @@ def upload_locations(locations):
     i = 0
     for location_row in locations:
         i += 1
-        # print(f"\rUploading locations [{i}/{len(locations)}]          ", end='\r')
         t = location_row['country'], location_row['province'], location_row['county']
-        if t in seen:
-            pass
-            # print("already seen [loc]:", t)
-        else:
+        if t not in seen:
             seen.add(t)
             Location.add_location_data(location_row, cache, session)
     
     print("\rCommitting locations             ", end='\r')
-    session.commit()
+    try_commit(session)
 
 def upload_datapoints(datapoints, source_link, recount=True):
     import recounting
@@ -78,4 +73,5 @@ def upload_datapoints(datapoints, source_link, recount=True):
         recounting.recount(updates, session=session, source_link=source_link, cache=cache)
 
     print("\rCommitting             ", end='\r')
-    session.commit()
+    try_commit(session)
+

@@ -39,7 +39,7 @@ def timeSeriesDF(country, province, county):
     return df
 
 def getFrame(series, index, lookahead=1, lookbehind=10):
-    before = series[index - lookbehind: index]
+    before = series[index - lookbehind + 1: index]
     row = [series[index]]
     after = series[index + 1: index + lookahead + 1]
 
