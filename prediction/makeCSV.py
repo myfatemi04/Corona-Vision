@@ -15,11 +15,13 @@ def timeSeriesDF(country, province, county):
         sys.stderr.write("Couldn't find that location, sorry!")
         return None
 
-    population = locationObject.population / 1000
+    population = locationObject.population
     populationDensity = locationObject.population_density
 
     if not population:
         population = float(input("Couldn't find population data. What is it, in millions of people? "))
+    else:
+        population /= 1000
 
     if not populationDensity:
         populationDensity = float(input("Couldn't find population density. What is it, in thousands of people/km^2? "))
@@ -38,20 +40,21 @@ def timeSeriesDF(country, province, county):
 
     return df
 
-def getFrame(series, index, lookahead=1, lookbehind=10):
-    before = series[index - lookbehind + 1: index]
-    row = [series[index]]
-    after = series[index + 1: index + lookahead + 1]
+def getFrame(series, index):
+    weekAgo3 = sum(series[index - 21:index - 14])
+    weekAgo2 = sum(series[index - 14:index - 7])
+    weekAgo = sum(series[index - 7:index])
+    weekLater = sum(series[index:index + 7])
 
-    x = np.concatenate((before, row), axis=0)
-    y = np.array(after)
+    x = np.array([weekAgo3, weekAgo2, weekAgo, index])
+    y = np.array([weekLater])
     return x, y
 
-def getFrames(series, lookahead=1, lookbehind=10):
+def getFrames(series):
     X = []
     Y = []
-    for frame in range(lookbehind, len(series) - lookahead):
-        frameX, frameY = getFrame(series, frame, lookahead, lookbehind)
+    for frame in range(21, len(series) - 7):
+        frameX, frameY = getFrame(series, frame)
         X.append(frameX)
         Y.append(frameY)
     

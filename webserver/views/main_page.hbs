@@ -88,6 +88,10 @@
 			.stats-detail {
 				font-size: 0.75em;
 			}
+			#countrySelector, #provinceSelector, #countySelector {
+				text-align: center;
+				text-align-last: center;
+			}
 		</style>
 	</head>
 	<body onload="init()">
@@ -103,9 +107,36 @@
 				<div class="column-container">
 					<div class="box" style="flex: 1;">
 						<div id="stats-info" class="lato" style="display: flex; flex-direction: column; font-size: 2rem;">
-							<span id="stats-label" style="text-align: center;">{{label}}</span>
-							<div style="text-align: center; font-size: 0.5em;"><a href="/sources">Sources</a></div>
-							<div style="text-align: center; font-size: 0.5em; display: flex; align-items: center;">
+							<div style="text-align: center; font-size: 1em; display: flex;">
+								<div style="flex: 2;"></div>
+								<div style="flex: 1;" class="d-flex flex-column">
+									<span style="font-size: 1rem;">Location</span>
+									<select id="countrySelector" class="custom-input-color small-input m-2" onchange="setCountry()">
+										<option value="">World</option>
+										{{#each countries}}
+											<option value="{{this.country}}">{{this.country}}</option>
+										{{/each}}
+									</select>
+									{{#if provinces}}
+										<select id="provinceSelector" class="custom-input-color small-input m-2" onchange="setProvince()">
+											<option value="">Nationwide</option>
+											{{#each provinces}}
+												<option value="{{this.province}}">{{this.province}}</option>
+											{{/each}}
+										</select>
+									{{/if}}
+									{{#if counties}}
+										<select id="countySelector" class="custom-input-color small-input m-2" onchange="setCounty()">
+											<option value="">Statewide</option>
+											{{#each counties}}
+												<option value="{{this.county}}">{{this.county}}</option>
+											{{/each}}
+										</select>
+									{{/if}}
+								</div>
+								<div style="flex: 2;"></div>
+							</div>
+							<div style="text-align: center; font-size: 0.75em; display: flex; align-items: center;">
 								<div style="flex: 2; text-align: right;">
 									{{{ prev_day_link }}}
 								</div>
@@ -216,6 +247,7 @@
 									<span class="font-weight-bold" >{{last_update}}</span>
 								</div>
 							{{/with}}
+							<div style="text-align: center; font-size: 0.5em;"><a href="/sources">Sources</a></div>
 						</div>
 					</div>
 				</div>
@@ -247,31 +279,7 @@
 						</div>
 					</div>
 					<div class="d-flex flex-column">
-						Select a location:
-						<select id="countrySelector" class="custom-input-color form-control m-2" onchange="setCountry()">
-							<option value="">Worldwide</option>
-							{{#each countries}}
-								<option value="{{this.country}}">{{this.country}}</option>
-							{{/each}}
-						</select>
-						{{#if provinces}}
-							<select id="provinceSelector" class="custom-input-color form-control m-2" onchange="setProvince()">
-								<option value="">Nationwide</option>
-								{{#each provinces}}
-									<option value="{{this.province}}">{{this.province}}</option>
-								{{/each}}
-							</select>
-						{{/if}}
-						{{#if counties}}
-							<select id="countySelector" class="custom-input-color form-control m-2" onchange="setCounty()">
-								<option value="">Statewide</option>
-								{{#each counties}}
-									<option value="{{this.county}}">{{this.county}}</option>
-								{{/each}}
-							</select>
-						{{/if}}
-						
-						<table id="datatable" class="data-container" style="flex: 1;">
+						<table id="datatable" class="data-container">
 							<thead class="border-bottom pos-sticky datatable-head custom-bg">
 								<tr>
 									<th>

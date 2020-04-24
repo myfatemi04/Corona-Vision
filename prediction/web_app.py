@@ -109,7 +109,7 @@ def predict_conv():
 	if not in_Y or len(in_Y) < 10:
 		return {"y": []}
 
-	pred = predict_better(in_Y, len(in_Y))
+	pred = list(predict_better(in_Y, len(in_Y)))
 	conv_cache[country, province, county] = {'time': time.time(), 'pred': pred}
 	return {"y": pred}
 
@@ -217,7 +217,7 @@ def predict_log():
 	)
 
 	try:
-		(MAX, T_INF, T_RISE), cov = scipy.optimize.curve_fit(logistic, numbered_X, Y, p0=p0, maxfev=10000, bounds=bounds)
+		(MAX, T_INF, T_RISE), _ = scipy.optimize.curve_fit(logistic, numbered_X, Y, p0=p0, maxfev=10000, bounds=bounds)
 	except Exception as e:
 		print("Exception: ", e)
 		MAX, T_INF, T_RISE = list(p0)

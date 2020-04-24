@@ -57,7 +57,7 @@
 					}
 				}];
 
-				let predictionsChartDatasets = {
+				let logisticPredictionDatasets = {
 					labels: [],
 					datasets: [
 						{
@@ -85,7 +85,46 @@
 							lineTension: 0
 						},
 						{
-							label: 'Logistic prediction',
+							label: 'Prediction',
+							backgroundColor: 'grey',
+							borderColor: 'grey',
+							fill: false,
+							data: [],
+							lineTension: 0,
+							hidden: false
+						}
+					]
+				};
+
+				let convPredictionDatasets = {
+					labels: [],
+					datasets: [
+						{
+							label: 'Total cases',
+							backgroundColor: 'yellow',
+							borderColor: 'yellow',
+							fill: false,
+							data: [],
+							lineTension: 0
+						},
+						{
+							label: 'Recovered',
+							backgroundColor: 'green',
+							borderColor: 'green',
+							fill: false,
+							data: [],
+							lineTension: 0
+						},
+						{
+							label: 'Deaths',
+							backgroundColor: 'red',
+							borderColor: 'red',
+							fill: false,
+							data: [],
+							lineTension: 0
+						},
+						{
+							label: 'Prediction',
 							backgroundColor: 'grey',
 							borderColor: 'grey',
 							fill: false,
@@ -98,18 +137,65 @@
 
 				let logisticChart = new Chart($("#predictions-logistic")[0].getContext('2d'), {
 					type: 'line',
-					data: predictionsChartDatasets,
+					data: logisticPredictionDatasets,
 					plugins: plugins,
 					options: chartStyles
 				});
 
+				logisticChart.options.title.text = "Generating a population growth model...";
+				logisticChart.update();
+
+				let convolutionalChart = new Chart($("#predictions-conv")[0].getContext('2d'), {
+					type: 'line',
+					data: convPredictionDatasets,
+					plugins: plugins,
+					options: chartStyles
+				});
+
+				convolutionalChart.options.title.text = "Analyzing recent trends to create predictions...";
+				convolutionalChart.update();
+
 				let locationData = {country: "{{country}}", province: "{{province}}", county: "{{county}}"};
+				let label = locationData.country || "the World";
+				let convDataAdded = false;
+
+				if (locationData.province) label = locationData.province + ", " + label;
+				if (locationData.county) label = locationData.county + ", " + label;
 
 				$.getJSON(
 					"/cases/totals_sequence",
 					locationData,
 					(data) => {
 						addData(logisticChart, data, locationData);
+						addData(convolutionalChart, data, locationData);
+						let extendedDates = extendDates(data.entry_date);
+						$.getJSON(
+							"//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/log",
+							locationData,
+							(fit) => {
+								logisticChart.options.title.text = "Logistic predictions for " + label;
+								logisticChart.data.labels = extendedDates;
+								logisticChart.data.datasets[3].data = [...logisticChart.data.datasets[0].data]
+								let originalLength = logisticChart.data.datasets[3].data.length;
+								for (let day = 0; day < originalLength; day++) {
+									logisticChart.data.datasets[3].data.push(logPredict(fit, day + originalLength));
+								}
+								logisticChart.update();
+							}
+						);
+
+						$.getJSON(
+							"//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/conv",
+							locationData,
+							({y}) => {
+
+								convolutionalChart.options.title.text = "Artifical Intelligence predictions for " + label;
+								convolutionalChart.data.labels = extendedDates;
+								convolutionalChart.data.datasets[3].data = y;
+								convolutionalChart.update();
+								convDataAdded = true;
+							}
+						);
 					}
 				);
 			}
@@ -118,26 +204,11 @@
 				return fit.MAX/(1 + Math.exp(-(x - fit.T_INF)/fit.T_RISE));
 			}
 
-			function addData(chart, data, locationData) {
-				let label = locationData.country || "the World";
-				if (locationData.province) label = locationData.province + ", " + label;
-				if (locationData.county) label = locationData.county + ", " + label;
-				chart.options.title.text = "Logistic predictions for " + label;
+			function addData(chart, data) {
 				let datasets = ['total', 'recovered', 'deaths'];
 				for (let i in datasets) {
 					chart.data.datasets[i].data = data[datasets[i]];
 				}
-				$.getJSON(
-					"//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/log",
-					locationData,
-					(fit) => {
-						chart.data.labels = extendDates(data.entry_date);
-						for (let day = 0; day < chart.data.labels.length; day++) {
-							chart.data.datasets[3].data.push(logPredict(fit, day));
-						}
-						chart.update();
-					}
-				);
 			}
 
 			function isoDate(date) {
@@ -180,36 +251,40 @@
 		<div class="container p-2">
 			<div class="box d-flex flex-column">
                 <span class="text-center font-weight-bold">Please note: predictions will not always be accurate, please do not base decisions off of them.</span>
-				<canvas id="predictions-logistic"></canvas>
+				<canvas id="predictions-logistic"></canvas><br/>
+				<canvas id="predictions-conv"></canvas><br/>
+				<span>
+					The logistic regression chart models population growth, and the artificial intelligence chart predicts
+					future patterns by using <i>1D convolutional neural networks</i>.
+				</span>
 				<div>
-					<a href="/charts_info">More info about the charts</a><br/>
-					<a href="/disclaimer">Disclaimer about predictions</a>
+					<a href="/charts_info">More info about the charts</a> | <a href="/disclaimer">Disclaimer about predictions</a>
 				</div>
-			</div>
-			<div class="d-flex flex-column">
-				Select a location:
-				<select id="countrySelector" class="custom-input-color form-control m-2" onchange="setCountry()">
-					<option value="">Worldwide</option>
-					{{#each countries}}
-						<option value="{{this.country}}">{{this.country}}</option>
-					{{/each}}
-				</select>
-				{{#if provinces}}
-					<select id="provinceSelector" class="custom-input-color form-control m-2" onchange="setProvince()">
-						<option value="">Nationwide</option>
-						{{#each provinces}}
-							<option value="{{this.province}}">{{this.province}}</option>
+				<div class="d-flex flex-column">
+					Select a location:
+					<select id="countrySelector" class="custom-input-color form-control m-2" onchange="setCountry()">
+						<option value="">Worldwide</option>
+						{{#each countries}}
+							<option value="{{this.country}}">{{this.country}}</option>
 						{{/each}}
 					</select>
-				{{/if}}
-				{{#if counties}}
-					<select id="countySelector" class="custom-input-color form-control m-2" onchange="setCounty()">
-						<option value="">Statewide</option>
-						{{#each counties}}
-							<option value="{{this.county}}">{{this.county}}</option>
-						{{/each}}
-					</select>
-				{{/if}}
+					{{#if provinces}}
+						<select id="provinceSelector" class="custom-input-color form-control m-2" onchange="setProvince()">
+							<option value="">Nationwide</option>
+							{{#each provinces}}
+								<option value="{{this.province}}">{{this.province}}</option>
+							{{/each}}
+						</select>
+					{{/if}}
+					{{#if counties}}
+						<select id="countySelector" class="custom-input-color form-control m-2" onchange="setCounty()">
+							<option value="">Statewide</option>
+							{{#each counties}}
+								<option value="{{this.county}}">{{this.county}}</option>
+							{{/each}}
+						</select>
+					{{/if}}
+				</div>
 			</div>
 		</div>
 	</body>
