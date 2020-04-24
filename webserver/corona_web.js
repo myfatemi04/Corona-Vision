@@ -151,14 +151,14 @@ const data_table_page = async (req, res) => {
 
     let {first_available_day, last_available_day, entry_dates} = date_response;
 
-    let hrs_elapsed = 24;
-    if ((entry_date == utc_iso(new Date())) && location_datapoint.dtotal) {
-        hrs_elapsed = (new Date() - new Date(entry_date)) / (1000 * 60 * 60);
-    }
+    // let hrs_elapsed = 24;
+    // if ((entry_date == utc_iso(new Date())) && location_datapoint.dtotal) {
+    //     hrs_elapsed = (new Date() - new Date(entry_date)) / (1000 * 60 * 60);
+    // }
     
-    if (hrs_elapsed > 0 && location_datapoint.dtotal >= 0) {
-        location_datapoint.cases_hr = (location_datapoint.dtotal / hrs_elapsed).toFixed(0) + " cases/hr";
-    }
+    // if (hrs_elapsed > 0 && location_datapoint.dtotal >= 0) {
+    //     location_datapoint.cases_hr = (location_datapoint.dtotal / hrs_elapsed).toFixed(0) + " cases/hr";
+    // }
 
     location_datapoint.last_update = datatables.format_update_time(location_datapoint.update_time);
 
