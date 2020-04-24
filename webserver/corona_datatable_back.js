@@ -161,14 +161,10 @@ module.exports = {
                 {number: i, flex: 1, color: "#f5f5f5"},
                 {number: format_update_time(datapoint.update_time)},
                 {number: label_link, flex: 4},
-                {number: datapoint.total + " (+" + datapoint.dtotal + ")", source: datapoint.source_total, color: COLORS.total, flex: 4},
-                //{number: datapoint.dtotal, color: COLORS.total},
+                {number: datapoint.total + (datapoint.dtotal > 0 ? (" (+" + datapoint.dtotal + ")") : ""), source: datapoint.source_total, color: COLORS.total, flex: 4},
                 {number: datapoint.recovered, color: COLORS.recovered, source: datapoint.source_recovered},
                 {number: datapoint.deaths, color: COLORS.deaths, source: datapoint.source_deaths},
-                //{number: datapoint.ddeaths, denom: datapoint.deaths, color: COLORS.deaths},
-                // {number: datapoint.num_tests, digits: 2, color: COLORS.tests},
                 {number: datapoint.serious, color: COLORS.serious, source: datapoint.source_serious},
-                // {number: "<a href=" + datapoint.source_link + ">Source</a>", style: "flex: 1;"}
             ];
 
             let tr = `<tr class="datatable-row" data-label="${label}">`;
