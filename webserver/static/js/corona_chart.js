@@ -1,32 +1,12 @@
-let index = {
-	total: 0,
-	deaths: 1,
-	recovered: 2,
-	predicted: 3
-};
+function smoothChart(id, smoothing) {
+	let chart = charts[id];
 
-let predictor_type = "none";
-let log_predictor = {};
-// let conv_predictor = {};
-
-let plugins = [{
-	beforeDraw: function (chart, easing) {
-		var ctx = chart.chart.ctx;
-
-		ctx.save();
-		ctx.fillStyle = "#212121";
-		ctx.fillRect(0, 0, $("canvas")[0].width, $("canvas")[0].height);
-		ctx.restore();
+	for (let label in chart.smoothLabels) {
+		let index = chart.smoothLabels[label];
+		chart.data.datasets[index].data = smoothData(chart.originalData[label], smoothing);
 	}
-}];
 
-function download_canvas() {
-	let url = $("#chart")[0].toDataURL("image/png;base64");
-	let filename = 'COVID19_Chart.png';
-
-	$("#download-chart")[0].href = url;
-	$("#download-chart")[0].setAttribute("download", filename);
-	$("#download-chart")[0].click();
+	chart.update();
 }
 
 function smoothData(array, smoothing) {
@@ -62,168 +42,161 @@ function smoothData(array, smoothing) {
 	});
 }
 
-function redrawChart(chart) {
-	let props = [];
-	if (chart.dataType == "daily-change") props = ['dtotal', 'ddeaths', 'drecovered'];
-	else props = ['total', 'deaths', 'recovered'];
-	
-	for (let i in props) {
-		chart.data.datasets[i].data = smoothData(chart.originalData[props[i]], chart.smoothing);
+function download(id) {
+	let url = $("#" + id)[0].toDataURL("image/png;base64");
+	let filename = 'COVID19_Chart.png';
+
+	$("#download-chart")[0].href = url;
+	$("#download-chart")[0].setAttribute("download", filename);
+	$("#download-chart")[0].click();
+}
+
+function scale(chart, val) {
+	chart.options.scales.yAxes[0].type = val;
+	chart.update();
+}
+
+function extendDates(dates) {
+	let numDays = dates.length;
+	let newDates = [...dates];
+	let current = dates[numDays - 1];
+	if (typeof current == 'string') {
+		current = new Date(current);
+	}
+	for (let i = 0; i < numDays; i++) {
+		current.setUTCDate(current.getUTCDate() + 1);
+		dates.push(isoDate(current));
+	}
+	return dates;
+}
+
+function addData(chart, data, datasets) {
+	chart.originalData = data;
+	chart.data.labels = data.entry_date;
+
+	if (typeof datasets == 'undefined') {
+		datasets = ['total', 'recovered', 'deaths'];
+	}
+
+	for (let i in datasets) {
+		chart.data.datasets[i].data = data[datasets[i]];
 	}
 	chart.update();
-	setTimeout(chart.update, 250); // for some reason, the charts don't load immediately on mobile
 }
 
-function initChartOptions(chart) {
-    $("select[name=scale-type]").change(
-        function() {
-            if (this.value == 'logarithmic' || this.value == 'linear') {
-                chart.options.scales.yAxes[0].type = this.value;
-                chart.update();
-            }
-        }
-    );
+let standardDatasets = [
+	{
+		label: 'Total cases',
+		backgroundColor: 'yellow',
+		borderColor: 'yellow',
+		fill: false,
+		data: [],
+		lineTension: 0
+	},
+	{
+		label: 'Recovered',
+		backgroundColor: 'green',
+		borderColor: 'green',
+		fill: false,
+		data: [],
+		lineTension: 0
+	},
+	{
+		label: 'Deaths',
+		backgroundColor: 'red',
+		borderColor: 'red',
+		fill: false,
+		data: [],
+		lineTension: 0
+	}
+];
 
-    $("select[name=chart-type]").change(
-        function() {
-			chart.dataType = $("select[name=chart-type]").val()
-			redrawChart(chart);
-        }
-    );
-	
-	$("input#smoothing").change(
-		function() {
-			chart.smoothing = parseInt($("input#smoothing").val());
-			redrawChart(chart);
+let logisticPredictionDatasets = {
+	labels: [],
+	datasets: [
+		{
+			label: 'Total cases',
+			backgroundColor: 'yellow',
+			borderColor: 'yellow',
+			fill: false,
+			data: [],
+			lineTension: 0
+		},
+		{
+			label: 'Logistic prediction',
+			backgroundColor: 'grey',
+			borderColor: 'grey',
+			fill: false,
+			data: [],
+			lineTension: 0,
+			hidden: false
 		}
-	);
-}
+	]
+};
 
-function new_chart(canvas_id) {
-	let data = {
-		labels: [],
-		datasets: [
+let convPredictionDatasets = {
+	labels: [],
+	datasets: [
+		{
+			label: 'Total cases',
+			backgroundColor: 'yellow',
+			borderColor: 'yellow',
+			fill: false,
+			data: [],
+			lineTension: 0
+		},
+		{
+			label: 'Logistic prediction',
+			backgroundColor: 'grey',
+			borderColor: 'grey',
+			fill: false,
+			data: [],
+			lineTension: 0,
+			hidden: false
+		}
+	]
+};
+
+let chartStyles = {
+	responsive: true,
+	title: {
+		display: true,
+		text: "Loading...",
+		fontColor: "#f5f5f5",
+		fontSize: 30,
+		fontFamily: "Lato"
+	},
+	legend: {
+		display: true,
+		labels: { fontColor: "#f5f5f5" }
+	},
+	hover: {
+		mode: 'nearest',
+		intersect: true
+	},
+	scales: {
+		xAxes: [
 			{
-				label: 'Total cases',
-				backgroundColor: 'yellow',
-				borderColor: 'yellow',
-				fill: false,
-				data: [],
-				lineTension: 0
-			},
+				gridLines: { color: "#f5f5f5" },
+				ticks: { fontColor: "#f5f5f5" }
+			}
+		],
+		yAxes: [
 			{
-				label: 'Deaths',
-				backgroundColor: 'red',
-				borderColor: 'red',
-				fill: false,
-				data: [],
-				lineTension: 0
-			},
-			{
-				label: 'Recovered',
-				backgroundColor: 'green',
-				borderColor: 'green',
-				fill: false,
-				data: [],
-				lineTension: 0
+				gridLines: { color: "#f5f5f5" },
+				ticks: { fontColor: "#f5f5f5"}
 			}
 		]
-	};
-	return new Chart(get_canvas(canvas_id), {
-		type: 'line',
-		data: data,
-		plugins: plugins,
-		options: {
-			responsive: true,
-			title: {
-				display: true,
-				text: "Loading",
-				fontColor: "#f5f5f5",
-				fontSize: 30,
-				fontStyle: "",
-				fontFamily: "Lato"
-			},
-			legend: {
-				display: true,
-				labels: {
-					fontColor: "#f5f5f5"
-				}
-			},
-			hover: {
-				mode: 'nearest',
-				intersect: true
-			},
-			scales: {
-				xAxes: [
-					{
-						gridLines: {
-							color: "#f5f5f5"
-						},
-						ticks: {
-							fontColor: "#f5f5f5"
-						}
-					}
-				],
-				yAxes: [
-					{
-						gridLines: {
-							color: "#f5f5f5"
-						},
-						ticks: {
-							fontColor: "#f5f5f5"
-						}
-					}
-				]
-			}
-		}
-	});
-}
-
-function get_canvas(a) {
-	return document.getElementById(a).getContext('2d');
-}
-
-function add_conv_predictor({y}) {
-	reset_predicted_data_datapoints();
-	for (let day = 0; day < y.length; day++) {
-		if (chart_type == "total") {
-			chart.data.datasets[index.predicted].data.push(y[day]);
-		} else {
-			if (day == 0) {
-				chart.data.datasets[index.predicted].data.push(y[0]);
-			} else {
-				chart.data.datasets[index.predicted].data.push(y[day] - y[day - 1]);
-			}
-		}
 	}
-	chart.update();
-}
+};
 
-// if (predictor_type == "conv") {
-// 	$.get(
-// 		"//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/conv",
-// 		// "//localhost:5050/predict/conv",
-// 		{ country: country, province: province, county: county },
-// 		(conv_predictor_json) => {
-// 			// make sure they didn't change the settings
-// 			if (predictor_type == "conv") {
-// 				predictor_type = "conv";
-// 				add_conv_predictor(conv_predictor_json);
-// 			}
-// 		},
-// 		"json"
-// 	);
-// }
+let plugins = [{
+	beforeDraw: function (chart, easing) {
+		var ctx = chart.chart.ctx;
 
-// chart.data.labels = data.entry_date;
-// for (let i in props) {
-// 	chart.data.datasets[i].data = data[props[i]];
-// }
-
-function deriv_log(fit, x) {
-	return (predict_log(fit, x + 0.001) - predict_log(fit, x)) / 0.001; 
-}
-
-function predict_log(fit, x) {
-	return fit.MAX/(1 + Math.exp(-(x - fit.T_INF)/fit.T_RISE));
-}
+		ctx.save();
+		ctx.fillStyle = "#212121";
+		ctx.fillRect(0, 0, $("canvas")[0].width, $("canvas")[0].height);
+		ctx.restore();
+	}
+}];

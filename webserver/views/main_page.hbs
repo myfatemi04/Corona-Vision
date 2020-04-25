@@ -5,34 +5,37 @@
 		{{> styles}}
 		<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
 		<script src="/js/corona_datatables.js"></script>
-		<script src="/js/corona_globals.js"></script>
 		<script src="/js/corona_chart.js"></script>
 		<script src="/js/corona_stats.js"></script>
 		<script src="/js/corona_util.js"></script>
-		<script src="/js/selector.js"></script>
-		<script>
-			{{!-- let pieChart = Chart(
-
-			); --}}
-		</script>
 		<script>
 			let country = "{{country}}";
 			let province = "{{province}}";
 			let county = "{{county}}";
+			let standardChart = null;
 			function init() {
 				$("#countrySelector").val(country);
 				$("#provinceSelector").val(province);
 				$("#countySelector").val(county);
-
-				let chart = new_chart("chart");
-				chart.smoothing = 0;
-				chart.dataType = "total";
-				initChartOptions(chart);
 				$("#date").val("{{entry_date}}");
+
+				standardChart = new Chart($("#standard-chart")[0].getContext('2d'), {
+					type: 'line',
+					data: {
+						labels: [],
+						datasets: standardDatasets
+					},
+					plugins: plugins,
+					options: chartStyles
+				});
 
 				let label = country || "World";
 				if (province) label = province + ", " + label;
 				if (county) label = county + ", " + label;
+
+				standardChart.options.title.text = "Cases in " + label;
+				standardChart.update();
+				standardChart.smoothLabels = {"total": 0, "recovered": 1, "deaths": 2}
 
 				$.getJSON(
 					"/cases/totals_sequence",
@@ -42,10 +45,7 @@
 						county: county
 					},
 					function(data) {
-						chart.originalData = data;
-						chart.options.title.text = 'Cases in ' + label;
-						chart.data.labels = data.entry_date;
-						redrawChart(chart);
+						addData(standardChart, data);
 					}
 				)
 			}
@@ -64,6 +64,10 @@
 
 			function setCounty() {
 				window.location = "?country=" + country + "&province=" + province + "&county=" + $("#countySelector").val() + "&date={{entry_date}}";
+			}
+
+			function viewPredictions() {
+				window.location = "/future?country=" + country + "&province=" + province + "&county=" + county;
 			}
 		</script>
 		<style type="text/css">
@@ -105,190 +109,178 @@
 				</div>
 			{{else}}
 				<div class="column-container">
-					<div class="box" style="flex: 1;">
-						<div id="stats-info" class="lato" style="display: flex; flex-direction: column; font-size: 2rem;">
-							<div style="text-align: center; font-size: 1em; display: flex;">
-								<div style="flex: 2;"></div>
-								<div style="flex: 1;" class="d-flex flex-column">
-									<span style="font-size: 1rem;">Location</span>
-									<select id="countrySelector" class="custom-input-color small-input m-2" onchange="setCountry()">
-										<option value="">World</option>
-										{{#each countries}}
-											<option value="{{this.country}}">{{this.country}}</option>
-										{{/each}}
-									</select>
-									{{#if provinces}}
-										<select id="provinceSelector" class="custom-input-color small-input m-2" onchange="setProvince()">
-											<option value="">Nationwide</option>
-											{{#each provinces}}
-												<option value="{{this.province}}">{{this.province}}</option>
+					<div style="flex: 1;" class="d-flex flex-column">
+						<div class="box">
+							<div id="stats-info" class="lato" style="display: flex; flex-direction: column; font-size: 1.5rem;">
+								<div style="text-align: center; font-size: 1em; display: flex;">
+									<div style="flex: 2;"></div>
+									<div style="flex: 1;" class="d-flex flex-column">
+										<span style="font-size: 1rem;">Location</span>
+										<select id="countrySelector" class="custom-input-color small-input m-2" onchange="setCountry()">
+											<option value="">World</option>
+											{{#each countries}}
+												<option value="{{this.country}}">{{this.country}}</option>
 											{{/each}}
 										</select>
-									{{/if}}
-									{{#if counties}}
-										<select id="countySelector" class="custom-input-color small-input m-2" onchange="setCounty()">
-											<option value="">Statewide</option>
-											{{#each counties}}
-												<option value="{{this.county}}">{{this.county}}</option>
+										{{#if provinces}}
+											<select id="provinceSelector" class="custom-input-color small-input m-2" onchange="setProvince()">
+												<option value="">Nationwide</option>
+												{{#each provinces}}
+													<option value="{{this.province}}">{{this.province}}</option>
+												{{/each}}
+											</select>
+										{{/if}}
+										{{#if counties}}
+											<select id="countySelector" class="custom-input-color small-input m-2" onchange="setCounty()">
+												<option value="">Statewide</option>
+												{{#each counties}}
+													<option value="{{this.county}}">{{this.county}}</option>
+												{{/each}}
+											</select>
+										{{/if}}
+									</div>
+									<div style="flex: 2;"></div>
+								</div>
+								<div style="text-align: center; font-size: 0.75em; display: flex; align-items: center;">
+									<div style="flex: 2; text-align: right;">
+										{{{ prev_day_link }}}
+									</div>
+									<div style="flex: 1;" id="date-label">
+										<select class="custom-input-color my-2" id="date" onchange="update_date()" style="border-radius: 0.25rem;">
+											{{#each entry_dates}}
+												<option value="{{this}}">{{this}}</option>
 											{{/each}}
 										</select>
-									{{/if}}
+									</div>
+									<div style="flex: 2; text-align: left;">
+										{{{ next_day_link }}}
+									</div>
 								</div>
-								<div style="flex: 2;"></div>
+								{{#if go_back_link}}
+									<div style="text-align: center; font-size: 0.5em;">{{{go_back_link}}}</div>
+								{{/if}}
+								{{#with location_datapoint}}
+									{{#pos total}}
+									<div class="stats-row">
+										<span class="stats-label">Cases</span>
+										<i class="fas fa-viruses"></i>
+										<span id="stats-total" class="font-weight-bold" style="color: #f3a513">
+											<a href="{{source_total}}">{{total}}</a>
+										</span>
+									</div>
+									{{/pos}}
+									
+									{{#pos dtotal}}
+									<div class="stats-row">
+										<span class="stats-label">Cases today</span>
+										<i class="fas fa-clock"></i>
+										<span id="stats-dtotal" class="font-weight-bold" style="color: #f3a513">
+											{{dtotal}}
+										</span>
+									</div>
+									{{/pos}}
+
+									{{#pos active}}
+									<div class="stats-row">
+										<span class="stats-label">Active</span>
+										<i class="fas fa-head-side-cough"></i>
+										<span id="stats-active" class="font-weight-bold" style="color: #f58020">
+											{{active}}
+											<span class="stats-detail">({{ percent active total }})</span>
+										</span>
+									</div>
+									{{/pos}}
+
+									{{#pos serious}}
+									<div class="stats-row">
+										<span class="stats-label">Severe</span>
+										<i class="fas fa-hospital-user"></i>
+										<span id="stats-serious" class="font-weight-bold" style="color: #f75027">
+											<a href="{{source_serious}}">{{serious}}</a>
+											<span class="stats-detail">({{ percent serious total }})</span>
+										</span>
+									</div>
+									{{/pos}}
+
+									{{#pos deaths}}
+									<div class="stats-row">
+										<span class="stats-label">Deaths</span>
+										<i class="fas fa-skull"></i>
+										<span id="stats-deaths" class="font-weight-bold" style="color: #f83e3e">
+											<a href="{{source_deaths}}">{{deaths}}</a>
+											<span class="stats-detail">({{ percent deaths total }})</span>
+										</span>
+									</div>
+									{{/pos}}
+
+									{{#pos recovered}}
+									<div class="stats-row">
+										<span class="stats-label">Recoveries</span>
+										<i class="far fa-smile"></i>
+										<span id="stats-recovered" class="font-weight-bold" style="color: #3dff7a">
+											<a href="{{source_recovered}}">{{recovered}}</a>
+											<span class="stats-detail">({{ percent recovered total }})</span>
+										</span>
+									</div>
+									{{/pos}}
+
+									{{#pos tests}}
+									<div class="stats-row">
+										<span class="stats-label">Tests</span>
+										<i class="fas fa-vials"></i>
+										<span id="stats-tests" class="font-weight-bold" style="color: #3d87ff">
+											<a href="{{source_tests}}">{{tests}}</a>
+											<span class="stats-detail">({{ percent total tests }} positive)</span>
+										</span>
+									</div>
+									{{/pos}}
+
+									{{#pos dtests}}
+									<div class="stats-row">
+										<span class="stats-label">Tests Today</span>
+										<i class="fas fa-clock"></i>
+										<span id="stats-dtests" class="font-weight-bold" style="color: #3d87ff">{{dtests}}</span>
+									</div>
+									{{/pos}}
+
+									<div class="stats-row">
+										<span class="stats-label">Data changed</span>
+										<i class="fas fa-hourglass-half"></i>
+										<span class="font-weight-bold" >{{last_update}}</span>
+									</div>
+								{{/with}}
+								<div style="text-align: center; font-size: 0.5em;"><a href="/sources">Sources</a></div>
 							</div>
-							<div style="text-align: center; font-size: 0.75em; display: flex; align-items: center;">
-								<div style="flex: 2; text-align: right;">
-									{{{ prev_day_link }}}
-								</div>
-								<div style="flex: 1;" id="date-label">
-									<select class="custom-input-color my-2" id="date" onchange="update_date()" style="border-radius: 0.25rem;">
-										{{#each entry_dates}}
-											<option value="{{this}}">{{this}}</option>
-										{{/each}}
-									</select>
-								</div>
-								<div style="flex: 2; text-align: left;">
-									{{{ next_day_link }}}
-								</div>
+						</div>
+						<div class="box">
+							<a id="download-chart" style="display: none;"></a>
+							<canvas id="standard-chart"></canvas>
+							<div class="d-flex">
+								<button style="flex: 1;" class="btn custom-button-color m-2" onclick="download('standard-chart')">
+										Save
+								</button>
+								<button style="flex: 1;" class="btn custom-button-color m-2" onclick="viewPredictions()">
+									Predictions
+								</button>
+								<select style="flex: 2;" onchange="scale(standardChart, this.value)" name="scale-type" class="custom-input-color form-control m-2">
+									<option value="linear">Linear</option>
+									<option value="logarithmic">Logarithmic</option>
+								</select>
 							</div>
-							{{#if go_back_link}}
-								<div style="text-align: center; font-size: 0.5em;">{{{go_back_link}}}</div>
-							{{/if}}
-							{{#with location_datapoint}}
-								{{#pos total}}
-								<div class="stats-row">
-									<span class="stats-label">Cases</span>
-									<i class="fas fa-viruses"></i>
-									<span id="stats-total" class="font-weight-bold" style="color: #f3a513">
-										<a href="{{source_total}}">{{total}}</a>
-									</span>
-								</div>
-								{{/pos}}
-								
-								{{#pos dtotal}}
-								<div class="stats-row">
-									<span class="stats-label">Cases today</span>
-									<i class="fas fa-clock"></i>
-									<span id="stats-dtotal" class="font-weight-bold" style="color: #f3a513">
-										{{dtotal}}
-									</span>
-								</div>
-								{{/pos}}
-
-								{{#pos active}}
-								<div class="stats-row">
-									<span class="stats-label">Active</span>
-									<i class="fas fa-head-side-cough"></i>
-									<span id="stats-active" class="font-weight-bold" style="color: #f58020">
-										{{active}}
-										<span class="stats-detail">({{ percent active total }})</span>
-									</span>
-								</div>
-								{{/pos}}
-
-								{{#pos serious}}
-								<div class="stats-row">
-									<span class="stats-label">Severe</span>
-									<i class="fas fa-hospital-user"></i>
-									<span id="stats-serious" class="font-weight-bold" style="color: #f75027">
-										<a href="{{source_serious}}">{{serious}}</a>
-										<span class="stats-detail">({{ percent serious total }})</span>
-									</span>
-								</div>
-								{{/pos}}
-
-								{{#pos deaths}}
-								<div class="stats-row">
-									<span class="stats-label">Deaths</span>
-									<i class="fas fa-skull"></i>
-									<span id="stats-deaths" class="font-weight-bold" style="color: #f83e3e">
-										<a href="{{source_deaths}}">{{deaths}}</a>
-										<span class="stats-detail">({{ percent deaths total }})</span>
-									</span>
-								</div>
-								{{/pos}}
-
-								{{#pos recovered}}
-								<div class="stats-row">
-									<span class="stats-label">Recoveries</span>
-									<i class="far fa-smile"></i>
-									<span id="stats-recovered" class="font-weight-bold" style="color: #3dff7a">
-										<a href="{{source_recovered}}">{{recovered}}</a>
-										<span class="stats-detail">({{ percent recovered total }})</span>
-									</span>
-								</div>
-								{{/pos}}
-
-								{{#pos tests}}
-								<div class="stats-row">
-									<span class="stats-label">Tests</span>
-									<i class="fas fa-vials"></i>
-									<span id="stats-tests" class="font-weight-bold" style="color: #3d87ff">
-										<a href="{{source_tests}}">{{tests}}</a>
-										<span class="stats-detail">({{ percent total tests }} positive)</span>
-									</span>
-								</div>
-								{{/pos}}
-
-								{{#pos dtests}}
-								<div class="stats-row">
-									<span class="stats-label">Tests Today</span>
-									<i class="fas fa-clock"></i>
-									<span id="stats-dtests" class="font-weight-bold" style="color: #3d87ff">{{dtests}}</span>
-								</div>
-								{{/pos}}
-
-								<div class="stats-row">
-									<span class="stats-label">Data changed</span>
-									<i class="fas fa-hourglass-half"></i>
-									<span class="font-weight-bold" >{{last_update}}</span>
-								</div>
-							{{/with}}
-							<div style="text-align: center; font-size: 0.5em;"><a href="/sources">Sources</a></div>
 						</div>
 					</div>
-				</div>
-				<div class="column-container">
-					<div id="chart-container" class="p-2 d-flex flex-column" style="flex: 1;">
-						<canvas id="chart"></canvas>
-						<a id="download-chart" style="display: none;"></a>
-						<button class="btn custom-button-color my-2" onclick="download_canvas()">
-							Save Image
-						</button>
-						<div>Scale <small>(change Y-axis type)</small></div>
-						<select name="scale-type" class="custom-input-color form-control my-2">
-							<option value="linear">Linear</option>
-							<option value="logarithmic">Logarithmic</option>
-						</select>
-						<div>Data type <small>(display daily change of each statistic or total)</small></div>
-						<select name="chart-type" class="custom-input-color form-control my-2">
-							<option value="total">Total</option>
-							<option value="daily-change">Daily change</option>
-						</select>
-						<div>Smoothing factor <small>(average N days to the left and right, filling in blanks with nearest value)</small></div>
-						<input type="number" id="smoothing" class="custom-input-color form-control my-2" value=0>
-						<span>
-							To see predictions for this country, click <a href="/future?country={{country}}&province={{province}}&county={{county}}">here</a>.
-						</span>
+					<div style="flex: 1;" class="d-flex flex-column box">
 						<div>
-							<a href="/charts_info">More info about the charts</a><br/>
-							<a href="/disclaimer">Disclaimer about predictions</a>
+							<b>This is the data table!</b>
+							<ul>
+								<li>Click on any stat to see its source.</li>
+								<li>Data changed: {{last_update}}</li>
+								<li>Daily counts reset at UTC-0.</li>
+								<li>Click on any country's name to see a chart of cases. If we have state data for that country, we will display that too!</li>
+							</ul>
 						</div>
-					</div>
-					<div class="d-flex flex-column">
-						<table id="datatable" class="data-container">
+						<table style="flex: 1;" id="datatable">
 							<thead class="border-bottom pos-sticky datatable-head custom-bg">
-								<tr>
-									<th>
-										Click on any stat to see its source.
-									</th>
-									<th>
-										Data changed: {{last_update}}.
-									</th>
-									<th>
-										Daily counts reset at UTC-0.
-									</th>
-								</tr>
 								<tr class="d-flex py-2" style="display: flex; align-items: center; text-align: center;">
 									<th style="flex: 2;">
 										<input type="text" onkeyup="filter_table()" class="custom-input-color form-control" placeholder="Search for location" id="locationSearch">
@@ -296,12 +288,12 @@
 								</tr>
 								<tr class="d-flex py-2" style="font-size: 0.9rem;">
 									<th style="flex: 1;">#</th>
-									<th style="flex: 2;">Updated</th>
 									<th style="flex: 4;">Location</th>
-									<th style="flex: 4;">Total</th>
+									<th style="flex: 2;">Total</th>
 									<th style="flex: 2;">Recovered</th>
 									<th style="flex: 2;">Deaths</th>
 									<th style="flex: 2;">Severe</th>
+									<th style="flex: 2;">Tests</th>
 								</tr>
 							</thead>
 							<tbody id="tablebody">

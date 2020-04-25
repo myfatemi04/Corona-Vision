@@ -228,13 +228,12 @@ def predict_log():
 	d['T_RISE'] = T_RISE
 
 	log_cache[country, province, county] = {"time": time.time(), "pred": d}
-	
+
 	return d
 
 @app.route("/")
 def redirect_to_coronavision():
 	return redirect("http://www.coronavision.us")
-	
+
 if __name__ == "__main__":
-	app.run(host, port, threaded=True, debug=True)
-	
+	app.run(host, port, threaded=True)

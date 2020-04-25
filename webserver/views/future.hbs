@@ -5,135 +5,36 @@
 		{{>styles}}
 		<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
 		<script src="/js/chart.min.js"></script>
+		<script src="/js/corona_chart.js"></script>
 		<script>
 			let country = "{{country}}";
 			let province = "{{province}}";
 			let county = "{{county}}";
+			let charts = {};
 			function init() {
+				let locationData = {country: "{{country}}", province: "{{province}}", county: "{{county}}"};
+				let label = locationData.country || "the World";
+				if (locationData.province) label = locationData.province + ", " + label;
+				if (locationData.county) label = locationData.county + ", " + label;
+
 				$("#countrySelector").val(country);
 				$("#provinceSelector").val(province);
 				$("#countySelector").val(county);
-				let chartStyles = {
-					responsive: true,
-					title: {
-						display: true,
-						text: "Loading...",
-						fontColor: "#f5f5f5",
-						fontSize: 30,
-						fontFamily: "Lato"
+
+				let standardChart = new Chart($("#standard-chart")[0].getContext('2d'), {
+					type: 'line',
+					data: {
+						labels: [],
+						datasets: standardDatasets
 					},
-					legend: {
-						display: true,
-						labels: { fontColor: "#f5f5f5" }
-					},
-					hover: {
-						mode: 'nearest',
-						intersect: true
-					},
-					scales: {
-						xAxes: [
-							{
-								gridLines: { color: "#f5f5f5" },
-								ticks: { fontColor: "#f5f5f5" }
-							}
-						],
-						yAxes: [
-							{
-								gridLines: { color: "#f5f5f5" },
-								ticks: { fontColor: "#f5f5f5"}
-							}
-						]
-					}
-				};
+					plugins: plugins,
+					options: chartStyles
+				});
 
-				let plugins = [{
-					beforeDraw: function (chart, easing) {
-						var ctx = chart.chart.ctx;
-
-						ctx.save();
-						ctx.fillStyle = "#212121";
-						ctx.fillRect(0, 0, $("canvas")[0].width, $("canvas")[0].height);
-						ctx.restore();
-					}
-				}];
-
-				let logisticPredictionDatasets = {
-					labels: [],
-					datasets: [
-						{
-							label: 'Total cases',
-							backgroundColor: 'yellow',
-							borderColor: 'yellow',
-							fill: false,
-							data: [],
-							lineTension: 0
-						},
-						{
-							label: 'Recovered',
-							backgroundColor: 'green',
-							borderColor: 'green',
-							fill: false,
-							data: [],
-							lineTension: 0
-						},
-						{
-							label: 'Deaths',
-							backgroundColor: 'red',
-							borderColor: 'red',
-							fill: false,
-							data: [],
-							lineTension: 0
-						},
-						{
-							label: 'Prediction',
-							backgroundColor: 'grey',
-							borderColor: 'grey',
-							fill: false,
-							data: [],
-							lineTension: 0,
-							hidden: false
-						}
-					]
-				};
-
-				let convPredictionDatasets = {
-					labels: [],
-					datasets: [
-						{
-							label: 'Total cases',
-							backgroundColor: 'yellow',
-							borderColor: 'yellow',
-							fill: false,
-							data: [],
-							lineTension: 0
-						},
-						{
-							label: 'Recovered',
-							backgroundColor: 'green',
-							borderColor: 'green',
-							fill: false,
-							data: [],
-							lineTension: 0
-						},
-						{
-							label: 'Deaths',
-							backgroundColor: 'red',
-							borderColor: 'red',
-							fill: false,
-							data: [],
-							lineTension: 0
-						},
-						{
-							label: 'Prediction',
-							backgroundColor: 'grey',
-							borderColor: 'grey',
-							fill: false,
-							data: [],
-							lineTension: 0,
-							hidden: false
-						}
-					]
-				};
+				standardChart.options.title.text = "Cases in " + label;
+				standardChart.update();
+				standardChart.smoothLabels = {"total": 0, "recovered": 1, "deaths": 2}
+				charts['standard'] = standardChart;
 
 				let logisticChart = new Chart($("#predictions-logistic")[0].getContext('2d'), {
 					type: 'line',
@@ -141,50 +42,48 @@
 					plugins: plugins,
 					options: chartStyles
 				});
+				charts['logistic'] = logisticChart;
 
 				logisticChart.options.title.text = "Generating a population growth model...";
 				logisticChart.update();
 
-				let convolutionalChart = new Chart($("#predictions-conv")[0].getContext('2d'), {
+				{{!-- let convolutionalChart = new Chart($("#predictions-conv")[0].getContext('2d'), {
 					type: 'line',
 					data: convPredictionDatasets,
 					plugins: plugins,
 					options: chartStyles
 				});
 
-				convolutionalChart.options.title.text = "Analyzing recent trends to create predictions...";
+				convolutionalChart.options.title.text = "Artificial Intelligence prediction coming soon!";
 				convolutionalChart.update();
-
-				let locationData = {country: "{{country}}", province: "{{province}}", county: "{{county}}"};
-				let label = locationData.country || "the World";
 				let convDataAdded = false;
-
-				if (locationData.province) label = locationData.province + ", " + label;
-				if (locationData.county) label = locationData.county + ", " + label;
+				--}}
 
 				$.getJSON(
 					"/cases/totals_sequence",
 					locationData,
 					(data) => {
-						addData(logisticChart, data, locationData);
-						addData(convolutionalChart, data, locationData);
-						let extendedDates = extendDates(data.entry_date);
+						addData(standardChart, data);
+						addData(logisticChart, data, ['total']);
+						{{!-- addData(convolutionalChart, data, ['total']); --}}
+						let extendedDates = extendDates([...data.entry_date]);
 						$.getJSON(
 							"//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/log",
 							locationData,
 							(fit) => {
 								logisticChart.options.title.text = "Logistic predictions for " + label;
 								logisticChart.data.labels = extendedDates;
-								logisticChart.data.datasets[3].data = [...logisticChart.data.datasets[0].data]
-								let originalLength = logisticChart.data.datasets[3].data.length;
+								let logisticData = logisticChart.data.datasets[1];
+								logisticData.data = [...logisticChart.data.datasets[0].data]
+								let originalLength = logisticData.data.length;
 								for (let day = 0; day < originalLength; day++) {
-									logisticChart.data.datasets[3].data.push(logPredict(fit, day + originalLength));
+									logisticData.data.push(logPredict(fit, day + originalLength));
 								}
 								logisticChart.update();
 							}
 						);
 
-						$.getJSON(
+						{{!-- $.getJSON(
 							"//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/conv",
 							locationData,
 							({y}) => {
@@ -195,7 +94,7 @@
 								convolutionalChart.update();
 								convDataAdded = true;
 							}
-						);
+						); --}}
 					}
 				);
 			}
@@ -204,33 +103,12 @@
 				return fit.MAX/(1 + Math.exp(-(x - fit.T_INF)/fit.T_RISE));
 			}
 
-			function addData(chart, data) {
-				let datasets = ['total', 'recovered', 'deaths'];
-				for (let i in datasets) {
-					chart.data.datasets[i].data = data[datasets[i]];
-				}
-			}
-
 			function isoDate(date) {
 				if (typeof date == 'string') {
 					return date;
 				} else {
 					return date.toISOString().substring(0, 10);
 				}
-			}
-
-			function extendDates(dates) {
-				let numDays = dates.length;
-				let newDates = [...dates];
-				let current = dates[numDays - 1];
-				if (typeof current == 'string') {
-					current = new Date(current);
-				}
-				for (let i = 0; i < numDays; i++) {
-					current.setUTCDate(current.getUTCDate() + 1);
-					dates.push(isoDate(current));
-				}
-				return dates;
 			}
 
 			function setCountry() {
@@ -244,46 +122,78 @@
 			function setCounty() {
 				window.location = "?country=" + country + "&province=" + province + "&county=" + $("#countySelector").val() + "&date={{entry_date}}";
 			}
+
+			function getChart(id) {
+				return charts[id];
+			}
 		</script>
 	</head>
 	<body onload="init()">
 		{{>navbar}}
 		<div class="container p-2">
 			<div class="box d-flex flex-column">
+				<a id="download-chart" style="display: none;"></a>
                 <span class="text-center font-weight-bold">Please note: predictions will not always be accurate, please do not base decisions off of them.</span>
-				<canvas id="predictions-logistic"></canvas><br/>
-				<canvas id="predictions-conv"></canvas><br/>
-				<span>
-					The logistic regression chart models population growth, and the artificial intelligence chart predicts
-					future patterns by using <i>1D convolutional neural networks</i>.
-				</span>
-				<div>
-					<a href="/charts_info">More info about the charts</a> | <a href="/disclaimer">Disclaimer about predictions</a>
-				</div>
-				<div class="d-flex flex-column">
-					Select a location:
-					<select id="countrySelector" class="custom-input-color form-control m-2" onchange="setCountry()">
-						<option value="">Worldwide</option>
-						{{#each countries}}
-							<option value="{{this.country}}">{{this.country}}</option>
-						{{/each}}
+				<div id="chart-container" class="p-2 d-flex flex-column" style="flex: 1;">
+					<div class="d-flex flex-column">
+						Select a location:
+						<select id="countrySelector" class="custom-input-color form-control m-2" onchange="setCountry()">
+							<option value="">Worldwide</option>
+							{{#each countries}}
+								<option value="{{this.country}}">{{this.country}}</option>
+							{{/each}}
+						</select>
+						{{#if provinces}}
+							<select id="provinceSelector" class="custom-input-color form-control m-2" onchange="setProvince()">
+								<option value="">Nationwide</option>
+								{{#each provinces}}
+									<option value="{{this.province}}">{{this.province}}</option>
+								{{/each}}
+							</select>
+						{{/if}}
+						{{#if counties}}
+							<select id="countySelector" class="custom-input-color form-control m-2" onchange="setCounty()">
+								<option value="">Statewide</option>
+								{{#each counties}}
+									<option value="{{this.county}}">{{this.county}}</option>
+								{{/each}}
+							</select>
+						{{/if}}
+					</div>
+					<canvas id="standard-chart"></canvas>
+					<button class="btn custom-button-color my-2" onclick="download('standard-chart')">
+						Save Image
+					</button>
+
+					<div>Scale <small>(change Y-axis type)</small></div>
+					<select onchange="scale(getChart('standard'), this.value)" name="scale-type" class="custom-input-color form-control my-2">
+						<option value="linear">Linear</option>
+						<option value="logarithmic">Logarithmic</option>
 					</select>
-					{{#if provinces}}
-						<select id="provinceSelector" class="custom-input-color form-control m-2" onchange="setProvince()">
-							<option value="">Nationwide</option>
-							{{#each provinces}}
-								<option value="{{this.province}}">{{this.province}}</option>
-							{{/each}}
-						</select>
-					{{/if}}
-					{{#if counties}}
-						<select id="countySelector" class="custom-input-color form-control m-2" onchange="setCounty()">
-							<option value="">Statewide</option>
-							{{#each counties}}
-								<option value="{{this.county}}">{{this.county}}</option>
-							{{/each}}
-						</select>
-					{{/if}}
+
+					<div>Smoothing factor <small>(average N days to the left and right, filling in blanks with nearest value)</small></div>
+					<input type="number" onchange="smoothChart('standard', this.value);" class="custom-input-color form-control my-2" value=0>
+					
+					<canvas id="predictions-logistic"></canvas>
+					<button class="btn custom-button-color my-2" onclick="download('predictions-logistic')">
+						Save Image
+					</button>
+					<div>Scale <small>(change Y-axis type)</small></div>
+					<select onchange="scale(getChart('logistic'), this.value)" name="scale-type" class="custom-input-color form-control my-2">
+						<option value="linear">Linear</option>
+						<option value="logarithmic">Logarithmic</option>
+					</select>
+					
+					<h1>Artificial Intelligence predictions coming soon!</h1>
+					<h1>SEIR predictions coming soon!</h1>
+					{{!-- <canvas id="predictions-conv"></canvas><br/> --}}
+					<span>
+						The logistic regression chart models population growth, and the artificial intelligence chart predicts
+						future patterns by using <i>1D convolutional neural networks</i>.
+					</span>
+					<div>
+						<a href="/charts_info">More info about the charts</a> | <a href="/disclaimer">Disclaimer about predictions</a>
+					</div>
 				</div>
 			</div>
 		</div>

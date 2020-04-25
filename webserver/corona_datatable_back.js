@@ -130,8 +130,7 @@ module.exports = {
             go_back_link = `${(province == '' || province == 'all' ? deselect_country_link : (county == '' || county == 'all' ? deselect_province_link : deselect_county_link))}`;
             html = `
             <tr>
-                <td class="mx-1" style="flex: 1;"></td>
-                <td class="mx-1" style="flex: 2;">
+                <td class="mx-1">
                     ${go_back_link}
                 </td>
             </tr>`;
@@ -159,12 +158,12 @@ module.exports = {
 
             let table_cols = [
                 {number: i, flex: 1, color: "#f5f5f5"},
-                {number: format_update_time(datapoint.update_time)},
                 {number: label_link, flex: 4},
-                {number: datapoint.total + (datapoint.dtotal > 0 ? (" (+" + datapoint.dtotal + ")") : ""), source: datapoint.source_total, color: COLORS.total, flex: 4},
+                {number: datapoint.total + (datapoint.dtotal > 0 ? (" (+" + datapoint.dtotal + ")") : ""), source: datapoint.source_total, color: COLORS.total},
                 {number: datapoint.recovered, color: COLORS.recovered, source: datapoint.source_recovered},
                 {number: datapoint.deaths, color: COLORS.deaths, source: datapoint.source_deaths},
                 {number: datapoint.serious, color: COLORS.serious, source: datapoint.source_serious},
+                {number: datapoint.tests, color: COLORS.tests, source: datapoint.source_tests}
             ];
 
             let tr = `<tr class="datatable-row" data-label="${label}">`;
