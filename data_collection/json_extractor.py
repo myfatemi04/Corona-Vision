@@ -17,7 +17,7 @@ def number(string):
         return 0
 
 def date_t(s):
-    return datetime.strptime(s, "%Y-%m-%dT%H:%M:%S").strftime("%Y-%m-%d")
+    return datetime.strptime(s, "%Y-%m-%dT%H:%M:%S").date()
 
 json_methods = {
     "::unixtime": lambda x: datetime.utcfromtimestamp(x//1000).strftime("%Y-%m-%d"),

@@ -250,6 +250,23 @@ live = [
 	import_live_usa_testing
 ]
 
+def import_italy_counties_historical():
+	url = "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-province.json"
+	return import_json(
+		url=url,
+		source_link='https://github.com/pcm-dpc/COVID-19/',
+		table_labels={
+			"datapoint": {
+				"country": "Italy",
+				"entry_date": ["data", "::date_t"],
+				"province": ["denominazione_regione"],
+				"county": ["denominazione_provincia"],
+				"total": ["totale_casi"]
+			}
+		},
+		namespace=[]
+	)
+
 def upload_all_live():
 	for f in live:
 		try:
@@ -305,4 +322,4 @@ def loop():
 		upload_all_live()
 
 if __name__ == "__main__":
-	pass # upload_social_distancing()
+	upload(import_italy_counties_historical())
