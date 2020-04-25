@@ -73,7 +73,7 @@
 				heatmaps.total.setMap(map);
 				if (prevSelectedLayer)
 					prevSelectedLayer.setMap(null);
-				callback();
+				if (typeof callback != "undefined") callback();
 			}
 
 			function init_dates() {

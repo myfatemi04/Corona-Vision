@@ -98,7 +98,7 @@
 							})
 						}
 						triggerTooltipUpdate();
-						callback();
+						if (typeof callback != "undefined") callback();
 					}
 				);
 			}

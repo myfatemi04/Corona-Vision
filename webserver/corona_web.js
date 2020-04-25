@@ -303,6 +303,10 @@ app.get("/maps/heat", (req, res) => {
     res.render("maps/heat");
 });
 
+app.get("/maps/usa", (req, res) => {
+    res.render("maps/usa");
+});
+
 /* Disclaimer lol
  */
 app.get("/disclaimer", (req, res) => {
@@ -647,6 +651,27 @@ app.get("/api/countries", async(req, res) => {
         resultsJSON = {};
         for (let result of results) {
             resultsJSON[iso2.getCode(result.country)] = result;
+        }
+        res.json(resultsJSON);
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+app.get("/api/states/us", async (req, res) => {
+    let params = url.parse(req.url, true).query;
+    let date = params['date'] || utc_iso(new Date());
+    let query = sqlstring.format(`
+        select province, total, dtotal, recovered, drecovered, deaths, ddeaths from datapoints
+        where entry_date=?
+        and country='United States'
+        and county='';
+    `, date);
+    try {
+        results = await get_sql(query);
+        resultsJSON = {};
+        for (let result of results) {
+            resultsJSON[result.province] = result;
         }
         res.json(resultsJSON);
     } catch (err) {
