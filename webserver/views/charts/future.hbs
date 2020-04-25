@@ -44,7 +44,7 @@
 				});
 				charts['logistic'] = logisticChart;
 
-				logisticChart.options.title.text = "Generating a population growth model...";
+				logisticChart.options.title.text = "Fitting growth model...";
 				logisticChart.update();
 
 				{{!-- let convolutionalChart = new Chart($("#predictions-conv")[0].getContext('2d'), {
@@ -71,7 +71,7 @@
 							"//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/log",
 							locationData,
 							(fit) => {
-								logisticChart.options.title.text = "Logistic predictions for " + label;
+								logisticChart.options.title.text = "Logistic curve fit for " + label;
 								logisticChart.data.labels = extendedDates;
 								let logisticData = logisticChart.data.datasets[1];
 								logisticData.data = []

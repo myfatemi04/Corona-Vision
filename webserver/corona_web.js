@@ -281,7 +281,7 @@ app.get("/future", async(req, res) => {
         }
     }
 
-    res.render("future", {
+    res.render("charts/future", {
         country: country,
         province: province,
         county: county,

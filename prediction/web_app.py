@@ -25,7 +25,7 @@ def logistic(t, MAX, T_INF, T_RISE):
     return MAX / (1 + np.exp(-(t - T_INF)/T_RISE))
 
 log_cache = {}
-	
+
 @app.route("/predict/log")
 def predict_log():
 	country = request.args.get("country") or ""
@@ -94,6 +94,7 @@ def predict_seir():
 	X, Y = corona_sql.timeSeriesAll(country, province, county)
 	recoveryRates = np.array([])
 	removalRates = np.array([])
+	tTimesC = np.array([])
 	for row in Y:
 		drecovered = row.drecovered
 		ddeaths = row.ddeaths
@@ -108,6 +109,10 @@ def predict_seir():
 			continue
 		recoveryRate = drecovered/active
 		removalRate = (drecovered + ddeaths)/active
+		# infections per day = contacts / day  * susc/total * Transmission probability * infected
+		# dtotal = (Contacts) * (S/total) * (Transmission) * I
+		S = (7.3e9 - row.total)
+		tTimesC = np.append(tTimesC, [row.dtotal / (S/7.3e9 * active)], axis=0)
 		recoveryRates = np.append(recoveryRates, [recoveryRate], axis=0)
 		removalRates = np.append(removalRates, [removalRate], axis=0)
 
@@ -117,6 +122,9 @@ def predict_seir():
 
 	if len(removalRates) > 0:
 		removalRates = removalRates[1:]
+
+	if len(tTimesC) > 0:
+		tTimesC = tTimesC[1:]
 
 	recoveryProbability = scipy.stats.gmean(recoveryRates)
 	removalProbability = scipy.stats.gmean(removalRates)
@@ -130,21 +138,32 @@ def predict_seir():
 	# 97.39% ^ X = 0.95 --> X = 2 days for 5% of people
 	
 	infectionRate = 0.01
-	dynamicSEIR(Y, removalProbability, infectionRate)
+	dynamicSEIR(Y, removalProbability)
 
-	return json.dumps({
+	return {
 		"recoveryRates": list(recoveryRates),
 		"recoveryProbability": recoveryProbability,
 		"removalRates": list(removalRates),
 		"removalProbability": removalProbability,
-	})
+		"tTimesC": list(tTimesC)
+	}
 
-def dynamicSEIR(Y, removalProbability, infectionRate):
-	S = 7.3e9
+def dynamicSEIR(Y, removalProbability):
+	S = 7.3e9 * 0.05
 	E = 0
 	I = 1
 	R = 0
-	print("{:.2f} {:.2f} {:.2f} {:.2f}".format(S, E, I, R))
+	for iter in range(1000):
+		contacts = 10 if iter < 30 else 1
+		infectionRate = 0.1 if iter < 60 else 0.0005
+		print("{:.2f} {:.2f} {:.2f} {:.2f}".format(S, E, I, R))
+		recoveriesToday = I * removalProbability
+		casesToday = I * contacts * S / (S + E + I + R) * infectionRate
+
+		# these equations should be in equilibrium
+		R = R + recoveriesToday
+		I = I + casesToday - recoveriesToday
+		S = S - casesToday
 
 @app.route("/")
 def redirect_to_coronavision():
