@@ -81,7 +81,8 @@ function addData(chart, data, datasets) {
 	for (let i in datasets) {
 		chart.data.datasets[i].data = data[datasets[i]];
 	}
-	chart.update();
+
+	setTimeout(() => {chart.update()}, 500);
 }
 
 let standardDatasets = [

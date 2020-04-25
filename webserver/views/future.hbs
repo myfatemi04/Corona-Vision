@@ -74,12 +74,12 @@
 								logisticChart.options.title.text = "Logistic predictions for " + label;
 								logisticChart.data.labels = extendedDates;
 								let logisticData = logisticChart.data.datasets[1];
-								logisticData.data = [...logisticChart.data.datasets[0].data]
-								let originalLength = logisticData.data.length;
-								for (let day = 0; day < originalLength; day++) {
-									logisticData.data.push(logPredict(fit, day + originalLength));
+								logisticData.data = []
+								{{!-- let originalLength = logisticData.data.length; --}}
+								for (let day = 0; day < logisticChart.data.labels.length; day++) {
+									logisticData.data.push(logPredict(fit, day));
 								}
-								logisticChart.update();
+								setTimeout(() => {logisticChart.update()}, 500);
 							}
 						);
 
