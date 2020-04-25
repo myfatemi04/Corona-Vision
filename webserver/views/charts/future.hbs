@@ -68,7 +68,8 @@
 						{{!-- addData(convolutionalChart, data, ['total']); --}}
 						let extendedDates = extendDates([...data.entry_date]);
 						$.getJSON(
-							"//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/log",
+							// "//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/log",
+							"//localhost:5050/predict/log",
 							locationData,
 							(fit) => {
 								logisticChart.options.title.text = "Logistic curve fit for " + label;
@@ -100,7 +101,10 @@
 			}
 
 			function logPredict(fit, x) {
-				return fit.MAX/(1 + Math.exp(-(x - fit.T_INF)/fit.T_RISE));
+				return fit.MAX/(1 + Math.exp(-(x - fit.T_INF)/(fit.T_RISE + fit.LIN * x)));
+				{{!-- return fit.MAX/(1 + Math.exp(-(x - fit.T_INF)/(fit.T_RISE * (1 + Math.exp((x - fit.T_INF)/fit.LIN))))); --}}
+				{{!-- return fit.MAX/(1 + Math.exp(-(x - fit.T_INF)/(fit.T_RISE * (1 + fit.LIN * (x - fit.T_INF) / fit.T_RISE)))); --}}
+				{{!-- return fit.MAX/(1 + Math.exp(-(x - fit.T_INF)/fit.T_RISE)); --}}
 			}
 
 			function isoDate(date) {
