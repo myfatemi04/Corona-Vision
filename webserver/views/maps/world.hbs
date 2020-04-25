@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Corona Vision - Coronavirus Map</title>
+		{{>styles}}
+		<link rel="stylesheet" href="/css/svgMap.css">
+		<script src="https://polyfill.io/v3/polyfill.min.js?features=Element.prototype.classList%2CObject.assign"></script>
+		<script src="/js/svgMap.js"></script>
+		<script src="/js/map_animate.js"></script>
+		<script>
+			let colorOptions = {
+				total: {
+					colorMax: "#CC0033",
+					colorMin: "#FFE5D9"
+				},
+				dtotal: {
+					colorMax: "#f7723e",
+					colorMin: "#ffd5c4"
+				},
+				deaths: {
+					colorMax: "#d12e2e",
+					colorMin: "#faa5a5"
+				},
+				recovered: {
+					colorMax: "#68fc60",
+					colorMin: "#eeffed"
+				}
+			}
+
+			let svg = null;
+
+			// we store this because the date can change
+			let feature = "total";
+
+			function setFeature(newFeature) {
+				feature = newFeature;
+				let oldData = svg.options.data;
+				oldData.applyData = feature;
+				svg.options.data = oldData; // so the tooltips update
+				let {colorMin, colorMax} = colorOptions[newFeature];
+				svg.options.colorMin = colorMin;
+				svg.options.colorMax = colorMax;
+				svg.applyData(oldData);
+			}
+
+			function triggerTooltipUpdate() {
+				let countryElement = $(".svgMap-country:hover");
+				if (countryElement) {
+					var countryID = countryElement.attr('data-id');
+					if (countryID) {
+						svg.setTooltipContent(svg.getTooltipContent(countryID))
+					}
+				}
+			}
+
+			function setDate(date, callback) {
+				if (typeof date == "undefined") {
+					date = $("#date").val();
+				}
+				$.getJSON(
+					"/api/countries",
+					{date: date},
+					(countryData) => {
+						let data = {
+							data: {
+								total: {
+									name: "Total cases",
+									format: "{0}",
+									thousandSeparator: ","
+								},
+								dtotal: {
+									name: "Cases today",
+									format: "{0}",
+									thousandSeparator: ","
+								},
+								recovered: {
+									name: "Recoveries",
+									format: "{0}",
+									thousandSeparator: ","
+								},
+								deaths: {
+									name: "Deaths",
+									format: "{0}",
+									thousandSeparator: ","
+								}
+							},
+							applyData: feature,
+							values: countryData
+						};
+						if (svg) {
+							svg.applyData(data)
+							svg.options.data = data;
+						} else {
+							svg = new svgMap({
+								targetElementID: "svgMap",
+								data: data,
+								colorNoData: "#212121"
+							})
+						}
+						triggerTooltipUpdate();
+						callback();
+					}
+				);
+			}
+
+			function init() {
+				init_dates();
+			}
+			
+			let hasDates = false;
+			function init_dates() {
+				$.getJSON(
+					"/list/dates",
+					{},
+					(data) => {
+						if (!hasDates) {
+							for (let result of data) {
+								let datestr = result.entry_date.substring(0, 10)
+								$("#date")[0].innerHTML += `<option value="${datestr}">${datestr}</option>`;
+							}
+							hasDates = true;
+						}
+						setDate($("#date").val());
+					}
+				)
+			}
+		</script>
+		<style>
+
+		</style>
+	</head>
+	<body onload="init()">
+		{{>navbar}}
+		<div class="scroll box">
+			<h3>Map</h3>
+			Source: Local government websites, Worldometers, publicly-available location data.<br/>
+			<a href="/maps/heat">Heat Map</a> | <b>World Map</b><br/>
+			{{!-- To view this app on a mobile device, download our app! --}}
+			<div class="d-flex flex-column">
+				<noscript>
+					This website requires JavaScript to run.
+				</noscript>
+				<select name="map-feature" class="custom-input-color form-control my-2" onchange="setFeature(this.value)">
+					<option value="total">Total cases</option>
+					<option value="recovered">Recovered cases</option>
+					<option value="deaths">Deaths</option>
+					<option value="dtotal">24H Change in total cases</option>
+				</select>
+				<select name="map-date" class="custom-input-color form-control my-2" id="date" onchange="setDate(this.value)">
+				</select>
+				<div class="column-container">
+					<button style="flex: 1;" class="btn custom-button-color mx-1 my-1" onclick="animate_now()">
+						Start animation from selected date to today
+					</button>
+					<button style="flex: 1;" class="btn custom-button-color mx-1 my-1" onclick="start_animation()">
+						Start animation from first day to today
+					</button>
+					<button style="flex: 1;" class="btn custom-button-color mx-1 my-1" onclick="stop_animation()">
+						Stop animation
+					</button>
+					<select style="flex: 1;" class="custom-input-color form-control my-1" onchange="setFps(this.value)">
+						<option value="16">4x Speed</option>
+						<option value="8">2x Speed</option>
+						<option value="4" selected>1x Speed</option>
+						<option value="2">0.5x Speed</option>
+						<option value="1">0.25x Speed</option>
+					</select>
+				</div>
+			</div>
+			<div id="mapWrapper" style="position: relative; width: 100%; height: 100%;">
+				<div id="svgMap">
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

@@ -7,6 +7,7 @@
 		{{!-- Mapbox --}}
 		<link href='https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css' rel='stylesheet' />
 		<script src='https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js'></script>
+		<script src="/js/map_animate.js"></script>
 
 		<script>
 			let isTouchDevice = 'ontouchstart' in document.documentElement;
@@ -159,29 +160,6 @@
 					}
 				)
 			}
-
-			let do_animation = false;
-			let fps = 4;
-
-			function set_start_date() {
-				let select = $("select[name=map-date]")[0];
-				select.selectedIndex = select.options.length-1;
-			}
-
-			function start_animation() {
-				if (!do_animation) {
-					do_animation = true;
-					set_start_date();
-					animate();
-				}
-			}
-
-			function animate_now() {
-				if (!do_animation) {
-					do_animation = true;
-					animate();
-				}
-			}
 			
 			function generateGeoJSONCircle(center, radius, numSides){
 				var points = [],
@@ -200,28 +178,6 @@
 					coordinates: [ points ]
 				};
 			}
-
-			/* recursive function to animate */
-			function animate() {
-				if (!do_animation) return;
-				let select = $("select[name=map-date]")[0];
-				if (select.selectedIndex > 0) {
-					select.selectedIndex--;
-					$("select[name=map-date]").trigger("change");
-					setTimeout(
-						() => {
-							animate();
-						},
-						1000/fps
-					);
-				} else {
-					do_animation = false;
-				}
-			}
-
-			function stop_animation() {
-				do_animation = false;
-			}
 		</script>
 	</head>
 	<body onload="init()">
@@ -229,7 +185,7 @@
 		<div class="scroll box">
 			<h3>Map</h3>
 			Source: Local government websites, Worldometers, publicly-available location data.<br/>
-			<a href="/heatmap">Heat Map</a> | <b>Circle Map</b><br/>
+			<a href="/maps/heat">Heat Map</a> | <b>Circle Map</b><br/>
 			{{!-- To view this app on a mobile device, download our app! --}}
 			<div class="d-flex flex-column">
 				<noscript>

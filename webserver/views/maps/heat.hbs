@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Corona Vision - Coronavirus Map</title>
+		{{>styles}}
+
+		<script async defer
+		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAMm-5SUX6ELt2KfUfEF49RpvgRIj8J6w4&callback=init&libraries=visualization">
+		</script>
+
+		<script src="/js/map_animate.js"></script>
+		<script src="/js/gmaps_darkmode.js"></script>
+		<script>
+
+			let map = null;
+			let hasDates = false;
+			let heatmapFeature = "total";
+
+			function setHeatmapFeature(val) {
+				let newFeature = val;
+				heatmaps[newFeature].setMap(map);
+				heatmaps[heatmapFeature].setMap(null);
+				heatmapFeature = val;
+			}
+
+			function setFps(newFPS) {
+				fps = newFPS;
+			}
+
+			function init()  {
+				map = new google.maps.Map(document.getElementById('map'), {
+					zoom: 2,
+					minZoom: 1,
+					streetViewControl: false,
+					styles: dark_mode_style,
+					center: {lat: 0, lng: 0}
+				});
+
+				init_dates();
+			}
+
+			let heatmaps = {};
+			function setDate(date, callback) {
+				$.getJSON(
+					"/api/heatmap",
+					{date: date},
+					(data) => {format_heatmap_data(data, callback)}
+				);
+			}
+
+			function format_heatmap_data(features, callback) {
+				let prevSelectedLayer = null;
+				for (let label of ['total', 'dtotal', 'recovered', 'drecovered', 'deaths', 'deaths']) {
+					heatmapData = [];
+					for (let feature of features) {
+						if (feature[label] > 10) {
+							heatmapData.push(
+								{
+									location: new google.maps.LatLng(feature.latitude, feature.longitude),
+									weight: Math.sqrt(feature[label])
+								}
+							);
+						}
+					}
+					let old_layer = heatmaps[label];
+					if (old_layer && old_layer.getMap() != null) {
+						prevSelectedLayer = old_layer;
+					}
+					heatmaps[label] = new google.maps.visualization.HeatmapLayer({
+						data: heatmapData
+					});
+				}
+				heatmaps.total.setMap(map);
+				if (prevSelectedLayer)
+					prevSelectedLayer.setMap(null);
+				callback();
+			}
+
+			function init_dates() {
+				$.getJSON(
+					"/list/dates",
+					{},
+					(data) => {
+						if (!hasDates) {
+							for (let result of data) {
+								let datestr = result.entry_date.substring(0, 10)
+								$("#date")[0].innerHTML += `<option value="${datestr}">${datestr}</option>`;
+							}
+							hasDates = true;
+						}
+						setDate($("#date").val());
+					}
+				)
+			}
+		</script>
+	</head>
+	<body onload="init()">
+		{{>navbar}}
+		<div class="scroll box">
+			<h3>Map</h3>
+			Source: Local government websites, Worldometers, publicly-available location data.<br/>
+			<b>Heat Map</b> | <a href="/maps/world">World Map</a>
+			<div class="d-flex flex-column">
+				<noscript>
+					This website requires JavaScript to run.
+				</noscript>
+				<select onchange="setHeatmapFeature(this.value)" name="map-feature" class="custom-input-color form-control my-2">
+					<option value="total">Total cases</option>
+					<option value="recovered">Recovered cases</option>
+					<option value="deaths">Deaths</option>
+					<option value="dtotal">24H Change in total cases</option>
+				</select>
+				<select onchange="setDate(this.value)" name="map-date" class="custom-input-color form-control my-2" id="date">
+				</select>
+				<div class="column-container">
+					<button style="flex: 1;" class="btn custom-button-color mx-1 my-1" onclick="start_from_now()">
+						Start animation from selected date to today
+					</button>
+					<button style="flex: 1;" class="btn custom-button-color mx-1 my-1" onclick="start_animation()">
+						Start animation from first day to today
+					</button>
+					<button style="flex: 1;" class="btn custom-button-color mx-1 my-1" onclick="stop_animation()">
+						Stop animation
+					</button>
+					<select style="flex: 1;" class="custom-input-color form-control my-1" onchange="setFps(this.value)">
+						<option value="16">4x Speed</option>
+						<option value="8">2x Speed</option>
+						<option value="4" selected>1x Speed</option>
+						<option value="2">0.5x Speed</option>
+						<option value="1">0.25x Speed</option>
+					</select>
+				</div>
+			</div>
+			<div id="map" class="map my-2"></div>
+		</div>
+	</body>
+</html>

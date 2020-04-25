@@ -7,6 +7,7 @@ const Handlebars = require('hbs');
 const corona_sql = require('./corona_sql');
 const sqlstring = require('sqlstring');
 const NewsAPI = require('newsapi');
+const iso2 = require('iso-3166-1-alpha-2');
 
 const newsapi = new NewsAPI(process.env.NEWS_API_KEY);
 
@@ -151,15 +152,6 @@ const data_table_page = async (req, res) => {
 
     let {first_available_day, last_available_day, entry_dates} = date_response;
 
-    // let hrs_elapsed = 24;
-    // if ((entry_date == utc_iso(new Date())) && location_datapoint.dtotal) {
-    //     hrs_elapsed = (new Date() - new Date(entry_date)) / (1000 * 60 * 60);
-    // }
-    
-    // if (hrs_elapsed > 0 && location_datapoint.dtotal >= 0) {
-    //     location_datapoint.cases_hr = (location_datapoint.dtotal / hrs_elapsed).toFixed(0) + " cases/hr";
-    // }
-
     location_datapoint.last_update = datatables.format_update_time(location_datapoint.update_time);
 
     countries = [];
@@ -209,15 +201,9 @@ app.get("/calculated", (req, res) => {
 
 app.get("/", data_table_page);
 
-/* Chart Page
- * The Chart Page includes customizable chart with LSTM and Logistic predictions */
-app.get("/charts", (req, res) => {
-    res.render("charts");
-});
-
 /* Technical info about the charts */
-app.get("/charts_info", (req, res) => {
-    res.render("charts_info");
+app.get("/charts/info", (req, res) => {
+    res.render("charts/info");
 });
 
 function noneUndefined(row) {
@@ -307,20 +293,20 @@ app.get("/future", async(req, res) => {
 
 /* Map Page
  * The Map Page includes a map of the most recent cases, to the county level. */
-app.get("/circlemap", (req, res) => {
-    res.render("circlemap");
+app.get("/maps/circle", (req, res) => {
+    res.render("maps/circle");
 });
 
 /* Map Page
  * The Map Page includes a map of the most recent cases, to the county level. */
-app.get("/heatmap", (req, res) => {
-    res.render("heatmap");
+app.get("/maps/heat", (req, res) => {
+    res.render("maps/heat");
 });
 
 /* Disclaimer lol
  */
 app.get("/disclaimer", (req, res) => {
-    res.render("disclaimer");
+    res.render("details/disclaimer");
 });
 
 /* Totals Table (backend)
@@ -387,6 +373,9 @@ app.get("/cases/totals", (req, res) => {
 });
 
 function utc_iso(date) {
+    if (typeof date == "undefined") {
+        return utc_iso(new Date());
+    }
     if (typeof date == "string") {
         return date;
     }
@@ -577,23 +566,14 @@ on
     locations.county = datapoints.county
 where
     datapoints.entry_date=? and
-    datapoints.country!='' and
-    (
-        datapoints.county!='' or
-        (
-            datapoints.country!='United States' and
-            datapoints.country!='Portugal' and
-            datapoints.country!='Netherlands'
-        )
-    ) and
-    locations.latitude is not null
+    datapoints.country!=''
 `;
 
 geojson_cache = {};
 geojson_max_age = 1000 * 60 * 15; // 15-minute caching
 app.get("/geojson", (req, res) => {
     let entry_date = req.query['date'] || utc_iso(new Date());
-    let query = sqlstring.format(geojson_query, entry_date);
+    let query = sqlstring.format(geojson_query + " and datapoints.province=''", entry_date);
     if (query in geojson_cache) {
         let {data, update_time} = geojson_cache[query];
         if (Date.now() - update_time < geojson_max_age) {
@@ -649,12 +629,67 @@ function geojson(content) {
 
 }
 
+app.get("/maps/world", (req, res) => {
+    res.render("maps/world");
+});
+
+app.get("/api/countries", async(req, res) => {
+    let params = url.parse(req.url, true).query;
+    let date = params['date'] || utc_iso(new Date());
+    let query = sqlstring.format(`
+        select country, total, dtotal, recovered, drecovered, deaths, ddeaths from datapoints
+        where entry_date=?
+        and country!=''
+        and province='';
+    `, date);
+    try {
+        results = await get_sql(query);
+        resultsJSON = {};
+        for (let result of results) {
+            resultsJSON[iso2.getCode(result.country)] = result;
+        }
+        res.json(resultsJSON);
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+app.get("/api/countries/csv", async(req, res) => {
+    let params = url.parse(req.url, true).query;
+    let date = params['date'] || utc_iso(new Date());
+    let query = sqlstring.format(`
+        select country, total, dtotal, recovered, drecovered, deaths, ddeaths from datapoints
+        where entry_date=?
+        and country!=''
+        and province='';
+    `, date);
+    try {
+        results = await get_sql(query);
+        let overall = 'country,total';//,dtotal,recovered,drecovered,deaths,ddeaths
+        for (let result of results) {
+            overall += `\n${result.country},${result.total}`;
+        }
+        res.send(overall);
+    } catch (err) {
+        console.error(err);
+    }
+});
+
 /* Heatmap API - returns a list of lat/longs, and various properties. */
 let heatmap_cache = {};
 let heatmap_max_age = 1000 * 60 * 15;
 app.get("/api/heatmap", (req, res) => {
     let entry_date = req.query['date'] || utc_iso(new Date());
-    let query = sqlstring.format(geojson_query, entry_date);
+    let query = sqlstring.format(geojson_query + ` and
+    (
+        datapoints.county!='' or
+        (
+            datapoints.country!='United States' and
+            datapoints.country!='Portugal' and
+            datapoints.country!='Netherlands'
+        )
+    ) and
+    locations.latitude is not null`, entry_date);
     if (query in heatmap_cache) {
         let {data, update_time} = heatmap_cache[query];
         if (Date.now() - update_time < heatmap_max_age) {
@@ -676,7 +711,7 @@ app.get("/api/heatmap", (req, res) => {
 /* What To Do Page - gives information about how to make homemade masks, general social distancing tips,
  * and organizations that you can donate to to help healthcare workers. */
 app.get("/howtohelp", (req, res) => {
-    res.render("howtohelp");
+    res.render("details/howtohelp");
 });
 
 function removeDuplicateArticles(articles) {
@@ -738,7 +773,7 @@ app.get("/history", (req, res) => {
 
 /* Contact Page - lists ways you can reach us for feedback or feature requests */
 app.get("/contact", (req, res) => {
-    res.render("contact");
+    res.render("details/contact");
 });
 
 /* Simulate Curve Page - would let you input the population, healthcare system capacity,
@@ -749,7 +784,7 @@ app.get("/simulate/curve", (req, res) => {
 
 /* Sources Page - lists the sources we use (Worldometers, BNO news, JHU, covid.iscii.es, etc.) */
 app.get("/sources", (req, res) => {
-    res.render("sources");
+    res.render("details/sources");
 });
 
 app.get("/test-gcloud", (req, res) => {

@@ -9,16 +9,7 @@ import scipy.optimize
 
 from pandas import read_csv, DataFrame
 import math
-import tensorflow
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.layers import LSTM
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.metrics import mean_squared_error
-from better_predictor import predict_better
 import corona_sql
-
-tensorflow.logging.set_verbosity(tensorflow.logging.WARN)
 
 # DEBUG MARKER
 port = 5050
@@ -30,151 +21,10 @@ host = "0.0.0.0"
 app = Flask(__name__)
 cors = CORS(app)
 
-
-def create_dataset(dataset, look_back=1):
-	dataX, dataY = [], []
-	for i in range(len(dataset)-look_back):
-		a = dataset[i:(i+look_back), 0]
-		dataX.append(a)
-		dataY.append(dataset[i + look_back, 0])
-	return np.array(dataX), np.array(dataY)
-
-def do_code(inp_arr, advance, lookback=20, epochs=100):
-
-	np.random.seed(7)
-
-	#dataframe = read_csv('test_data.csv', usecols=[2], engine='python')
-	dataframe = DataFrame({"Series" : inp_arr})
-	dataset = dataframe.values
-	dataset = dataset.astype('float32')
-
-	scaler = MinMaxScaler(feature_range=(0, 1))
-	dataset = scaler.fit_transform(dataset)
-	train_size = int(len(dataset) * 0.67)
-	#test_size = len(dataset) - train_size
-	#train, test = dataset[0:train_size,:], dataset[train_size:len(dataset),:]
-	look_back = lookback
-	trainX, trainY = create_dataset(dataset, look_back)
-
-	trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
-	#testX = np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
-
-	model = Sequential()
-	model.add(LSTM(4, input_shape=(1, look_back), activation='tanh'))
-	model.add(Dense(1))
-	model.compile(loss='mean_squared_error', optimizer='adam')
-	model.fit(trainX, trainY, epochs=epochs, batch_size=1, verbose=0)
-
-
-	trainPredict = model.predict(trainX)
-	#testPredict = model.predict(testX)
-
-	trainPredict = scaler.inverse_transform(trainPredict)
-	trainY = scaler.inverse_transform([trainY]).tolist()[0]
-	#testPredict = scaler.inverse_transform(testPredict)
-	#testY = scaler.inverse_transform([testY])
-
-	predArr = trainY[-look_back:]
-	for i in range(advance+1):
-		temp = np.array(predArr.copy())
-		temp = np.reshape(temp, (1, look_back))
-		temp = scaler.transform(temp)
-		temp = np.reshape(temp, (temp.shape[0], 1, temp.shape[1]))
-		predval = scaler.inverse_transform(model.predict(temp, verbose=0)).tolist()[0][0]
-		trainY.append(predval)
-		predArr.append(predval)
-		predArr = predArr[1:]
-
-	return trainY
-
-def predict_data(fixed_data, advance, lookback=20):
-	return do_code(fixed_data, advance=advance, lookback=lookback, epochs=50)
-
 def logistic(t, MAX, T_INF, T_RISE):
     return MAX / (1 + np.exp(-(t - T_INF)/T_RISE))
 
-conv_cache = {}
 log_cache = {}
-
-@app.route("/predict/conv")
-def predict_conv():
-	country = request.args.get("country") or ""
-	province = request.args.get("province") or ""
-	county = request.args.get("county") or ""
-
-	if (country, province, county) in conv_cache and time.time() - conv_cache[country, province, county]['time'] < (60 * 60 * 12):
-		return {"y": conv_cache[country, province, county]['pred']}
-
-	_, in_Y = corona_sql.time_series(country, province, county)
-	if not in_Y or len(in_Y) < 10:
-		return {"y": []}
-
-	pred = list(predict_better(in_Y, len(in_Y)))
-	conv_cache[country, province, county] = {'time': time.time(), 'pred': pred}
-	return {"y": pred}
-
-# deprecated
-# def predict_lstm():
-# 	dates = []
-# 	d = {}
-	
-# 	if "X" not in request.form or "Y" not in request.form:
-# 		return {"X": [], "Y": []}
-# 	rfx = request.form.get("X")
-# 	rfy = request.form.get("Y")
-	
-# 	# rfx = "2020-02-24 2020-02-25 2020-02-26 2020-02-27 2020-02-28 2020-02-29 2020-03-01 2020-03-02 2020-03-03 2020-03-04 2020-03-05 2020-03-06 2020-03-07 2020-03-08 2020-03-09 2020-03-10 2020-03-11 2020-03-12 2020-03-13 2020-03-14 2020-03-15 2020-03-16 2020-03-17 2020-03-18 2020-03-19 2020-03-20 2020-03-21 2020-03-22 2020-03-23 2020-03-24 2020-03-25 2020-03-26 2020-03-27 2020-03-28 2020-03-29 2020-03-30 2020-03-31 2020-04-01 2020-04-02 2020-04-03 2020-04-04 2020-04-05 2020-04-06 2020-04-07 2020-04-08 2020-04-09 2020-04-10 2020-04-11 2020-04-12 2020-04-13" # = request.form.get("X")
-# 	# rfy = "1 23 33 33 36 41 47 49 49 52 55 60 85 85 95 110 195 195 189 210 214 214 228 256 278 285 305 334 377 392 419 458 466 476 499 515 567 569 643 672 688 700 756 811 823 887 925 1040 1136 1348" # = request.form.get("Y")
-	
-# 	for date_ in rfx.split():
-# 		year, month, day = date_.split('-')
-# 		dates.append(datetime.date(int(year), int(month), int(day)))
-	
-# 	min_date = dates[0]
-	
-# 	X = np.array([(date_ - min_date).days for date_ in dates])
-# 	Y = np.array([float(y) for y in rfy.split()])
-	
-# 	# print(" ".join(str(x) for x in X))
-# 	# print(" ".join(str(y) for y in Y))
-	
-# 	key = (tuple(X), tuple(Y))
-	
-# 	if key in lstm_cache:
-# 		return lstm_cache[key]
-	
-# 	paired = {X[i]: Y[i] for i in range(len(X))}
-
-# 	fixed_Y = []
-# 	i = 0
-# 	while i < (dates[-1] - dates[0]).days:
-# 		if i not in paired:
-# 			fixed_Y.append(fixed_Y[-1])
-# 		else:
-# 			fixed_Y.append(paired[i])
-# 		i += 1
-	
-# 	lookback = min(20, len(fixed_Y)//2)
-	
-# 	if len(fixed_Y) < 10:
-# 		d['x'] = list(range(len(fixed_Y)))
-# 		d['y'] = fixed_Y
-# 		lstm_cache[key] = d
-# 		return d
-	
-# 	x = list(range(len(fixed_Y) * 2))
-# 	y = predict_data(fixed_Y, len(fixed_Y), lookback)
-# 	future_data = y[len(fixed_Y) - lookback + 1:]
-
-# 	d['x'] = x
-# 	d['y'] = [point for point in fixed_Y] + [point for point in future_data]
-	
-# 	# print(x, fixed_Y)
-# 	# print(d['y'])
-# 	# print(y)
-	
-# 	lstm_cache[key] = d
-# 	return d
 	
 @app.route("/predict/log")
 def predict_log():
@@ -231,9 +81,86 @@ def predict_log():
 
 	return d
 
+statisticThres = 30
+
+@app.route("/predict/seir")
+def predict_seir():
+	import json
+	import scipy.stats
+	country = request.args.get("country") or ""
+	province = request.args.get("province") or ""
+	county = request.args.get("county") or ""
+
+	X, Y = corona_sql.timeSeriesAll(country, province, county)
+	recoveryRates = np.array([])
+	removalRates = np.array([])
+	for row in Y:
+		drecovered = row.drecovered
+		ddeaths = row.ddeaths
+		active = row.active
+		if row.total <= statisticThres:
+			continue
+		if active <= 0:
+			continue
+		if ddeaths + drecovered <= 0:
+			continue
+		if drecovered <= 0:
+			continue
+		recoveryRate = drecovered/active
+		removalRate = (drecovered + ddeaths)/active
+		recoveryRates = np.append(recoveryRates, [recoveryRate], axis=0)
+		removalRates = np.append(removalRates, [removalRate], axis=0)
+
+	# the first day where we mention recoveries will be a spike
+	if len(recoveryRates) > 0:
+		recoveryRates = recoveryRates[1:]
+
+	if len(removalRates) > 0:
+		removalRates = removalRates[1:]
+
+	recoveryProbability = scipy.stats.gmean(recoveryRates)
+	removalProbability = scipy.stats.gmean(removalRates)
+
+	# World overall recoveryProbability = 0.020244933251719263
+	# World overall removalProbability = 0.026082348497932107
+	# Each day, there is a 2.61% chance of recovering OR dying.
+	# This means that is a 5% chance of not recoverying/dying after
+	# 97.39% ^ X = 0.05 --> X = 113 days
+	# 97.39% ^ X = 0.5 --> X = 26.2 days for the majority
+	# 97.39% ^ X = 0.95 --> X = 2 days for 5% of people
+	
+	infectionRate = 0.01
+	dynamicSEIR(Y, removalProbability, infectionRate)
+
+	return json.dumps({
+		"recoveryRates": list(recoveryRates),
+		"recoveryProbability": recoveryProbability,
+		"removalRates": list(removalRates),
+		"removalProbability": removalProbability,
+	})
+
+def dynamicSEIR(Y, removalProbability, infectionRate):
+	S = 7.3e9
+	E = 0
+	I = 1
+	R = 0
+	print("{:.2f} {:.2f} {:.2f} {:.2f}".format(S, E, I, R))
+
 @app.route("/")
 def redirect_to_coronavision():
-	return redirect("http://www.coronavision.us")
+	return """
+This is our backend<br/>
+If you're curious and wanna test it out use this form:<br/>
+<form action="/predict/seir" method="get">
+	Country:<br/>
+	<input type="text" name="country"><br/>
+	Province:<br/>
+	<input type="text" name="province"><br/>
+	County:<br/>
+	<input type="text" name="county"><br/>
+	<button type="submit">Test</button>
+</form>
+	"""
 
 if __name__ == "__main__":
-	app.run(host, port, threaded=True)
+	app.run(host, port, threaded=True, debug=True)
