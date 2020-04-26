@@ -25,26 +25,15 @@ class Location(Base):
 	country = Column(String(256), primary_key=True)
 	province = Column(String(256), primary_key=True)
 	county = Column(String(256), primary_key=True)
-	country_code = Column(String(2))
-	province_code = Column(String(2))
-	county_code = Column(String(10))
-	admin_level = Column(Enum('world', 'country', 'province', 'county'))
+
+	latitude = Column(Float(10, 6))
+	longitude = Column(Float(10, 6))
 
 	latitude = Column(Float(10, 6))
 	longitude = Column(Float(10, 6))
 
 	population = Column(Float)
 	population_density = Column(Float)
-	
-	humidity = Column(Float)
-	temperature = Column(Float)
-
-	start_cases = Column(Date)
-	start_socdist = Column(Date)
-	start_lockdown = Column(Date)
-
-	geometry = Column(JSON)
-	geometry_precision = Column(Integer(), default=6)
 
 	@property
 	def location_labelled(self):
@@ -85,7 +74,6 @@ class Datapoint(Base):
 	total = Column(Integer, default=0)
 	recovered = Column(Integer, default=0)
 	deaths = Column(Integer, default=0)
-	active = Column(Integer, default=0)
 	serious = Column(Integer, default=0)
 	tests = Column(Integer, default=0)
 	hospitalized = Column(Integer, default=0)
@@ -93,7 +81,6 @@ class Datapoint(Base):
 	dtotal = Column(Integer, default=0)
 	drecovered = Column(Integer, default=0)
 	ddeaths = Column(Integer, default=0)
-	dactive = Column(Integer, default=0)
 	dserious = Column(Integer, default=0)
 	dtests = Column(Integer, default=0)
 	dhospitalized = Column(Integer, default=0)
@@ -105,13 +92,6 @@ class Datapoint(Base):
 	source_serious = Column(String())
 	source_tests = Column(String())
 	source_hospitalized = Column(String())
-
-	retail_change = Column(Integer)
-	grocery_change = Column(Integer)
-	parks_change = Column(Integer)
-	transit_change = Column(Integer)
-	workplaces_change = Column(Integer)
-	residential_change = Column(Integer)
 
 def time_series(country, province, county):
 	session = Session()
