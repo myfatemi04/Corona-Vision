@@ -116,6 +116,7 @@ class Datapoint(Base):
 def time_series(country, province, county):
 	session = Session()
 	rows = session.query(Datapoint).filter_by(country=country, province=province, county=county).order_by(Datapoint.entry_date).all()
+	session.close()
 	X = []
 	Y = []
 	if len(rows) == 0:
@@ -144,6 +145,7 @@ def time_series(country, province, county):
 def timeSeriesAll(country, province, county):
 	session = Session()
 	rows = session.query(Datapoint).filter_by(country=country, province=province, county=county).order_by(Datapoint.entry_date).all()
+	session.close()
 	X = []
 	Y = []
 	if len(rows) == 0:

@@ -38,7 +38,7 @@ def predict_log():
 	X, Y = corona_sql.time_series(country, province, county)
 
 	if not X or len(X) < 10:
-		return {"LNMAX": 0, "MAX": 1, "T_INF": 0, "T_RISE": 1}
+		return {"LNMAX": 0, "MAX": 1, "T_INF": 0, "T_RISE": 1, "LIN": 0}
 
 	if (country, province, county) in log_cache and time.time() - log_cache[country, province, county]['time'] < (60 * 60 * 12):
 		return log_cache[country, province, county]['pred']
@@ -199,8 +199,8 @@ If you're curious and wanna test it out use this form:<br/>
 </form>
 	"""
 
-X, Y = corona_sql.timeSeriesAll("United States", "", "")
-dynamicSEIR(X, Y)
+# X, Y = corona_sql.timeSeriesAll("United States", "", "")
+# dynamicSEIR(X, Y)
 
 if __name__ == "__main__":
 	app.run(host, port, threaded=True, debug=True)
