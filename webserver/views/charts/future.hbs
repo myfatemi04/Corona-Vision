@@ -68,8 +68,8 @@
 						{{!-- addData(convolutionalChart, data, ['total']); --}}
 						let extendedDates = extendDates([...data.entry_date]);
 						$.getJSON(
-							// "//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/log",
-							"//localhost:5050/predict/log",
+							"//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/log",
+							//"//localhost:5050/predict/log",
 							locationData,
 							(fit) => {
 								logisticChart.options.title.text = "Logistic curve fit for " + label;
