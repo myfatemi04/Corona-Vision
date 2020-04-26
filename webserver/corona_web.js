@@ -417,7 +417,7 @@ app.get("/cases/totals_sequence", (req, res) => {
 
     get_sql(query).then(
         (content) => {
-            let labels = ['total', 'recovered', 'deaths', 'active'];
+            let labels = ['total', 'recovered', 'deaths'];
             let resp = {};
             
             resp.entry_date = [];
