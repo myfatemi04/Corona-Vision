@@ -28,47 +28,15 @@ stat_labels = ['total', 'deaths', 'recovered', 'serious', 'tests', 'hospitalized
 increase_labels = {'total', 'deaths', 'recovered', 'tests'}
 
 class Location(Base):
-	__tablename__ = "locations"
-
-	def __init__(self, **kwargs):
-		super().__init__(**kwargs)
-		# prt("new location-", self.country, self.province, self.county)
-		self.admin_level = location_data.get_admin_level(self.country, self.province, self.county)
-		
-		new_country_code, new_province_code, new_county_code = location_data.get_codes(self.country, self.province, self.county)
-
-		if not self.country_code: self.country_code = new_country_code
-		if not self.province_code: self.province_code = new_province_code
-		if not self.county_code: self.county_code = new_county_code
-
-		location_data.store_codes(self.country, self.province, self.county, self.country_code, self.province_code, self.county_code)
-	
-	# location_id = Column(Integer, primary_key=True)
+	__tablename__ = "test_locations"
 
 	country = Column(String(256), primary_key=True)
 	province = Column(String(256), primary_key=True)
 	county = Column(String(256), primary_key=True)
-	country_code = Column(String(2))
-	province_code = Column(String(2))
-	county_code = Column(String(10))
-	admin_level = Column(Enum('world', 'country', 'province', 'county'))
 
 	latitude = Column(Float(10, 6))
 	longitude = Column(Float(10, 6))
-
-	population = Column(Float)
-	population_density = Column(Float)
 	
-	humidity = Column(Float)
-	temperature = Column(Float)
-
-	start_cases = Column(Date)
-	start_socdist = Column(Date)
-	start_lockdown = Column(Date)
-
-	geometry = Column(JSON)
-	geometry_precision = Column(Integer(), default=6)
-
 	@property
 	def location_labelled(self):
 		return self.latitude is not None and self.longitude is not None
@@ -91,38 +59,12 @@ class Location(Base):
 		return self.t
 
 	def update(self, new_data):
-		for key in ['latitude', 'longitude', 'population', 'population_density', 'humidity', 'temperature']:
+		for key in ['latitude', 'longitude']:
 			if key in new_data:
 				new_value = float(new_data[key] or "0")
 				old_value = float(getattr(self, key) or "0")
 				if abs(new_value - old_value) > 1e-5:
 					setattr(self, key, new_value)
-		for key in ['country_code', 'province_code', 'county_code', 'start_cases', 'start_socdist', 'start_lockdown']:
-			if key in new_data:
-				new_value = new_data[key]
-				old_value = getattr(self, key)
-				if new_value and not old_value:
-					setattr(self, key, new_value)
-		if 'geometry' in new_data:
-			if not self.geometry:
-				self.geometry = new_data['geometry']
-				self.geometry_precision = new_data['geometry_precision']
-			else:
-				old_value = self.geometry
-				new_value = new_data['geometry']
-				if type(old_value) == str:
-					old_value = json.loads(old_value)
-				if type(new_value) == str:
-					new_value = json.loads(new_value)
-				if old_value['type'] != new_value['type']:
-					if new_value['type'] != 'Point':
-						self.geometry = new_data['geometry']
-						self.geometry_precision = new_data['geometry_precision']
-				else:
-					if new_data['geometry_precision'] > self.geometry_precision:
-						# print("updating because of precision")
-						self.geometry = new_data['geometry']
-						self.geometry_precision = new_data['geometry_precision']
 
 	#### Generated keys are commented out and replaced with functions ####
 	@staticmethod
@@ -167,11 +109,11 @@ class Location(Base):
 			return f"<Location {self.combined_key}>"
 
 class Datapoint(Base):
-	__tablename__ = "datapoints"
+	__tablename__ = "test_datapoints"
 
 	def __init__(self, data, source_link):
 		super().__init__(**data)
-		# prt("new data point-", self.country, self.province, self.province, source_link)
+		
 		for label in stat_labels:
 			if getattr(self, label) is not None:
 				setattr(self, "source_" + label, source_link)
@@ -190,7 +132,6 @@ class Datapoint(Base):
 	total = Column(Integer, default=0)
 	recovered = Column(Integer, default=0)
 	deaths = Column(Integer, default=0)
-	active = Column(Integer, default=0)
 	serious = Column(Integer, default=0)
 	tests = Column(Integer, default=0)
 	hospitalized = Column(Integer, default=0)
@@ -198,7 +139,6 @@ class Datapoint(Base):
 	dtotal = Column(Integer, default=0)
 	drecovered = Column(Integer, default=0)
 	ddeaths = Column(Integer, default=0)
-	dactive = Column(Integer, default=0)
 	dserious = Column(Integer, default=0)
 	dtests = Column(Integer, default=0)
 	dhospitalized = Column(Integer, default=0)
@@ -210,30 +150,6 @@ class Datapoint(Base):
 	source_serious = Column(String())
 	source_tests = Column(String())
 	source_hospitalized = Column(String())
-
-	retail_change = Column(Integer)
-	grocery_change = Column(Integer)
-	parks_change = Column(Integer)
-	transit_change = Column(Integer)
-	workplaces_change = Column(Integer)
-	residential_change = Column(Integer)
-
-	def location_labelled(self):
-		return self.latitude != None and self.longitude != None
-
-	def guess_location(self):
-		# try to update the location
-		if not self.location_labelled():
-			# if the object's location is not accurate, however,
-			# we try to estimate its location
-			estimated_location = standards.get_estimated_location(self.country, self.province, self.county)
-
-			# ^^^ returns none if no accurate data could be found
-			if estimated_location:
-				# update the old location
-				est_lat, est_lng = estimated_location
-				self.latitude = est_lat
-				self.longitude = est_lng
 
 	def update_data(self, data, source_link):
 		change = False

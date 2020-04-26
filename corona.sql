@@ -89,33 +89,8 @@ create table test_locations (
 	province varchar(256) default '',
 	county varchar(256) default '',
 
-	/* Administrative division ISO codes */
-	country_code varchar(2) default '',
-	province_code varchar(2) default '',
-	county_code varchar(10) default '',
-
-	/* Specificity of location */
-	admin_level enum("world", "country", "province", "county"),
-
-	/* Demographics */
-	population float,
-	population_density float,
-
 	latitude float(10, 6),
 	longitude float(10, 6),
-	
-	/* Weather
-	   Relative humidity, temperature in C */
-	humidity float,
-	temperature float,
-
-	/* Virus lockdown info */
-	start_cases date,
-	start_socdist date,
-	start_lockdown date,
-
-	`geometry` json,
-	geometry_precision int(2) default 6, /* number of digits past decimal place */
 
 	primary key (country, province, county)
 
@@ -133,7 +108,6 @@ create table test_datapoints (
 	total integer default 0,
 	recovered integer default 0,
 	deaths integer default 0,
-	active integer default 0,
 	serious integer default 0,
 	tests integer default 0,
 	hospitalized integer default 0,
@@ -141,7 +115,6 @@ create table test_datapoints (
 	dtotal integer default 0,
 	drecovered integer default 0,
 	ddeaths integer default 0,
-	dactive integer default 0,
 	dserious integer default 0,
 	dtests integer default 0,
 	dhospitalized integer default 0,

@@ -1,1 +1,0 @@
-from corona_sql import Session, Hospital

@@ -55,3 +55,8 @@ def extract_json_row(row, labels):
         if j is not None:
             result[label] = j
     return result
+
+def column_total(rows, column, start=0):
+    for row in rows:
+        start += row[column]
+    return start

@@ -84,10 +84,6 @@ def update_deltas(day, updated=None):
             skipped += 1
             continue
 
-        active = float(today_dp.total) - float(today_dp.deaths) - float(today_dp.recovered)
-        if today_dp.active != active:
-            today_dp.active = active
-
         country, province, county, _ = data_tuple
         if (country, province, county) in yesterday_dict:
             yesterday_dp = yesterday_dict[country, province, county]

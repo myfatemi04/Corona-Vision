@@ -1,4 +1,4 @@
-from corona_sql import Session, Datapoint, Location, Hospital
+from corona_sql import Session, Datapoint, Location
 from sqlalchemy import or_, between, func
 from datetime import date, datetime
 
