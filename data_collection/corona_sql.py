@@ -28,7 +28,7 @@ stat_labels = ['total', 'deaths', 'recovered', 'serious', 'tests', 'hospitalized
 increase_labels = {'total', 'deaths', 'recovered', 'tests'}
 
 class Location(Base):
-	__tablename__ = "test_locations"
+	__tablename__ = "locations"
 
 	country = Column(String(256), primary_key=True)
 	province = Column(String(256), primary_key=True)
@@ -109,7 +109,7 @@ class Location(Base):
 			return f"<Location {self.combined_key}>"
 
 class Datapoint(Base):
-	__tablename__ = "test_datapoints"
+	__tablename__ = "datapoints"
 
 	def __init__(self, data, source_link):
 		super().__init__(**data)

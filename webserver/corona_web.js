@@ -63,7 +63,7 @@ function make_prev_day_link(country, province, county, entry_date) {
 
 const get_datapoint = async(country, province, county, group, entry_date) => {
     try {
-        let query = "select * from test_datapoints where";
+        let query = "select * from datapoints where";
         query += " entry_date=" + sqlstring.escape(entry_date);
         if(group) query += " and `group`=" + sqlstring.escape(group);
         if(country) query += " and country=" + sqlstring.escape(country);
@@ -71,7 +71,7 @@ const get_datapoint = async(country, province, county, group, entry_date) => {
         if(!province || county) query += " and county=" + sqlstring.escape(county);
         query += " and total > 10";
 
-        let query2 = "select * from test_datapoints where "
+        let query2 = "select * from datapoints where "
         query2 += " entry_date=" + sqlstring.escape(entry_date) + " and";
         let loc_where = "";
         loc_where += " country=" + sqlstring.escape(country);
@@ -80,7 +80,7 @@ const get_datapoint = async(country, province, county, group, entry_date) => {
         loc_where += " and total > 10";
         query2 += loc_where;
 
-        last_update_result = await get_sql("select MAX(update_time) as update_time from test_datapoints where entry_date=" + sqlstring.escape(entry_date) + ";");
+        last_update_result = await get_sql("select MAX(update_time) as update_time from datapoints where entry_date=" + sqlstring.escape(entry_date) + ";");
         last_update = last_update_result[0]['update_time'];
 
         let label = county;
@@ -89,27 +89,27 @@ const get_datapoint = async(country, province, county, group, entry_date) => {
         if (!country) label = "World";
 
         let data = await get_sql(query);
-        location_test_datapoints = await get_sql(query2)
+        location_datapoints = await get_sql(query2)
 
-        if (location_test_datapoints.length == 0) {
+        if (location_datapoints.length == 0) {
             return null;
         }
 
         return {
-            location_datapoint: location_test_datapoints[0],
+            location_datapoint: location_datapoints[0],
             loc_where: loc_where,
             label: label,
             data: data
         };
     } catch (err) {
-        console.error("Error while querying for test_datapoints at that location!");
+        console.error("Error while querying for datapoints at that location!");
         return {"error": err}
     }
 }
 
 get_all_dates = async(loc_where) => {
     try {
-        let entry_dates_result = await get_sql("select distinct entry_date from test_datapoints where" + loc_where + " order by entry_date desc");
+        let entry_dates_result = await get_sql("select distinct entry_date from datapoints where" + loc_where + " order by entry_date desc");
         let entry_dates = entry_dates_result.map(x => utc_iso(x['entry_date']));
         return {
             first_available_day: entry_dates[entry_dates.length - 1],
@@ -215,7 +215,7 @@ function noneUndefined(row) {
 
 const getCountries = async(entryDate) => {
     try {
-        let query = "select distinct country from test_datapoints where total > 10";
+        let query = "select distinct country from datapoints where total > 10";
         if (typeof entryDate != "undefined") query += " and entry_date = " + sqlstring.escape(entryDate);
         let countriesResult = await get_sql(query);
         return countriesResult.filter(noneUndefined);
@@ -227,7 +227,7 @@ const getCountries = async(entryDate) => {
 
 const getProvinces = async(country, entryDate) => {
     try {
-        let query = sqlstring.format("select distinct province from test_datapoints where country = ? and total > 10", [country]);
+        let query = sqlstring.format("select distinct province from datapoints where country = ? and total > 10", [country]);
         if (typeof entryDate != "undefined") query += " and entry_date = " + sqlstring.escape(entryDate);
         let provincesResult = await get_sql(query);
         return provincesResult.filter(noneUndefined);
@@ -239,7 +239,7 @@ const getProvinces = async(country, entryDate) => {
 
 const getCounties = async(country, province, entryDate) => {
     try {
-        let query = sqlstring.format("select distinct county from test_datapoints where country = ? and province = ? and total > 10", [country, province]);
+        let query = sqlstring.format("select distinct county from datapoints where country = ? and province = ? and total > 10", [country, province]);
         if (typeof entryDate != "undefined") query += " and entry_date = " + sqlstring.escape(entryDate);
         let countiesResult = await get_sql(query);
         return countiesResult.filter(noneUndefined);
@@ -324,7 +324,7 @@ app.get("/cases/totals_table", (req, res) => {
     let county = get(params, "county") || "";
     let entry_date = get(params, "date") || utc_iso(new Date());
 
-    let query = "select * from test_datapoints";
+    let query = "select * from datapoints";
     
     // dont filter if the field = 'all'
     let where_conds = [];
@@ -357,7 +357,7 @@ app.get("/cases/totals", (req, res) => {
     let county = get(params, "county") || "";
     let entry_date = get(params, "date") || utc_iso(new Date());
 
-    let query = "select * from test_datapoints";
+    let query = "select * from datapoints";
     
     // dont filter if the field = 'all'
     let where_conds = [];
@@ -401,7 +401,7 @@ app.get("/cases/totals_sequence", (req, res) => {
     let province = params.province || "";
     let county = params.county || "";
 
-    let query = "select * from test_datapoints";
+    let query = "select * from datapoints";
     
     // dont filter if the field = 'all'
     let where_conds = [];
@@ -472,7 +472,7 @@ app.get("/list/countries", (req, res) => {
     let entry_date = get(params, "date") || utc_iso(new Date());
 
     // base query
-    let query = "select distinct country from test_datapoints where country != '' and entry_date = " + sqlstring.escape(entry_date);
+    let query = "select distinct country from datapoints where country != '' and entry_date = " + sqlstring.escape(entry_date);
 
     // require a province if necessary
     if ("need_province" in params && params.need_province == 1) { query += " and province != ''"; }
@@ -495,7 +495,7 @@ app.get("/list/provinces", (req, res) => {
     if (!("country" in params)) res.end();
 
     // base query
-    let query = sqlstring.format("select distinct province from test_datapoints where country = ? and province != ''" , params.country);
+    let query = sqlstring.format("select distinct province from datapoints where country = ? and province != ''" , params.country);
 
     // require a county if necessary
     if ("need_county" in params && params.need_county == 1) { query += " and county != ''"; }
@@ -516,7 +516,7 @@ app.get("/list/county", (req, res) => {
     if (!("country" in params) || !("province" in params)) res.end();
 
     // base query
-    let query = sqlstring.format("select distinct county from test_datapoints where country = ? and province = ? and county != '' order by county", [params.country, params.province]);
+    let query = sqlstring.format("select distinct county from datapoints where country = ? and province = ? and county != '' order by county", [params.country, params.province]);
     
     get_sql(query).then(
         content => res.json(content)
@@ -525,7 +525,7 @@ app.get("/list/county", (req, res) => {
 
 /* Dates API - list all dates that we have on record */
 app.get("/list/dates", (req, res) => {
-    let query = "select distinct entry_date from test_datapoints order by entry_date desc";
+    let query = "select distinct entry_date from datapoints order by entry_date desc";
 
     get_sql(query).then(
         content => res.json(content)
@@ -534,7 +534,7 @@ app.get("/list/dates", (req, res) => {
 
 /* First Days API - returns the stats for each country on the first day of infection */
 app.get("/cases/first_days", (req, res) => {
-    let query = sqlstring.format("select * from test_datapoints where is_first_day = true order by entry_date;");
+    let query = sqlstring.format("select * from datapoints where is_first_day = true order by entry_date;");
     get_sql(query).then(
         content => res.json(content)
     );
@@ -543,7 +543,7 @@ app.get("/cases/first_days", (req, res) => {
 /* Cases-by-date API - returns all cases (with a labelled location) for a given date. Used by the map */
 app.get("/cases/date", (req, res) => {
     let entry_date = get(req.query, "date") || utc_iso(new Date());
-    let query = sqlstring.format("select * from test_datapoints where entry_date = ? and latitude != 0 and longitude != 0 and county = '' and country != ''", entry_date);
+    let query = sqlstring.format("select * from datapoints where entry_date = ? and latitude != 0 and longitude != 0 and county = '' and country != ''", entry_date);
     get_sql(query).then( 
         content => res.json(content)
     );
@@ -551,33 +551,33 @@ app.get("/cases/date", (req, res) => {
 
 const geojson_query = `
 select
-    test_datapoints.country,
-    test_datapoints.province,
-    test_datapoints.county,
-    test_datapoints.total,
-    test_datapoints.dtotal,
-    test_datapoints.recovered,
-    test_datapoints.drecovered,
-    test_datapoints.deaths,
-    test_datapoints.ddeaths,
-    test_locations.latitude,
-    test_locations.longitude
-from test_datapoints
-inner join test_locations
+    datapoints.country,
+    datapoints.province,
+    datapoints.county,
+    datapoints.total,
+    datapoints.dtotal,
+    datapoints.recovered,
+    datapoints.drecovered,
+    datapoints.deaths,
+    datapoints.ddeaths,
+    locations.latitude,
+    locations.longitude
+from datapoints
+inner join locations
 on
-    test_locations.country = test_datapoints.country and
-    test_locations.province = test_datapoints.province and
-    test_locations.county = test_datapoints.county
+    locations.country = datapoints.country and
+    locations.province = datapoints.province and
+    locations.county = datapoints.county
 where
-    test_datapoints.entry_date=? and
-    test_datapoints.country!=''
+    datapoints.entry_date=? and
+    datapoints.country!=''
 `;
 
 geojson_cache = {};
 geojson_max_age = 1000 * 60 * 15; // 15-minute caching
 app.get("/geojson", (req, res) => {
     let entry_date = req.query['date'] || utc_iso(new Date());
-    let query = sqlstring.format(geojson_query + " and test_datapoints.province=''", entry_date);
+    let query = sqlstring.format(geojson_query + " and datapoints.province=''", entry_date);
     if (query in geojson_cache) {
         let {data, update_time} = geojson_cache[query];
         if (Date.now() - update_time < geojson_max_age) {
@@ -623,7 +623,6 @@ function geojson(content) {
                     datapoint.longitude, datapoint.latitude
                 ]
             }
-                //JSON.parse(datapoint.geometry)
         });
     }
     return {
@@ -641,7 +640,7 @@ app.get("/api/countries", async(req, res) => {
     let params = url.parse(req.url, true).query;
     let date = params['date'] || utc_iso(new Date());
     let query = sqlstring.format(`
-        select country, total, dtotal, recovered, drecovered, deaths, ddeaths from test_datapoints
+        select country, total, dtotal, recovered, drecovered, deaths, ddeaths from datapoints
         where entry_date=?
         and country!=''
         and province='';
@@ -662,7 +661,7 @@ app.get("/api/states/us", async (req, res) => {
     let params = url.parse(req.url, true).query;
     let date = params['date'] || utc_iso(new Date());
     let query = sqlstring.format(`
-        select province, total, dtotal, recovered, drecovered, deaths, ddeaths from test_datapoints
+        select province, total, dtotal, recovered, drecovered, deaths, ddeaths from datapoints
         where entry_date=?
         and country='United States'
         and county='';
@@ -683,7 +682,7 @@ app.get("/api/countries/csv", async(req, res) => {
     let params = url.parse(req.url, true).query;
     let date = params['date'] || utc_iso(new Date());
     let query = sqlstring.format(`
-        select country, total, dtotal, recovered, drecovered, deaths, ddeaths from test_datapoints
+        select country, total, dtotal, recovered, drecovered, deaths, ddeaths from datapoints
         where entry_date=?
         and country!=''
         and province='';
@@ -707,14 +706,14 @@ app.get("/api/heatmap", (req, res) => {
     let entry_date = req.query['date'] || utc_iso(new Date());
     let query = sqlstring.format(geojson_query + ` and
     (
-        test_datapoints.county!='' or
+        datapoints.county!='' or
         (
-            test_datapoints.country!='United States' and
-            test_datapoints.country!='Portugal' and
-            test_datapoints.country!='Netherlands'
+            datapoints.country!='United States' and
+            datapoints.country!='Portugal' and
+            datapoints.country!='Netherlands'
         )
     ) and
-    test_locations.latitude is not null`, entry_date);
+    locations.latitude is not null`, entry_date);
     if (query in heatmap_cache) {
         let {data, update_time} = heatmap_cache[query];
         if (Date.now() - update_time < heatmap_max_age) {
