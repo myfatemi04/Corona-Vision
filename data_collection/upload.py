@@ -21,17 +21,19 @@ def upload(data):
     import sys
     import traceback
     print("\rUploading content...            ", end='\r')
+    datapoints_updated = False
     if data:
         for table, rows in data.items():
             try:
                 if table == 'location':
                     upload_locations(rows)
                 elif table == 'datapoint':
-                    upload_datapoints(rows, data['source_link'])
+                    datapoints_updated = upload_datapoints(rows, data['source_link'])
             except Exception as e:
                 traceback.print_tb(e.__traceback__)
                 sys.stderr.write("Error during {}s upload {} {}".format( table, type(e), e ))
     print("\rDone uploading          ", end='\r')
+    return datapoints_updated
 
 def upload_locations(locations):
     print("\rUploading locations", end="\r")
@@ -59,14 +61,17 @@ def upload_datapoints(datapoints, source_link, recount=True):
     session = Session()
     datapoints = prepare_data.prepare_datapoints(datapoints)
     cache = data_caching.get_datapoint_cache(datapoints, session)
+    was_updated = False
     updates = set()
     seen = set()
     for datapoint_data in datapoints:
         t = datapoint_data['country'], datapoint_data['province'], datapoint_data['county'], datapoint_data['entry_date'].isoformat()
         if t not in seen:
             seen.add(t)
-            updated_datapoint = Datapoint.add_datapoint_data(datapoint_data=datapoint_data, source_link=source_link, session=session, cache=cache)
+            updated_datapoint, this_datapoint_updated = Datapoint.add_datapoint_data(datapoint_data=datapoint_data, source_link=source_link, session=session, cache=cache)
             updates.update(updated_datapoint.ripples())
+            if this_datapoint_updated:
+                was_updated = True
     
     if recount:
         print("\rRecounting             ", end='\r')
@@ -74,4 +79,4 @@ def upload_datapoints(datapoints, source_link, recount=True):
 
     print("\rCommitting             ", end='\r')
     try_commit(session)
-
+    return was_updated

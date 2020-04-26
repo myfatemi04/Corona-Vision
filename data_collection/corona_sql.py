@@ -197,17 +197,19 @@ class Datapoint(Base):
 	@staticmethod
 	def add_datapoint_data(datapoint_data, source_link, session, cache=None):
 		import prepare_data
+		was_changed = False
 		datapoint_data = prepare_data.prepare_datapoint_data(datapoint_data)
 		if cache is not None:
 			t = datapoint_data['country'], datapoint_data['province'], datapoint_data['county'], datapoint_data['entry_date'].isoformat()
 			if t in cache:
 				datapoint = cache[t]
-				datapoint.update_data(data=datapoint_data, source_link=source_link)
+				was_changed = datapoint.update_data(data=datapoint_data, source_link=source_link)
 			else:
 				datapoint = Datapoint(data=datapoint_data, source_link=source_link)
 				session.add(datapoint)
 				cache[datapoint.t] = datapoint
-			return datapoint
+				was_changed = True
+			return datapoint, was_changed
 		else:
 			datapoint = session.query(
 				country=datapoint_data['country'],
@@ -217,11 +219,12 @@ class Datapoint(Base):
 			).first()
 
 			if datapoint is not None:
-				datapoint.update_data(data=datapoint_data, source_link=source_link)
+				was_changed = datapoint.update_data(data=datapoint_data, source_link=source_link)
 			else:
 				datapoint = Datapoint(data=datapoint_data, source_link=source_link)
 				session.add(datapoint)
-			return datapoint
+				was_changed = True
+			return datapoint, was_changed
 
 	def location_tuple(self):
 		return (self.country, self.province, self.county)

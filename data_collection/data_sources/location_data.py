@@ -3,11 +3,6 @@ import json
 from corona_sql import Location, Session, try_commit
 from location_data import get_province_name
 
-def na(val, sub):
-    if pd.isna(val):
-        return sub
-    return val
-
 def import_countries():
     session = Session()
     country_location_df = pd.read_csv("location_data/country_locations.tsv", sep='\t', keep_default_na=False, na_values=['_'])

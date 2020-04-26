@@ -56,7 +56,7 @@ def extract_json_row(row, labels):
             result[label] = j
     return result
 
-def column_total(rows, column, start=0):
+def column_total(rows, column, start=0, converter=int):
     for row in rows:
-        start += row[column]
+        start += converter(row[column])
     return start

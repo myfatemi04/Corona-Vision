@@ -17,10 +17,9 @@ def import_gis(gis_url, table_labels, use_geometry=False, geometry_precision=6):
         query_url += "&returnGeometry=false"
 
     source_url = "http://www.arcgis.com/home/webmap/viewer.html?url=" + gis_url
-    return import_geojson(source_url=source_url, query_url=query_url, table_labels=table_labels, use_geometry=use_geometry, geometry_precision=geometry_precision)
+    return import_geojson(source_url=source_url, query_url=query_url, table_labels=table_labels, use_geometry=use_geometry)
 
-def import_geojson(source_url, query_url, table_labels, use_geometry=True, geometry_precision=3):
-    print("Loading GIS data from", source_url)
+def import_geojson(source_url, query_url, table_labels, use_geometry=True):
     content = {}
     content['source_link'] = source_url
 
