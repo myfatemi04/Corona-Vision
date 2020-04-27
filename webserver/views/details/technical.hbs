@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Corona Vision - Technical Info</title>
+        {{>styles}}
+        <style>
+            .contact-container {
+                display: flex;
+                flex-direction: column;
+            }
+            .contact-container li {
+                list-style: none;
+            }
+            .contact-container > .contact-row {
+                margin-top: 1rem;
+                margin-bottom: 1rem;
+                padding-top: 1rem;
+                display: flex;
+                text-align: left;
+                border-top: 1px solid #f5f5f5;
+            }
+        </style>
+	</head>
+	<body>
+		{{>navbar}}
+		<div class="container box mx-auto d-flex flex-column align-items-center">
+            <h1>Technical Info</h1>
+            <span>
+                <h1>Libraries Used</h1>
+                <ul>
+                    <li>Database: Google Cloud SQL + MySQL</li>
+                    <li>Frontend: NodeJS 11
+                        <ul>
+                            <li>Express</li>
+                            <li>Handlebars</li>
+                            <li>CountryJS</li>
+                            <li>NewsAPI</li>
+                            <li>SQLString</li>
+                        </ul>
+                    </li>
+                    <li>CSS: Bootstrap</li>
+                    <li>Data collection: Python 3.6
+                        <ul>
+                            <li>SQLAlchemy</li>
+                            <li>BeautifulSoup 4</li>
+                            <li>LXML</li>
+                            <li>PdfPy2</li>
+                            <li>Pandas</li>
+                            <li>Numpy</li>
+                            <li>Scipy</li>
+                            <li>Requests</li>
+                        </ul>
+                    </li>
+                </ul>
+            </span>
+		</div>
+	</body>
+</html>

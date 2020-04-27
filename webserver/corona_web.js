@@ -107,7 +107,35 @@ const get_datapoint = async(country, province, county, group, entry_date) => {
     }
 }
 
-get_all_dates = async(loc_where) => {
+const childSelector = (country, province) => 
+    (!country ?
+        `country != ''` :
+        !province ?
+            `country = ${sqlstring.escape(country)} and province != ''` :
+            `country = ${sqlstring.escape(country)} and province = ${sqlstring.escape(province)}`);
+
+const getChildDates = async(country, province) => {
+    if (!country) country = "";
+    if (!province) province = "";
+    return await get_sql(
+        `select distinct entry_date from datapoints where ` +
+        childSelector(country, province) + 
+        ` order by entry_date desc`
+    );
+}
+
+const getLabel = (country, province, county) => {
+    let label = "the World";
+    if (!country) return label;
+    label = country;
+    if (!province) return label;
+    label = province + ", " + label;
+    if (!county) return label;
+    label = county + ", " + label;
+    return label;
+}
+
+const get_all_dates = async(loc_where) => {
     try {
         let entry_dates_result = await get_sql("select distinct entry_date from datapoints where" + loc_where + " order by entry_date desc");
         let entry_dates = entry_dates_result.map(x => utc_iso(x['entry_date']));
@@ -120,6 +148,16 @@ get_all_dates = async(loc_where) => {
         console.error("Error while obtaining list of dates! Error:", err);
         return {"error": err}
     }
+}
+
+const getDatapointFromRequest = async (req) => {
+    let params = url.parse(req.url, true).query;
+    let group = params['region'] || "";
+    let country = params['country'] || "";
+    let province = params['province'] || "";
+    let county = params['county'] || "";
+    let entry_date = params['date'] || utc_iso(new Date());
+    return await get_datapoint(country, province, county, group, entry_date);
 }
 
 const data_table_page = async (req, res) => {
@@ -303,8 +341,19 @@ app.get("/maps/heat", (req, res) => {
     res.render("maps/heat");
 });
 
-app.get("/maps/usa", (req, res) => {
-    res.render("maps/usa");
+app.get("/maps/country", async (req, res) => {
+    let query = url.parse(req.url, true).query;
+    if (!query.country) {
+        res.render("maps/index");
+    } else {
+        let label = getLabel(query.country, query.province, query.county);
+        let dates = await getChildDates(query.country, query.province);
+        res.render("maps/country", {
+            mapID: query.country,
+            entryDates: dates.map(date => utc_iso(date.entry_date)),
+            label: label
+        });
+    }
 });
 
 /* Disclaimer lol
@@ -525,7 +574,11 @@ app.get("/list/county", (req, res) => {
 
 /* Dates API - list all dates that we have on record */
 app.get("/list/dates", (req, res) => {
-    let query = "select distinct entry_date from datapoints order by entry_date desc";
+    let params = url.parse(req.url, true).query;
+    let query = "select distinct entry_date from datapoints";
+    if (params.country)
+        query += " where country = " + sqlstring.escape(params.country) + " and province != ''";
+    query += " order by entry_date desc";
 
     get_sql(query).then(
         content => res.json(content)
@@ -657,15 +710,16 @@ app.get("/api/countries", async(req, res) => {
     }
 });
 
-app.get("/api/states/us", async (req, res) => {
+app.get("/api/mapdata", async (req, res) => {
     let params = url.parse(req.url, true).query;
-    let date = params['date'] || utc_iso(new Date());
+    let date = params.date || utc_iso(new Date());
+    let country = mapid = params.map;
     let query = sqlstring.format(`
         select province, total, dtotal, recovered, drecovered, deaths, ddeaths from datapoints
         where entry_date=?
-        and country='United States'
+        and country=?
         and county='';
-    `, date);
+    `, [date, country]);
     try {
         results = await get_sql(query);
         resultsJSON = {};
