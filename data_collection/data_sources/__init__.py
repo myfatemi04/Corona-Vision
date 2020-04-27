@@ -6,6 +6,7 @@ import sys
 
 from . import albania
 from . import australia
+from . import argentina
 from . import azerbaijan
 from . import bahrain
 from . import canada
@@ -26,6 +27,7 @@ from . import usa_testing
 
 live = [
 	albania.import_data,
+	argentina.import_data,
 	australia.import_data,
 	azerbaijan.import_data,
 	bahrain.import_data,

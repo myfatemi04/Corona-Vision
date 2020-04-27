@@ -4,6 +4,7 @@ from datetime import date
 import data_caching
 import location_data
 import prepare_data
+import typing
 
 """
 
@@ -52,7 +53,7 @@ def upload_locations(locations):
     print("\rCommitting locations             ", end='\r')
     try_commit(session)
 
-def upload_datapoints(datapoints, source_link, recount=True):
+def upload_datapoints(datapoints: typing.List, source_link: str, recount=True) -> bool:
     import recounting
     if not recount:
         print("Not recounting datapoints")

@@ -8,4 +8,4 @@ chardet
 mysqlclient
 html5lib
 lxml
-pdfminer
+pypdf2
