@@ -187,12 +187,11 @@ class Datapoint(Base):
 			original_value = getattr(self, "d" + label)
 			if prev_row is not None:
 				calculated_value = getattr(self, label) - getattr(prev_row, label)
+				if original_value is None or float(calculated_value) != float(original_value):
+					setattr(self, "d" + label, calculated_value)
 			else:
-				calculated_value = getattr(self, label)
-
-			if float(calculated_value) != float(original_value):
-				setattr(self, "d" + label, calculated_value)
-				self.update_time = datetime.utcnow()
+				if getattr(self, label) is not None:
+					setattr(self, "d" + label, None)
 
 	@staticmethod
 	def add_datapoint_data(datapoint_data, source_link, session, cache=None):
@@ -244,6 +243,12 @@ class Datapoint(Base):
 	@property
 	def t(self):
 		return self.country, self.province, self.county, self.entry_date
+
+	def __str__(self):
+		return self.__repr__()
+	
+	def __repr__(self):
+		return f"<Datapoint {self.t}>"
 
 class Hospital(Base):
 	__tablename__ = "hospitals"

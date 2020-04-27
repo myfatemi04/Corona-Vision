@@ -86,11 +86,24 @@ def update_deltas(day, updated=None):
 
         country, province, county, _ = data_tuple
         if (country, province, county) in yesterday_dict:
-            yesterday_dp = yesterday_dict[country, province, county]
+            most_recent_dp = yesterday_dict[country, province, county]
         else:
-            yesterday_dp = None
+            most_recent_date = sess.query(func.max(Datapoint.entry_date))\
+                .filter(Datapoint.entry_date < day)\
+                .filter_by(country=country, province=province, county=county)\
+                .first()
+            if most_recent_date:
+                most_recent_dp = sess.query(Datapoint).filter_by(
+                    entry_date=most_recent_date,
+                    country=country,
+                    province=province,
+                    county=county
+                ).first()
+                print(most_recent_dp)
+            else:
+                most_recent_dp = None
         
-        today_dp.update_differences(yesterday_dp)
+        today_dp.update_differences(most_recent_dp)
 
     print("Committing deltas", end='\r')
     try_commit(sess)
