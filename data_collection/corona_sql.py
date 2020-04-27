@@ -160,7 +160,7 @@ class Datapoint(Base):
 				setattr(self, "source_" + label, source_link)
 
 		for label in stat_labels:
-			if label not in data:
+			if label not in data or data[label] is None:
 				continue
 			
 			my_val = getattr(self, label)
@@ -233,6 +233,8 @@ class Datapoint(Base):
 			date_str = self.entry_date
 		elif type(self.entry_date) == date:
 			date_str = self.entry_date.isoformat()
+		else:
+			raise ValueError("Entry date not found! Date=", date_str)
 		result = set()
 		result.add(('', '', '', date_str))
 		result.add((self.country, '', '', date_str))

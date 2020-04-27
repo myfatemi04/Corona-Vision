@@ -16,7 +16,7 @@ def import_data():
         return
     else:
         print(f"Loading from {name}...")
-    
+
     # if upload.upload(result):
     #     lastDatapointsUpdate = time.time()
 
