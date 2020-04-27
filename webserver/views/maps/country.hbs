@@ -7,6 +7,7 @@
 		<script src="https://polyfill.io/v3/polyfill.min.js?features=Element.prototype.classList%2CObject.assign"></script>
 		<script src="/js/svgMap.js"></script>
 		<script src="/js/map_animate.js"></script>
+		<script src="/js/svg-pan-zoom.min.js"></script>
 		<script>
 			let colorOptions = {
 				total: {
@@ -27,9 +28,11 @@
 				}
 			}
 
-			let currentData = {};
-
-			let svg = null;
+			let subregions = {};
+			let overall = {};
+			let svgZoomObject = null;
+			let country = "{{country}}";
+			let province = "{{province}}";
 
 			// we store this because the date can change
 			let feature = "total";
@@ -42,9 +45,9 @@
 			function triggerTooltipUpdate() {
 				let countryElement = $("path:hover");
 				if (countryElement) {
-					var stateName = countryElement.attr('title');
-					if (stateName) {
-						setTooltipInfo(stateName, currentData[stateName]);
+					var subregionName = countryElement.attr('title');
+					if (subregionName) {
+						setTooltipInfo(subregionName, subregions[subregionName]);
 					}
 				}
 			}
@@ -57,13 +60,15 @@
 					"/api/mapdata",
 					{
 						date: date,
-						map: "{{mapID}}"
+						country: country,
+						province: province,
 					},
-					(stateData) => {
-						currentData = stateData;
-						console.log(currentData);
+					(data) => {
+						subregions = data.subregions;
+						overall = data.overall;
 						updateFills();
 						triggerTooltipUpdate();
+						$("#dateHead").html(date);
 						if (typeof callback != 'undefined') callback();
 					}
 				);
@@ -75,9 +80,9 @@
 
 			function dataMinMax(data, feature) {
 				let array = [];
-				for (let stateID in data) {
-					if (stateID !== '') {
-						array.push(data[stateID][feature]);
+				for (let subregionID in data) {
+					if (subregionID !== '') {
+						array.push(data[subregionID][feature]);
 					}
 				}
 				return minMax(array);
@@ -105,22 +110,36 @@
 				let {colorMin, colorMax} = colorOptions[feature];
 				let thresMin = 0;
 				let thresMax = 0;
-				let {min, max} = dataMinMax(currentData, feature);
+				let {min, max} = dataMinMax(subregions, feature);
 				thresMin = min;
 				thresMax = max;
 				$("path").attr("fill", "#212121");
-				for (let stateID in currentData) {
-					if (stateID) {
-						let featureValue = currentData[stateID][feature];
-						let featureRatio = getRatio(thresMin, thresMax, featureValue);
+				console.log(subregions);
+				for (let subregionID in subregions) {
+					let featureValue = subregions[subregionID][feature];
+					let featureRatio = getRatio(thresMin, thresMax, featureValue);
+					if (featureRatio > 0) {
 						let overallColor = getColor(colorMax, colorMin, featureRatio);
-						$(`[title="${stateID}"]`).attr("fill", overallColor);
+						let found = $(`[title="${subregionID}"]`);
+						if (found.length > 0) {
+							found.attr("fill", overallColor);
+						} else {
+							console.error("Warning: County not found: ", subregionID);
+						}
 					}
 				}
 			}
 
 			function init() {
-				loadSVG("/svgmap/{{mapID}}.svg");
+				$(window).resize(
+					() => {
+						$("#pageContent").height($(window).height() - $("#header").height());
+					}
+				);
+				$(window).trigger('resize');
+				if (!country) loadSVG(`/svgmap/world.svg`);
+				else if (!province) loadSVG(`/svgmap/${country}.svg`);
+				else loadSVG(`/svgmap/${country}/${province}.svg`);
 			}
 
 			function loadSVG(path) {
@@ -129,16 +148,19 @@
 						response.text().then(
 							text => {
 								$("#svgMap").html(text);
-								addStateListeners();
-								setDate($("#date").val());
+								addSubregionListeners();
+								setDate($("#date").val(), resetTooltip);
+								$("svg").width($("#svgMap").width());
+								$("svg").height($("#svgMap").height());
+								svgZoomObject = svgPanZoom('svg');
 							}
 						)
 					}
 				);
 			}
-
-			function showTooltip() {
-				$("#tooltip").css("display", "flex");
+			
+			function resetTooltip() {
+				setTooltipInfo('{{label}}', overall)
 			}
 
 			function generateHTML(label, content) {
@@ -149,7 +171,7 @@
 					</div>`
 			}
 
-			function setTooltipInfo(state, content) {
+			function setTooltipInfo(subregion, content) {
 				let html = '';
 				if (content) {
 					html += generateHTML("Cases", content.total);
@@ -158,44 +180,41 @@
 					html += generateHTML("Recoveries", content.recovered);
 				}
 				$("#tooltipRows").html(html);
-				$("#tooltipState").html(state);
+				$("#tooltipSubregion").html(subregion);
 			}
 
-			function hideTooltip() {
-				$("#tooltip").css("display", "none");
-			}
-
-			function moveTooltip(e) {
-				let width = $("#tooltip").width();
-				let height = $("#tooltip").height();
-				$("#tooltip").css({left: e.pageX - width / 2, top: e.pageY - height - 30})
-			}
-
-			function addStateListeners() {
-				for (let state of $("#svgMap path")) {
-					let stateName = state.getAttribute("title");
-					if (typeof stateName != 'undefined') {
-						state.addEventListener('mousemove', function(e) {
-							moveTooltip(e);
+			function addSubregionListeners() {
+				$("#svgMap")[0].addEventListener('touchend', function(e) {
+					// 'path' tags are for countries
+					// #svgMap is triggered even if you aren't directly tapping it
+					if (e.path[0].tagName != 'path') {
+						resetTooltip();
+					}
+				});
+				for (let subregion of $("#svgMap path")) {
+					let subregionName = subregion.getAttribute("title");
+					if (typeof subregionName != 'undefined') {
+						subregion.addEventListener('mouseenter', function(e) {
+							setTooltipInfo(subregionName, subregions[subregionName]);
 						});
-						state.addEventListener('mouseenter', function(e) {
-							showTooltip();
-							setTooltipInfo(stateName, currentData[stateName]);
+						subregion.addEventListener('touchend', function(e) {
+							setTooltipInfo(subregionName, subregions[subregionName]);
 						});
-						state.addEventListener('mouseleave', function() {
-							hideTooltip();
+						subregion.addEventListener('mouseleave', function() {
+							resetTooltip();
 						});
 					}
 				}
-
-				$("#tooltip").mousemove((e) => {
-					moveTooltip(e);
-				});
 			}
 		</script>
 		<style>
+			html, body {
+				height: 100%;
+				width: 100%;
+			}
 			#svgMap {
 				stroke: #999;
+				stroke-width: 0.5px;
 				z-index: -1;
 			}
 			#mapWrapper {
@@ -207,9 +226,6 @@
 			#tooltip {
 				flex-direction: column;
 				padding: 0.5em;
-				background-color: #f5f5f5;
-				z-index: 1;
-				color: #212121;
 			}
 			#tooltip .trow {
 				display: flex;
@@ -218,21 +234,24 @@
 				flex: 1;
 				padding: 0 0.5em;
 			}
-			svg {
-				width: auto!important;
-				height: auto!important;
+			#sidebar {
+				overflow-y: auto;
 			}
 		</style>
 	</head>
 	<body onload="init()">
-		{{>navbar}}
-		<div class="scroll box">
-			<h3>Map</h3>
-			Source: Local government websites, ESRI ARCGIS dashboards.<br/>
-			<a href="http://mapsvg.com/">Map data from MapSVG.com</a><br/>
-			<a href='/maps'>Maps Index</a>
-			{{!-- To view this app on a mobile device, download our app! --}}
-			<div class="d-flex flex-column">
+		<div id="header">
+			{{>navbar}}
+		</div>
+		<div class="column-container" id="pageContent">
+			<div id="sidebar" class="d-flex flex-column p-2" style="flex: 1; border-right: 1px solid #f5f5f5;">
+				<div id="tooltip">
+					<div>
+						<span id="tooltipSubregion" class="font-weight-bold"></span>
+					</div>
+					<div id="tooltipRows">
+					</div>
+				</div>
 				<noscript>
 					This website requires JavaScript to run.
 				</noscript>
@@ -247,17 +266,17 @@
 						<option value="{{this}}">{{this}}</option>
 					{{/each}}
 				</select>
-				<div class="column-container">
-					<button style="flex: 1;" class="btn custom-button-color mx-1 my-1" onclick="animate_now()">
+				<div class="d-flex flex-column">
+					<button class="btn custom-button-color my-2" onclick="animate_now()">
 						Start animation from selected date to today
 					</button>
-					<button style="flex: 1;" class="btn custom-button-color mx-1 my-1" onclick="start_animation()">
-						Start animation from first day to today
+					<button class="btn custom-button-color my-2" onclick="start_animation()">
+						Play animation from first day to today
 					</button>
-					<button style="flex: 1;" class="btn custom-button-color mx-1 my-1" onclick="stop_animation()">
-						Stop animation
+					<button class="btn custom-button-color my-2" onclick="stop_animation()">
+						Pause animation
 					</button>
-					<select style="flex: 1;" class="custom-input-color form-control my-1" onchange="setFps(this.value)">
+					<select class="custom-input-color form-control my-2" onchange="setFps(this.value)">
 						<option value="16">4x Speed</option>
 						<option value="8">2x Speed</option>
 						<option value="4" selected>1x Speed</option>
@@ -265,19 +284,33 @@
 						<option value="1">0.25x Speed</option>
 					</select>
 				</div>
+				{{#if country}}
+					<a href="/maps/">World Map</a><br/>
+				{{/if}}
+				{{#if province}}
+					<a href="/maps/{{country}}">{{country}} Map</a><br/>
+				{{/if}}
+				{{#if relatedMaps}}
+					<div style="border-top: 1px solid #f5f5f5;">
+						<b>Related maps</b>
+						<ul>
+							{{#each relatedMaps}}
+								<li>
+									<a href="/maps/{{this}}">{{this}}</a>
+								</li>
+							{{/each}}
+						</ul>
+					</div>
+				{{/if}}
 			</div>
-			<div id="tooltip" style="display: none; position: absolute;">
-				<div>
-					<span id="tooltipState" class="font-weight-bold"></span>
+			<div id="mapWrapper" style="flex: 4;">
+				<div class="text-center" style="border-bottom: 1px solid #f5f5f5;">
+					<h1 style="margin: 0;">Map of {{label}}</h1>
+					Source: Local government websites, ESRI ARCGIS dashboards.<br/>
+					<a href="http://mapsvg.com/">Map data from MapSVG.com</a><br/>
+					<span class="font-italic" id="dateHead"></span>
 				</div>
-				<div id="tooltipRows">
-				</div>
-			</div>
-			<div id="mapWrapper" style="position: relative; width: 100%; height: 100%;">
-				<h1>Map of {{label}}</h1>
-				<div id="svgMap"
-				{{!-- style="height: 30em;" --}}
-				>
+				<div id="svgMap" style="height: 30em;">
 				</div>
 			</div>
 		</div>

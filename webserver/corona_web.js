@@ -2,6 +2,7 @@ const express = require('express');
 const bodyparser = require('body-parser');
 const fs = require('fs');
 const url = require('url');
+const state_abbr = require('./state_abbr');
 
 const Handlebars = require('hbs');
 const corona_sql = require('./corona_sql');
@@ -109,10 +110,17 @@ const get_datapoint = async(country, province, county, group, entry_date) => {
 
 const childSelector = (country, province) => 
     (!country ?
-        `country != ''` :
+        `country != '' and province=''` :
         !province ?
             `country = ${sqlstring.escape(country)} and province != ''` :
-            `country = ${sqlstring.escape(country)} and province = ${sqlstring.escape(province)}`);
+            `country = ${sqlstring.escape(country)} and province = ${sqlstring.escape(province)} and county != ''`);
+
+const childAndParentSelector = (country, province) => 
+(!country ?
+    `province=''` :
+    !province ?
+        `country = ${sqlstring.escape(country)} and county=''` :
+        `country = ${sqlstring.escape(country)} and province = ${sqlstring.escape(province)}`);
 
 const getChildDates = async(country, province) => {
     if (!country) country = "";
@@ -125,7 +133,7 @@ const getChildDates = async(country, province) => {
 }
 
 const getLabel = (country, province, county) => {
-    let label = "the World";
+    let label = "World";
     if (!country) return label;
     label = country;
     if (!province) return label;
@@ -339,25 +347,6 @@ app.get("/future", async(req, res) => {
  * The Map Page includes a map of the most recent cases, to the county level. */
 app.get("/maps/heat", (req, res) => {
     res.render("maps/heat");
-});
-
-app.get("/maps", (req, res) => {
-    res.render("maps/index");
-});
-
-app.get("/maps/country", async (req, res) => {
-    let query = url.parse(req.url, true).query;
-    if (!query.country) {
-        res.render("maps/index");
-    } else {
-        let label = getLabel(query.country, query.province, query.county);
-        let dates = await getChildDates(query.country, query.province);
-        res.render("maps/country", {
-            mapID: query.country,
-            entryDates: dates.map(date => utc_iso(date.entry_date)),
-            label: label
-        });
-    }
 });
 
 /* Disclaimer lol
@@ -689,9 +678,9 @@ function geojson(content) {
 
 }
 
-app.get("/maps/world", (req, res) => {
-    res.render("maps/world");
-});
+// app.get("/maps/world", (req, res) => {
+//     res.render("maps/world");
+// });
 
 app.get("/api/countries", async(req, res) => {
     let params = url.parse(req.url, true).query;
@@ -714,25 +703,102 @@ app.get("/api/countries", async(req, res) => {
     }
 });
 
+mapTree = {
+    'World': [
+        'Argentina',
+        'Australia',
+        'Canada',
+        'India',
+        'Italy',
+        'Japan',
+        'Netherlands',
+        'Portugal',
+        'South Korea',
+        'Spain',
+        'United States',
+    ]
+}
+// app.get("/maps", (req, res) => {
+//     res.render("maps/index");
+// });
+
+app.get("/maps/", countryMap);
+app.get("/maps/:country", countryMap);
+app.get("/maps/:country/:province", countryMap);
+
+async function countryMap(req, res) {
+    let country = req.params.country;
+    let province = req.params.province;
+    let label = getLabel(country, province);
+    let dates = await getChildDates(country, province);
+    res.render("maps/country", {
+        country: country,
+        province: province,
+        entryDates: dates.map(date => utc_iso(date.entry_date)),
+        relatedMaps: mapTree[label],
+        label: label
+    });
+};
+
+function childLabel(country, province, county) {
+    if (!country) return "country";
+    if (!province) return "province";
+    if (!county) return "county";
+}
+
 app.get("/api/mapdata", async (req, res) => {
     let params = url.parse(req.url, true).query;
     let date = params.date || utc_iso(new Date());
-    let country = mapid = params.map;
-    let query = sqlstring.format(`
-        select province, total, dtotal, recovered, drecovered, deaths, ddeaths from datapoints
+    let country = params.country || '';
+    let province = params.province || '';
+    if (country == 'world') country = '';
+    if (country == 'United States Counties') {
+        let query = sqlstring.format(`
+        select province, county, total, dtotal, recovered, drecovered, deaths, ddeaths from datapoints
         where entry_date=?
-        and country=?
-        and county='';
-    `, [date, country]);
-    try {
-        results = await get_sql(query);
-        resultsJSON = {};
-        for (let result of results) {
-            resultsJSON[result.province] = result;
+        and country='United States'
+        and county!='';
+        `, date);
+        try {
+            results = await get_sql(query);
+            resultsJSON = {};
+            let mapRegions = {};
+            for (let result of results) {
+                if (result.province in state_abbr) {
+                    mapRegions[result.county + ", " + state_abbr[result.province]] = result;
+                } else {
+                    mapRegions[result.county + ", " + result.province] = result;
+                }
+            }
+            resultsJSON.mapRegions = mapRegions;
+            resultsJSON.overall = overall;
+            res.json(resultsJSON);
+        } catch (err) {
+            console.error(err);
         }
-        res.json(resultsJSON);
-    } catch (err) {
-        console.error(err);
+    } else {
+        let childLabel_ = childLabel(country, province);
+        let query = sqlstring.format(`
+            select ${childLabel_}, total, dtotal, recovered, drecovered, deaths, ddeaths from datapoints
+            where entry_date=?
+            and ` + childAndParentSelector(country, province), date);
+        try {
+            results = await get_sql(query);
+            resultsJSON = {
+                subregions: {},
+                overall: {}
+            };
+            for (let result of results) {
+                if (result[childLabel_]) {
+                    resultsJSON.subregions[result[childLabel_]] = result;
+                } else {
+                    resultsJSON.overall = result;
+                }
+            }
+            res.json(resultsJSON);
+        } catch (err) {
+            console.error(err);
+        }
     }
 });
 
