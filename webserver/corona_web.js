@@ -329,16 +329,20 @@ app.get("/future", async(req, res) => {
     });
 });
 
-/* Map Page
- * The Map Page includes a map of the most recent cases, to the county level. */
-app.get("/maps/circle", (req, res) => {
-    res.render("maps/circle");
-});
+// /* Map Page
+//  * The Map Page includes a map of the most recent cases, to the county level. */
+// app.get("/maps/circle", (req, res) => {
+//     res.render("maps/circle");
+// });
 
 /* Map Page
  * The Map Page includes a map of the most recent cases, to the county level. */
 app.get("/maps/heat", (req, res) => {
     res.render("maps/heat");
+});
+
+app.get("/maps", (req, res) => {
+    res.render("maps/index");
 });
 
 app.get("/maps/country", async (req, res) => {

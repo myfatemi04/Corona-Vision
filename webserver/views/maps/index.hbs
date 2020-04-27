@@ -227,59 +227,28 @@
 	<body onload="init()">
 		{{>navbar}}
 		<div class="scroll box">
-			<h3>Map</h3>
 			Source: Local government websites, ESRI ARCGIS dashboards.<br/>
 			<a href="http://mapsvg.com/">Map data from MapSVG.com</a><br/>
-			<a href='/maps'>Maps Index</a>
-			{{!-- To view this app on a mobile device, download our app! --}}
-			<div class="d-flex flex-column">
-				<noscript>
-					This website requires JavaScript to run.
-				</noscript>
-				<select name="map-feature" class="custom-input-color form-control my-2" onchange="setFeature(this.value)">
-					<option value="total">Total cases</option>
-					<option value="recovered">Recovered cases</option>
-					<option value="deaths">Deaths</option>
-					<option value="dtotal">24H Change in total cases</option>
-				</select>
-				<select name="map-date" class="custom-input-color form-control my-2" id="date" onchange="setDate(this.value)">
-					{{#each entryDates}}
-						<option value="{{this}}">{{this}}</option>
-					{{/each}}
-				</select>
-				<div class="column-container">
-					<button style="flex: 1;" class="btn custom-button-color mx-1 my-1" onclick="animate_now()">
-						Start animation from selected date to today
-					</button>
-					<button style="flex: 1;" class="btn custom-button-color mx-1 my-1" onclick="start_animation()">
-						Start animation from first day to today
-					</button>
-					<button style="flex: 1;" class="btn custom-button-color mx-1 my-1" onclick="stop_animation()">
-						Stop animation
-					</button>
-					<select style="flex: 1;" class="custom-input-color form-control my-1" onchange="setFps(this.value)">
-						<option value="16">4x Speed</option>
-						<option value="8">2x Speed</option>
-						<option value="4" selected>1x Speed</option>
-						<option value="2">0.5x Speed</option>
-						<option value="1">0.25x Speed</option>
-					</select>
-				</div>
-			</div>
-			<div id="tooltip" style="display: none; position: absolute;">
-				<div>
-					<span id="tooltipState" class="font-weight-bold"></span>
-				</div>
-				<div id="tooltipRows">
-				</div>
-			</div>
-			<div id="mapWrapper" style="position: relative; width: 100%; height: 100%;">
-				<h1>Map of {{label}}</h1>
-				<div id="svgMap"
-				{{!-- style="height: 30em;" --}}
-				>
-				</div>
-			</div>
+			<a href="/maps/heat">Heat Map</a> | <a href="/maps/world">World Map</a> | <b>Country Map</b><br/>
+            <h3>Countries with Live Maps</h3>
+			<div style="font-size: 1.5em;">
+                <ul>
+                    <li><a href='/maps/heat'>Heat map</a></li>
+                    <li><a href='/maps/circle'>Circle map</a></li>
+                    <li><a href='/maps/world'>World map</a></li>
+                    <li><a href='/maps/country?country=Argentina'>Argentina map</a></li>
+                    <li><a href='/maps/country?country=Australia'>Australia map</a></li>
+                    <li><a href='/maps/country?country=Canada'>Canada map</a></li>
+                    <li><a href='/maps/country?country=India'>India map</a></li>
+                    <li><a href='/maps/country?country=Italy'>Italy map</a></li>
+                    <li><a href='/maps/country?country=Japan'>Japan map</a></li>
+                    <li><a href='/maps/country?country=Netherlands'>Netherlands map</a></li>
+                    <li><a href='/maps/country?country=Portugal'>Portugal map</a></li>
+                    <li><a href='/maps/country?country=South Korea'>South Korea map</a></li>
+                    <li><a href='/maps/country?country=Spain'>Spain map</a></li>
+                    <li><a href='/maps/country?country=United States'>United States state map</a></li>
+                </ul>
+            </div>
 		</div>
 	</body>
 </html>
