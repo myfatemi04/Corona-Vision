@@ -294,6 +294,9 @@
 									<th style="flex: 2;">Deaths</th>
 									<th style="flex: 2;">Severe</th>
 									<th style="flex: 2;">Tests</th>
+									{{#unless country}}
+										<th style="flex: 2;">Tests/mil</th>
+									{{/unless}}
 								</tr>
 							</thead>
 							<tbody id="tablebody">

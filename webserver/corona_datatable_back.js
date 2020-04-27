@@ -1,7 +1,4 @@
-const sql = require('./corona_sql');
-
-let country_list = [];
-let province_list = {};
+const countryjs = require('countryjs');
 
 let COLORS = {
     total: "#fcba03",
@@ -105,13 +102,13 @@ module.exports = {
     format_update_time: format_update_time,
     make_rows: (data, country, province, county, entry_date) => {
         // if the country isn't specified, we are listing countries
-        if (country == 'all' || country == '') { label_prop = 'country'; label_default = 'World'; }
+        if (country == '') { label_prop = 'country'; label_default = 'World'; }
 
         // if the province isn't specified, we are listing provinces
-        else if (province == 'all' || province == '') { label_prop = 'province'; label_default = country; }
+        else if (province == '') { label_prop = 'province'; label_default = country; }
 
         // if the county isn't specified, we are listing county
-        else if (county == 'all' || county == '') { label_prop = 'county'; label_default = province; }
+        else if (county == '') { label_prop = 'county'; label_default = province; }
 
         // if all are specified, we are listing a single entry
         else { label_prop = ''; label_default = county; }
@@ -127,7 +124,7 @@ module.exports = {
         let html = "";
         let go_back_link = '';
         if (country != '' && country != 'all') {
-            go_back_link = `${(province == '' || province == 'all' ? deselect_country_link : (county == '' || county == 'all' ? deselect_province_link : deselect_county_link))}`;
+            go_back_link = `${(province == '' ? deselect_country_link : (county == '' ? deselect_province_link : deselect_county_link))}`;
             html = `
             <tr>
                 <td class="mx-1">
@@ -156,6 +153,20 @@ module.exports = {
                 label_link = label_default;
             }
 
+            let tests_mil = 0;
+
+            if (label_prop == 'country') {
+                let countryInfo = countryjs.info(label, "name");
+                    if (typeof countryInfo != 'undefined') {
+                    let population = countryInfo['population'];
+                    let area = countryInfo['area'];
+                    if (population) {
+                        let mils = population / 1000000;
+                        tests_mil = (datapoint.tests/mils).toFixed(0);
+                    }
+                }
+            }
+
             let table_cols = [
                 {number: i, flex: 1, color: "#f5f5f5"},
                 {number: label_link, flex: 4},
@@ -165,6 +176,10 @@ module.exports = {
                 {number: datapoint.serious, color: COLORS.serious, source: datapoint.source_serious},
                 {number: datapoint.tests, color: COLORS.tests, source: datapoint.source_tests}
             ];
+
+            if (label_prop == "country") {
+                table_cols.push({number: tests_mil, color: COLORS.tests});
+            }
 
             let tr = `<tr class="datatable-row" data-label="${label}">`;
 
