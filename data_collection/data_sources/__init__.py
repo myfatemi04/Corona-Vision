@@ -17,6 +17,7 @@ from . import japan
 from . import netherlands
 from . import portugal
 from . import south_korea
+from . import spain
 from . import united_states
 
 from . import worldometers
@@ -36,6 +37,7 @@ live = [
 	netherlands.import_data,
 	portugal.import_data,
 	south_korea.import_data,
+	spain.import_data,
 	united_states.import_data,
 	worldometers.import_data,
 
