@@ -99,7 +99,6 @@ def update_deltas(day, updated=None):
                     province=province,
                     county=county
                 ).first()
-                print(most_recent_dp)
             else:
                 most_recent_dp = None
         
