@@ -4,9 +4,9 @@ import upload
 import time
 import upload
 from import_gis import import_gis
+from data_sources import minWait
 
 lastDatapointsUpdate = 0
-minWait = 60 * 15
 
 def import_data():
     global lastDatapointsUpdate

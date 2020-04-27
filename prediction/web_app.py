@@ -40,7 +40,7 @@ def predict_log():
 	if not X or len(X) < 10:
 		return {"LNMAX": 0, "MAX": 1, "T_INF": 0, "T_RISE": 1, "LIN": 0}
 
-	if (country, province, county) in log_cache and time.time() - log_cache[country, province, county]['time'] < (60 * 60 * 12):
+	if (country, province, county) in log_cache and time.time() - log_cache[country, province, county]['time'] < (60 * 360 * 12):
 		return log_cache[country, province, county]['pred']
 
 	min_date = min(X)

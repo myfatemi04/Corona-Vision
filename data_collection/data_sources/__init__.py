@@ -1,7 +1,11 @@
+
+minWait = 60 * 360
+
 import traceback
 import sys
 
 from . import albania
+from . import australia
 from . import china
 from . import india
 from . import italy
@@ -17,6 +21,7 @@ from . import usa_testing
 
 live = [
 	albania.import_data,
+	australia.import_data,
 	india.import_data,
 	italy.import_data,
 	japan.import_data,

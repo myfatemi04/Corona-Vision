@@ -762,7 +762,7 @@ app.get("/news", (req, res) => {
     /* 1000 ms/s * 60 s/m * 60 m/h * 1 h --> 1 hour cache age */
     let newsCacheExists = category in recent_news;
     if (newsCacheExists) {
-        let newsCacheShouldBeUpdated = Date.now() - recent_news[category].update_time > 1000 * 60 * 60 * 1;
+        let newsCacheShouldBeUpdated = Date.now() - recent_news[category].update_time > 1000 * 60 * 360 * 1;
         if (!newsCacheShouldBeUpdated) {
             res.render("news", {articles: recent_news[category].articles});
             return;

@@ -102,7 +102,7 @@ def predict_conv():
 	province = request.args.get("province") or ""
 	county = request.args.get("county") or ""
 
-	if (country, province, county) in conv_cache and time.time() - conv_cache[country, province, county]['time'] < (60 * 60 * 12):
+	if (country, province, county) in conv_cache and time.time() - conv_cache[country, province, county]['time'] < (60 * 360 * 12):
 		return {"y": conv_cache[country, province, county]['pred']}
 
 	_, in_Y = corona_sql.time_series(country, province, county)
@@ -187,7 +187,7 @@ def predict_log():
 	if not X or len(X) < 10:
 		return {"MAX": 0, "T_INF": 0, "T_RISE": 1}
 
-	if (country, province, county) in log_cache and time.time() - log_cache[country, province, county]['time'] < (60 * 60 * 12):
+	if (country, province, county) in log_cache and time.time() - log_cache[country, province, county]['time'] < (60 * 360 * 12):
 		return log_cache[country, province, county]['pred']
 
 	min_date = min(X)

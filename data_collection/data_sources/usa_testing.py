@@ -3,9 +3,9 @@ import json_extractor
 import upload
 import time
 import standards
+from data_sources import minWait
 
 lastDatapointsUpdate = 0
-minWait = 60 * 15
 
 def import_data():
 	global lastDatapointsUpdate
