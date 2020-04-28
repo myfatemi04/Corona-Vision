@@ -28,12 +28,12 @@ def import_data() -> None:
     if rq_evening.status_code == 200:
         import_pdf(rq_evening.content, ar_date)
     else:
-        print("\rError on evening report download")
+        print(f"\r{rq_evening.status_code} on evening report download")
         rq_morning = requests.get(urlm)
         if rq_morning.status_code == 200:
             import_pdf(rq_morning.content, ar_date)
         else:
-            print("\rError on morning report download")
+            print(f"\r{rq_morning.status_code} on morning report download")
 
 # def import_historical_data() -> None:
 #     # use argentina date

@@ -7,13 +7,23 @@ from data_parser import import_table
 lastDatapointsUpdate = 0
 minWait = 60
 
-disallowed = {
-	"United States": ["tests"],
-	"Albania": [],
-	"India": [],
-	"Japan": [],
-	"Spain": []
-}
+disallowed = [
+	"Albania",
+	"Argentina",
+	"Australia",
+	"Azerbaijan",
+	"Bahrain",
+	"Canada",
+	"France",
+	"India",
+	"Italy",
+	"Japan",
+	"Netherlands",
+	"Portugal",
+	"South Korea",
+	"Spain"
+	"United States",
+]
 
 def import_data():
 	global lastDatapointsUpdate
@@ -42,12 +52,11 @@ def import_data():
 		if key in result:
 			del result[key]
 	
+	newDatapoints = []
 	for result in results['datapoint']:
 		result['country'], _, _ = standards.normalize_name(result['country'], '', '')
-		if result['country'] in disallowed:
-			features = disallowed[result['country']] or ['total', 'deaths']
-			for feature in features:
-				delif(result, feature)
+		if result['country'] not in disallowed:
+			newDatapoints.append(result)
 
-	if upload.upload(results):			
+	if upload.upload_datapoints(newDatapoints, "http://www.worldometers.info/coronavirus"):			
 		lastDatapointsUpdate = time.time()
