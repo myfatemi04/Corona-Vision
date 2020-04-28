@@ -13,7 +13,7 @@ def loop():
 		data_sources.import_live()
 
 if __name__ == "__main__":
-	Thread(name="Live data downloader", target=loop, daemon=False).start()
+	Thread(name="Live data downloader", target=loop).start()
 	PORT = 6060
 	if "PORT" in os.environ:
 		PORT = os.environ['PORT']

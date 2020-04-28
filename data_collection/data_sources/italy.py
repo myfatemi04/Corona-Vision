@@ -19,6 +19,7 @@ def import_data():
 	import_counties()
 
 def import_counties():
+	print("Loading from Italy counties...")
 	global lastDatapointsUpdate
 	import io
 	import pandas as pd
@@ -58,6 +59,7 @@ def import_counties():
 		lastDatapointsUpdate = time.time()
 
 def import_provinces():
+	print("Loading from Italy provinces...")
 	global lastDatapointsUpdate
 	import io
 	import pandas as pd
@@ -100,27 +102,3 @@ def import_provinces():
 	if upload.upload(overall):
 		lastDatapointsUpdate = time.time()
 
-def import_historical_data():
-	global lastDatapointsUpdate
-	if time.time() - lastDatapointsUpdate < minWait:
-		print("Not uploading because elapsed < minWait")
-		return
-	else:
-		print("Loading from Italy...")
-
-	results = import_json(
-		url="https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-province.json",
-		source_link='https://github.com/pcm-dpc/COVID-19/',
-		table_labels={
-			"datapoint": {
-				"country": "Italy",
-				"entry_date": ["data", "::date_t"],
-				"province": ["denominazione_regione"],
-				"county": ["denominazione_provincia"],
-				"total": ["totale_casi"]
-			}
-		},
-		namespace=[]
-	)
-
-	upload.upload(results)

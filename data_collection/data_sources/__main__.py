@@ -1,2 +1,2 @@
-from . import italy
-italy.import_data()
+from . import spain
+spain.import_data()

@@ -18,11 +18,11 @@ def import_data():
     datapoints = []
     for row in rq.text.split("\n")[1:]:
         if row.strip():
-            province, total, _, _, _, _ = row.split(",")
+            split = row.split(",")
             datapoints.append({
                 "country": "Spain",
-                "province": province,
-                "total": total
+                "province": split[0],
+                "total": int(split[1])
             })
     
     if upload.upload_datapoints(datapoints, "https://covid19.isciii.es/"):
