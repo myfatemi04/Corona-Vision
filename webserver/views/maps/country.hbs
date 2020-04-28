@@ -39,6 +39,7 @@
 			let svgZoomObject = null;
 			let country = "{{country}}";
 			let province = "{{province}}";
+			let lastTooltipName = "{{label}}";
 
 			// we store this because the date can change
 			let feature = "total";
@@ -49,12 +50,10 @@
 			}
 
 			function triggerTooltipUpdate() {
-				let countryElement = $("path:hover");
-				if (countryElement) {
-					var subregionName = countryElement.attr('title');
-					if (subregionName) {
-						setTooltipInfo(subregionName, subregions[subregionName]);
-					}
+				if (lastTooltipName == "{{label}}") {
+					resetTooltip();
+				} else {
+					setTooltipInfo(lastTooltipName, subregions[lastTooltipName]);
 				}
 			}
 
@@ -183,6 +182,7 @@
 			}
 
 			function setTooltipInfo(subregion, content) {
+				lastTooltipName = subregion;
 				let html = '';
 				if (content) {
 					html += generateHTML("Cases", content.total);
