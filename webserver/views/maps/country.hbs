@@ -28,6 +28,12 @@
 				}
 			}
 
+			let relatedMaps = [
+				{{#each relatedMaps}}
+					"{{this}}",
+				{{/each}}
+			];
+
 			let subregions = {};
 			let overall = {};
 			let svgZoomObject = null;
@@ -114,7 +120,6 @@
 				thresMin = min;
 				thresMax = max;
 				$("path").attr("fill", "#212121");
-				console.log(subregions);
 				for (let subregionID in subregions) {
 					let featureValue = subregions[subregionID][feature];
 					let featureRatio = getRatio(thresMin, thresMax, featureValue);
@@ -134,6 +139,10 @@
 				$(window).resize(
 					() => {
 						$("#pageContent").height($(window).height() - $("#header").height());
+						$("#svgMap").height($("#mapWrapper").height() - $("#mapHeader").height());
+						console.log($("#svgMap").height());
+						$("svg").width($("#svgMap").width());
+						$("svg").height($("#svgMap").height());
 					}
 				);
 				$(window).trigger('resize');
@@ -150,9 +159,11 @@
 								$("#svgMap").html(text);
 								addSubregionListeners();
 								setDate($("#date").val(), resetTooltip);
-								$("svg").width($("#svgMap").width());
-								$("svg").height($("#svgMap").height());
-								svgZoomObject = svgPanZoom('svg');
+								svgZoomObject = svgPanZoom('svg', {
+									dblClickZoomEnabled: false,
+									zoomScaleSensitivity: 0.5
+								});
+								$(window).trigger('resize');
 							}
 						)
 					}
@@ -178,15 +189,25 @@
 					html += generateHTML("Cases today", content.dtotal);
 					html += generateHTML("Deaths", content.deaths);
 					html += generateHTML("Recoveries", content.recovered);
+					if (relatedMaps.includes(subregion)) {
+						html += `<a href="/maps/${country?country+"/":""}${subregion}">Click for map of ${subregion}</a>`;
+					}
+				} else {
+					html += '<i>No data found</i>';
 				}
 				$("#tooltipRows").html(html);
 				$("#tooltipSubregion").html(subregion);
 			}
 
 			function addSubregionListeners() {
+				// 'path' tags are for countries
+				// #svgMap is triggered even if you aren't directly tapping it
 				$("#svgMap")[0].addEventListener('touchend', function(e) {
-					// 'path' tags are for countries
-					// #svgMap is triggered even if you aren't directly tapping it
+					if (e.path[0].tagName != 'path') {
+						resetTooltip();
+					}
+				});
+				$("#svgMap")[0].addEventListener('click', function(e) {
 					if (e.path[0].tagName != 'path') {
 						resetTooltip();
 					}
@@ -194,14 +215,11 @@
 				for (let subregion of $("#svgMap path")) {
 					let subregionName = subregion.getAttribute("title");
 					if (typeof subregionName != 'undefined') {
-						subregion.addEventListener('mouseenter', function(e) {
-							setTooltipInfo(subregionName, subregions[subregionName]);
-						});
 						subregion.addEventListener('touchend', function(e) {
 							setTooltipInfo(subregionName, subregions[subregionName]);
 						});
-						subregion.addEventListener('mouseleave', function() {
-							resetTooltip();
+						subregion.addEventListener('click', function(e) {
+							setTooltipInfo(subregionName, subregions[subregionName]);
 						});
 					}
 				}
@@ -268,10 +286,10 @@
 				</select>
 				<div class="d-flex flex-column">
 					<button class="btn custom-button-color my-2" onclick="animate_now()">
-						Start animation from selected date to today
+						Animate from selected date to today
 					</button>
 					<button class="btn custom-button-color my-2" onclick="start_animation()">
-						Play animation from first day to today
+						Animate from first day to today
 					</button>
 					<button class="btn custom-button-color my-2" onclick="stop_animation()">
 						Pause animation
@@ -284,34 +302,36 @@
 						<option value="1">0.25x Speed</option>
 					</select>
 				</div>
-				{{#if country}}
-					<a href="/maps/">World Map</a><br/>
-				{{/if}}
-				{{#if province}}
-					<a href="/maps/{{country}}">{{country}} Map</a><br/>
-				{{/if}}
-				{{#if relatedMaps}}
-					<div style="border-top: 1px solid #f5f5f5;">
-						<b>Related maps</b>
-						<ul>
-							{{#each relatedMaps}}
-								<li>
-									<a href="/maps/{{this}}">{{this}}</a>
-								</li>
-							{{/each}}
-						</ul>
-					</div>
-				{{/if}}
+				
+				<div style="border-top: 1px solid #f5f5f5;">
+					<b>Related maps</b>
+					<ul>
+						{{#if country}}
+							<li>
+								<a href="/maps/world">World Map</a>
+							</li>
+						{{/if}}
+						{{#if province}}
+							<li>
+								<a href="/maps/{{country}}">{{country}} Map</a>
+							</li>
+						{{/if}}
+						{{#each relatedMaps}}
+							<li>
+								<a href="/maps/{{#if ../country}}{{../country}}/{{/if}}{{this}}">{{this}}</a>
+							</li>
+						{{/each}}
+					</ul>
+				</div>
 			</div>
 			<div id="mapWrapper" style="flex: 4;">
-				<div class="text-center" style="border-bottom: 1px solid #f5f5f5;">
+				<div id="mapHeader" class="text-center" style="border-bottom: 1px solid #f5f5f5;">
 					<h1 style="margin: 0;">Map of {{label}}</h1>
 					Source: Local government websites, ESRI ARCGIS dashboards.<br/>
 					<a href="http://mapsvg.com/">Map data from MapSVG.com</a><br/>
 					<span class="font-italic" id="dateHead"></span>
 				</div>
-				<div id="svgMap" style="height: 30em;">
-				</div>
+				<div id="svgMap"></div>
 			</div>
 		</div>
 	</body>

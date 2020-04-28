@@ -1,2 +1,2 @@
-from . import import_live
-import_live()
+from . import argentina
+argentina.import_data()

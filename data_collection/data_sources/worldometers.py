@@ -11,7 +11,8 @@ disallowed = {
 	"United States": ["tests"],
 	"Albania": [],
 	"India": [],
-	"Japan": []
+	"Japan": [],
+	"Spain": []
 }
 
 def import_data():

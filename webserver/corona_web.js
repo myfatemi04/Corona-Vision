@@ -339,9 +339,9 @@ app.get("/future", async(req, res) => {
 
 // /* Map Page
 //  * The Map Page includes a map of the most recent cases, to the county level. */
-// app.get("/maps/circle", (req, res) => {
-//     res.render("maps/circle");
-// });
+app.get("/maps/circle", (req, res) => {
+    res.render("maps/circle");
+});
 
 /* Map Page
  * The Map Page includes a map of the most recent cases, to the county level. */
@@ -678,10 +678,6 @@ function geojson(content) {
 
 }
 
-// app.get("/maps/world", (req, res) => {
-//     res.render("maps/world");
-// });
-
 app.get("/api/countries", async(req, res) => {
     let params = url.parse(req.url, true).query;
     let date = params['date'] || utc_iso(new Date());
@@ -716,11 +712,11 @@ mapTree = {
         'South Korea',
         'Spain',
         'United States',
+    ],
+    'United States': [
+        ...Object.keys(state_abbr)
     ]
 }
-// app.get("/maps", (req, res) => {
-//     res.render("maps/index");
-// });
 
 app.get("/maps/", countryMap);
 app.get("/maps/:country", countryMap);
@@ -729,6 +725,9 @@ app.get("/maps/:country/:province", countryMap);
 async function countryMap(req, res) {
     let country = req.params.country;
     let province = req.params.province;
+    if (country.toLowerCase() == 'world') {
+        country = '';
+    }
     let label = getLabel(country, province);
     let dates = await getChildDates(country, province);
     res.render("maps/country", {
