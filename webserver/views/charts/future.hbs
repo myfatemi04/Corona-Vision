@@ -36,6 +36,21 @@
 				totalChart.smoothLabels = {"total": 0};
 				charts['total'] = totalChart;
 
+				let dtotalChart = new Chart($("#dtotal-chart")[0].getContext('2d'), {
+					type: 'line',
+					data: {
+						labels: [],
+						datasets: [dtotalsDataset]
+					},
+					plugins: plugins,
+					options: chartStyles
+				});
+
+				dtotalChart.options.title.text = "Daily cases in " + label;
+				dtotalChart.update();
+				dtotalChart.smoothLabels = {"dtotal": 0};
+				charts['dtotal'] = dtotalChart;
+
 				let deathsChart = new Chart($("#deaths-chart")[0].getContext('2d'), {
 					type: 'line',
 					data: {
@@ -83,6 +98,7 @@
 					data => {
 						addData(totalChart, data, ['total']);
 						// addData(totalChart, data, ['total']); // positive cases/tests
+						addData(dtotalChart, data, ['dtotal']);
 						addData(deathsChart, data, ['deaths']);
 						addData(recoveredChart, data, ['recovered']);
 						addData(logisticChart, data, ['total']);
@@ -183,8 +199,33 @@
 							<option value="logarithmic">Logarithmic</option>
 						</select>
 
-						<div>Smoothing factor <small>(average N days to the left and right, filling in blanks with nearest value)</small></div>
-						<input type="number" onchange="smoothChart('total', this.value);" class="custom-input-color form-control my-2" value=0>
+						<div>Moving average</div>
+						<select onchange="smoothChart('total', this.value);" class="custom-input-color form-control my-2">
+							<option value=0>None</option>
+							<option value=1>3-day</option>
+							<option value=2>5-day</option>
+							<option value=3>7-day</option>
+						</select>
+					</div>
+					<div>
+						<canvas id="dtotal-chart"></canvas>
+						<button class="btn custom-button-color my-2" onclick="download('dtotal-chart')">
+							Save Image
+						</button>
+
+						<div>Scale <small>(change Y-axis type)</small></div>
+						<select onchange="scale(getChart('dtotal'), this.value)" name="scale-type" class="custom-input-color form-control my-2">
+							<option value="linear">Linear</option>
+							<option value="logarithmic">Logarithmic</option>
+						</select>
+
+						<div>Moving average</div>
+						<select onchange="smoothChart('dtotal', this.value);" class="custom-input-color form-control my-2">
+							<option value=0>None</option>
+							<option value=1>3-day</option>
+							<option value=2>5-day</option>
+							<option value=3>7-day</option>
+						</select>
 					</div>
 					<div>
 						<canvas id="deaths-chart"></canvas>
@@ -198,8 +239,13 @@
 							<option value="logarithmic">Logarithmic</option>
 						</select>
 
-						<div>Smoothing factor <small>(average N days to the left and right, filling in blanks with nearest value)</small></div>
-						<input type="number" onchange="smoothChart('deaths', this.value);" class="custom-input-color form-control my-2" value=0>
+						<div>Moving average</div>
+						<select onchange="smoothChart('deaths', this.value);" class="custom-input-color form-control my-2">
+							<option value=0>None</option>
+							<option value=1>3-day</option>
+							<option value=2>5-day</option>
+							<option value=3>7-day</option>
+						</select>
 					</div>
 					<div>
 						<canvas id="recovered-chart"></canvas>
@@ -213,8 +259,13 @@
 							<option value="logarithmic">Logarithmic</option>
 						</select>
 
-						<div>Smoothing factor <small>(average N days to the left and right, filling in blanks with nearest value)</small></div>
-						<input type="number" onchange="smoothChart('recovered', this.value);" class="custom-input-color form-control my-2" value=0>
+						<div>Moving average</div>
+						<select onchange="smoothChart('recovered', this.value);" class="custom-input-color form-control my-2">
+							<option value=0>None</option>
+							<option value=1>3-day</option>
+							<option value=2>5-day</option>
+							<option value=3>7-day</option>
+						</select>
 					</div>
 
 					<canvas id="predictions-logistic"></canvas>

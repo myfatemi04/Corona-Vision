@@ -137,11 +137,17 @@
 			function init() {
 				$(window).resize(
 					() => {
-						$("#pageContent").height($(window).height() - $("#header").height());
-						$("#svgMap").height($("#mapWrapper").height() - $("#mapHeader").height());
-						console.log($("#svgMap").height());
-						$("svg").width($("#svgMap").width());
-						$("svg").height($("#svgMap").height());
+						if ($(window).width() > 1000) {
+							$("#pageContent").css("display", "flex");
+							$("#pageContent").height($(window).height() - $("#header").height());
+							$("#svgMap").height($("#pageContent").height());
+							$("svg").width($("#svgMap").width());
+							$("svg").height($("#svgMap").height());
+						} else {
+							$("#pageContent").css("display", "block");
+							$("svg").width($("#svgMap").width());
+							$("svg").height("100%");
+						}
 					}
 				);
 				$(window).trigger('resize');
@@ -260,8 +266,14 @@
 	<body onload="init()">
 		<div id="header">
 			{{>navbar}}
+			<div id="mapHeader" class="text-center" style="border-bottom: 1px solid #f5f5f5;">
+				<h1 style="margin: 0;">Map of {{label}}</h1>
+				Source: Local government websites, ESRI ARCGIS dashboards.<br/>
+				<a href="http://mapsvg.com/">Map data from MapSVG.com</a><br/>
+				<span class="font-italic" id="dateHead"></span>
+			</div>
 		</div>
-		<div class="column-container" id="pageContent">
+		<div id="pageContent" style="display: flex;">
 			<div id="sidebar" class="d-flex flex-column p-2" style="flex: 1; border-right: 1px solid #f5f5f5;">
 				<div id="tooltip">
 					<div>
@@ -325,12 +337,6 @@
 				</div>
 			</div>
 			<div id="mapWrapper" style="flex: 4;">
-				<div id="mapHeader" class="text-center" style="border-bottom: 1px solid #f5f5f5;">
-					<h1 style="margin: 0;">Map of {{label}}</h1>
-					Source: Local government websites, ESRI ARCGIS dashboards.<br/>
-					<a href="http://mapsvg.com/">Map data from MapSVG.com</a><br/>
-					<span class="font-italic" id="dateHead"></span>
-				</div>
 				<div id="svgMap"></div>
 			</div>
 		</div>

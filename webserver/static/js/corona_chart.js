@@ -1,9 +1,10 @@
 function smoothChart(id, smoothing) {
 	let chart = charts[id];
 
+	chart.data.labels = chart.originalLabels.slice(smoothing, chart.originalLabels.length - smoothing);
 	for (let label in chart.smoothLabels) {
 		let index = chart.smoothLabels[label];
-		chart.data.datasets[index].data = smoothData(chart.originalData[label], smoothing);
+		chart.data.datasets[index].data = smoothData(chart.originalData[label], smoothing).slice(smoothing, chart.originalData[label].length - smoothing);
 	}
 
 	chart.update();
@@ -72,6 +73,7 @@ function extendDates(dates) {
 
 function addData(chart, data, datasets) {
 	chart.originalData = data;
+	chart.originalLabels = data.entry_date;
 	chart.data.labels = data.entry_date;
 
 	if (typeof datasets == 'undefined') {
@@ -87,6 +89,15 @@ function addData(chart, data, datasets) {
 
 let totalsDataset = {
 		label: 'Total cases',
+		backgroundColor: COLORS.total,
+		borderColor: COLORS.total,
+		fill: false,
+		data: [],
+		lineTension: 0
+	};
+
+let dtotalsDataset = {
+		label: 'Daily total cases',
 		backgroundColor: COLORS.total,
 		borderColor: COLORS.total,
 		fill: false,
