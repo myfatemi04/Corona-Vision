@@ -85,15 +85,16 @@ function addData(chart, data, datasets) {
 	setTimeout(() => {chart.update()}, 500);
 }
 
-let standardDatasets = [
-	{
+let totalsDataset = {
 		label: 'Total cases',
 		backgroundColor: 'yellow',
 		borderColor: 'yellow',
 		fill: false,
 		data: [],
 		lineTension: 0
-	},
+	};
+
+let recoveredDataset =
 	{
 		label: 'Recovered',
 		backgroundColor: 'green',
@@ -101,7 +102,9 @@ let standardDatasets = [
 		fill: false,
 		data: [],
 		lineTension: 0
-	},
+	};
+
+let deathsDataset =
 	{
 		label: 'Deaths',
 		backgroundColor: 'red',
@@ -109,7 +112,12 @@ let standardDatasets = [
 		fill: false,
 		data: [],
 		lineTension: 0
-	}
+	};
+
+let standardDatasets = [
+	totalsDataset,
+	recoveredDataset,
+	deathsDataset
 ];
 
 let logisticPredictionDatasets = {

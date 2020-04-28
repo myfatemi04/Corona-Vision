@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Corona Vision - About Statistics</title>
+        {{>styles}}
+        <script>
+            function back() {
+                window.history.back();
+            }
+        </script>
+	</head>
+	<body>
+		{{>navbar}}
+		<div class="container box mx-auto d-flex flex-column align-items-center">
+            <h1>Statistics Definitions</h1>
+            <ul>
+                <li>
+                    <b>Total cases</b>: includes both <i>confirmed cases</i> AND <i>presumptive positive cases.</i>
+                </li>
+                <li>
+                    <b>Active cases</b>: this value is calculated with the equation: <i>total cases - recoveries - deaths.</i>
+                </li>
+                <li>
+                    <b>Recoveries</b>: "recovered" case statistics are inexact, because the criteria for a case to be considered "recovered" varies between countries, and sometimes even between provinces.
+                    <i>However,</i> the WHO recommendation is to classify a patient as recovered if symptoms resolve and they have two negative tests within 24 hours, or symptoms resolve and 14 days pass. Some countries consider patients that leave the hospital as "recovered", even if they are not retested.
+                    Others consider anyone who tested positive and has not died three weeks after contracting the virus to be recovered. So, recovered cases vary by country and are inexact.
+                </li>
+                <li>
+                    <b>Serious / Critical cases</b>: patients being treated in an Intensive Care Unit.
+                </li>
+            </ul>
+            <br/>Sincerely, the Corona Vision team
+        </div>
+	</body>
+</html>

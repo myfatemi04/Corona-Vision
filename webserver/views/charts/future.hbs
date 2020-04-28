@@ -21,20 +21,50 @@
 				$("#provinceSelector").val(province);
 				$("#countySelector").val(county);
 
-				let standardChart = new Chart($("#standard-chart")[0].getContext('2d'), {
+				let totalChart = new Chart($("#total-chart")[0].getContext('2d'), {
 					type: 'line',
 					data: {
 						labels: [],
-						datasets: standardDatasets
+						datasets: [totalsDataset]
 					},
 					plugins: plugins,
 					options: chartStyles
 				});
 
-				standardChart.options.title.text = "Cases in " + label;
-				standardChart.update();
-				standardChart.smoothLabels = {"total": 0, "recovered": 1, "deaths": 2}
-				charts['standard'] = standardChart;
+				totalChart.options.title.text = "Cases in " + label;
+				totalChart.update();
+				totalChart.smoothLabels = {"total": 0};
+				charts['total'] = totalChart;
+
+				let deathsChart = new Chart($("#deaths-chart")[0].getContext('2d'), {
+					type: 'line',
+					data: {
+						labels: [],
+						datasets: [deathsDataset]
+					},
+					plugins: plugins,
+					options: chartStyles
+				});
+
+				deathsChart.options.title.text = "Deaths in " + label;
+				deathsChart.update();
+				deathsChart.smoothLabels = {"deaths": 0};
+				charts['deaths'] = deathsChart;
+
+				let recoveredChart = new Chart($("#recovered-chart")[0].getContext('2d'), {
+					type: 'line',
+					data: {
+						labels: [],
+						datasets: [recoveredDataset]
+					},
+					plugins: plugins,
+					options: chartStyles
+				});
+
+				recoveredChart.options.title.text = "Recoveries in " + label;
+				recoveredChart.update();
+				recoveredChart.smoothLabels = {"recovered": 0};
+				charts['recovered'] = recoveredChart;
 
 				let logisticChart = new Chart($("#predictions-logistic")[0].getContext('2d'), {
 					type: 'line',
@@ -47,25 +77,15 @@
 				logisticChart.options.title.text = "Fitting growth model...";
 				logisticChart.update();
 
-				{{!-- let convolutionalChart = new Chart($("#predictions-conv")[0].getContext('2d'), {
-					type: 'line',
-					data: convPredictionDatasets,
-					plugins: plugins,
-					options: chartStyles
-				});
-
-				convolutionalChart.options.title.text = "Artificial Intelligence prediction coming soon!";
-				convolutionalChart.update();
-				let convDataAdded = false;
-				--}}
-
 				$.getJSON(
 					"/cases/totals_sequence",
 					locationData,
-					(data) => {
-						addData(standardChart, data);
+					data => {
+						addData(totalChart, data, ['total']);
+						// addData(totalChart, data, ['total']); // positive cases/tests
+						addData(deathsChart, data, ['deaths']);
+						addData(recoveredChart, data, ['recovered']);
 						addData(logisticChart, data, ['total']);
-						{{!-- addData(convolutionalChart, data, ['total']); --}}
 						let extendedDates = extendDates([...data.entry_date]);
 						$.getJSON(
 							"//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/log",
@@ -83,19 +103,6 @@
 								setTimeout(() => {logisticChart.update()}, 500);
 							}
 						);
-
-						{{!-- $.getJSON(
-							"//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/conv",
-							locationData,
-							({y}) => {
-
-								convolutionalChart.options.title.text = "Artifical Intelligence predictions for " + label;
-								convolutionalChart.data.labels = extendedDates;
-								convolutionalChart.data.datasets[3].data = y;
-								convolutionalChart.update();
-								convDataAdded = true;
-							}
-						); --}}
 					}
 				);
 			}
@@ -164,20 +171,52 @@
 							</select>
 						{{/if}}
 					</div>
-					<canvas id="standard-chart"></canvas>
-					<button class="btn custom-button-color my-2" onclick="download('standard-chart')">
-						Save Image
-					</button>
+					<div>
+						<canvas id="total-chart"></canvas>
+						<button class="btn custom-button-color my-2" onclick="download('total-chart')">
+							Save Image
+						</button>
 
-					<div>Scale <small>(change Y-axis type)</small></div>
-					<select onchange="scale(getChart('standard'), this.value)" name="scale-type" class="custom-input-color form-control my-2">
-						<option value="linear">Linear</option>
-						<option value="logarithmic">Logarithmic</option>
-					</select>
+						<div>Scale <small>(change Y-axis type)</small></div>
+						<select onchange="scale(getChart('total'), this.value)" name="scale-type" class="custom-input-color form-control my-2">
+							<option value="linear">Linear</option>
+							<option value="logarithmic">Logarithmic</option>
+						</select>
 
-					<div>Smoothing factor <small>(average N days to the left and right, filling in blanks with nearest value)</small></div>
-					<input type="number" onchange="smoothChart('standard', this.value);" class="custom-input-color form-control my-2" value=0>
-					
+						<div>Smoothing factor <small>(average N days to the left and right, filling in blanks with nearest value)</small></div>
+						<input type="number" onchange="smoothChart('total', this.value);" class="custom-input-color form-control my-2" value=0>
+					</div>
+					<div>
+						<canvas id="deaths-chart"></canvas>
+						<button class="btn custom-button-color my-2" onclick="download('deaths-chart')">
+							Save Image
+						</button>
+
+						<div>Scale <small>(change Y-axis type)</small></div>
+						<select onchange="scale(getChart('deaths'), this.value)" name="scale-type" class="custom-input-color form-control my-2">
+							<option value="linear">Linear</option>
+							<option value="logarithmic">Logarithmic</option>
+						</select>
+
+						<div>Smoothing factor <small>(average N days to the left and right, filling in blanks with nearest value)</small></div>
+						<input type="number" onchange="smoothChart('deaths', this.value);" class="custom-input-color form-control my-2" value=0>
+					</div>
+					<div>
+						<canvas id="recovered-chart"></canvas>
+						<button class="btn custom-button-color my-2" onclick="download('recovered-chart')">
+							Save Image
+						</button>
+
+						<div>Scale <small>(change Y-axis type)</small></div>
+						<select onchange="scale(getChart('recovered'), this.value)" name="scale-type" class="custom-input-color form-control my-2">
+							<option value="linear">Linear</option>
+							<option value="logarithmic">Logarithmic</option>
+						</select>
+
+						<div>Smoothing factor <small>(average N days to the left and right, filling in blanks with nearest value)</small></div>
+						<input type="number" onchange="smoothChart('recovered', this.value);" class="custom-input-color form-control my-2" value=0>
+					</div>
+
 					<canvas id="predictions-logistic"></canvas>
 					<button class="btn custom-button-color my-2" onclick="download('predictions-logistic')">
 						Save Image
@@ -187,13 +226,8 @@
 						<option value="linear">Linear</option>
 						<option value="logarithmic">Logarithmic</option>
 					</select>
-					
-					<h1>Artificial Intelligence predictions coming soon!</h1>
-					<h1>SEIR predictions coming soon!</h1>
-					{{!-- <canvas id="predictions-conv"></canvas><br/> --}}
 					<span>
-						The logistic regression chart models population growth, and the artificial intelligence chart predicts
-						future patterns by using <i>1D convolutional neural networks</i>.
+						The logistic regression chart models population growth.</i>.
 					</span>
 					<div>
 						<a href="/charts/info">More info about the charts</a> | <a href="/disclaimer">Disclaimer about predictions</a>

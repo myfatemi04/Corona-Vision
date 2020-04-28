@@ -934,6 +934,10 @@ app.get("/sources", (req, res) => {
     res.render("details/sources");
 });
 
+app.get("/statisticsInfo", (req, res) => {
+    res.render("details/statisticsInfo");
+});
+
 app.get("/test-gcloud", (req, res) => {
     res.send("Domain is directed to Google Cloud App Engine");
 });
