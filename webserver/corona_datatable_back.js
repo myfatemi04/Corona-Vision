@@ -1,13 +1,5 @@
 const countryjs = require('countryjs');
-
-let COLORS = {
-    total: "#fcba03",
-    recovered: "#34eb4f",
-    deaths: "#eb3d34",
-    active: "#eb8c34",
-    tests: "#3440eb",
-    serious: "#fc8003"
-};
+const COLORS = require("./static/js/colors.js");
 
 function nFormatter(num, digits) {
     var si = [
@@ -68,16 +60,16 @@ function table_col(options) {
 let ico = ""; // <i class="fas fa-angle-right"></i>
 
 function set_country_link(entry_date, country) {
-    return `<a style="color: #3657ff;" href='?date=${entry_date}&country=${country}'>${country} ${ico}</a>`;
-    // return `<a style="color: #3657ff;" href='javascript:set_country("${label}")';>${label} ${ico}</a>`;
+    return `<a style="color: ${COLORS.link};" href='?date=${entry_date}&country=${country}'>${country} ${ico}</a>`;
+    // return `<a style="color: ${COLORS.link};" href='javascript:set_country("${label}")';>${label} ${ico}</a>`;
 }
 
 function set_province_link(entry_date, country, province) {
-    return `<a style="color: #3657ff;" href='?date=${entry_date}&country=${country}&province=${province}'>${province} ${ico}</a>`;
+    return `<a style="color: ${COLORS.link};" href='?date=${entry_date}&country=${country}&province=${province}'>${province} ${ico}</a>`;
 }
 
 function set_county_link(entry_date, country, province, county) {
-    return `<a style="color: #3657ff;" href='?date=${entry_date}&country=${country}&province=${province}&county=${county}';>${county} ${ico}</a>`
+    return `<a style="color: ${COLORS.link};" href='?date=${entry_date}&country=${country}&province=${province}&county=${county}';>${county} ${ico}</a>`
 }
 
 function format_update_time(update_time) {
@@ -169,7 +161,7 @@ module.exports = {
 
             let table_cols = [
                 {number: i, flex: 1, color: "#f5f5f5"},
-                {number: label_link, flex: 4},
+                {number: label_link, color: COLORS.link, flex: 4},
                 {number: datapoint.total + (datapoint.dtotal > 0 ? (" (+" + datapoint.dtotal + ")") : ""), source: datapoint.source_total, color: COLORS.total},
                 {number: datapoint.recovered, color: COLORS.recovered, source: datapoint.source_recovered},
                 {number: datapoint.deaths, color: COLORS.deaths, source: datapoint.source_deaths},

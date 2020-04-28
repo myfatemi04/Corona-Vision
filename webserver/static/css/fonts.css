@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css?family=Lato&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@800&display=swap');
 
 .lato {
 	font-family: "Lato";
@@ -12,4 +13,9 @@
 .no-deco:hover {
 	text-decoration: none;
 	color: #333;
+}
+
+.bold-sans {
+	font-family: "Open Sans";
+	font-weight: 800;
 }

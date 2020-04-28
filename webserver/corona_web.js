@@ -3,6 +3,7 @@ const bodyparser = require('body-parser');
 const fs = require('fs');
 const url = require('url');
 const state_abbr = require('./state_abbr');
+const COLORS = require("./static/js/colors.js");
 
 const Handlebars = require('hbs');
 const corona_sql = require('./corona_sql');
@@ -237,7 +238,8 @@ const data_table_page = async (req, res) => {
         prev_day_link: (first_available_day == entry_date) ? "" : make_prev_day_link(country, province, county, entry_date),
         countries: countries,
         provinces: provinces,
-        counties: counties
+        counties: counties,
+        COLORS: COLORS
     });
 }
 

@@ -87,8 +87,8 @@ function addData(chart, data, datasets) {
 
 let totalsDataset = {
 		label: 'Total cases',
-		backgroundColor: 'yellow',
-		borderColor: 'yellow',
+		backgroundColor: COLORS.total,
+		borderColor: COLORS.total,
 		fill: false,
 		data: [],
 		lineTension: 0
@@ -97,8 +97,8 @@ let totalsDataset = {
 let recoveredDataset =
 	{
 		label: 'Recovered',
-		backgroundColor: 'green',
-		borderColor: 'green',
+		backgroundColor: COLORS.recovered,
+		borderColor: COLORS.recovered,
 		fill: false,
 		data: [],
 		lineTension: 0
@@ -107,8 +107,8 @@ let recoveredDataset =
 let deathsDataset =
 	{
 		label: 'Deaths',
-		backgroundColor: 'red',
-		borderColor: 'red',
+		backgroundColor: COLORS.deaths,
+		borderColor: COLORS.deaths,
 		fill: false,
 		data: [],
 		lineTension: 0
@@ -123,37 +123,7 @@ let standardDatasets = [
 let logisticPredictionDatasets = {
 	labels: [],
 	datasets: [
-		{
-			label: 'Total cases',
-			backgroundColor: 'yellow',
-			borderColor: 'yellow',
-			fill: false,
-			data: [],
-			lineTension: 0
-		},
-		{
-			label: 'Logistic prediction',
-			backgroundColor: 'grey',
-			borderColor: 'grey',
-			fill: false,
-			data: [],
-			lineTension: 0,
-			hidden: false
-		}
-	]
-};
-
-let convPredictionDatasets = {
-	labels: [],
-	datasets: [
-		{
-			label: 'Total cases',
-			backgroundColor: 'yellow',
-			borderColor: 'yellow',
-			fill: false,
-			data: [],
-			lineTension: 0
-		},
+		totalsDataset,
 		{
 			label: 'Logistic prediction',
 			backgroundColor: 'grey',

@@ -111,7 +111,7 @@
 				<div class="column-container">
 					<div style="flex: 1;" class="d-flex flex-column">
 						<div class="box">
-							<div id="stats-info" class="lato" style="display: flex; flex-direction: column; font-size: 1.5rem;">
+							<div id="stats-info" class="boldsans" style="display: flex; flex-direction: column; font-size: 1.5rem;">
 								<div style="text-align: center; font-size: 1em; display: flex;">
 									<div style="flex: 2;"></div>
 									<div style="flex: 1;" class="d-flex flex-column">
@@ -164,7 +164,7 @@
 									<div class="stats-row">
 										<span class="stats-label">Cases</span>
 										<i class="fas fa-viruses"></i>
-										<span id="stats-total" class="font-weight-bold" style="color: #f3a513">
+										<span id="stats-total" class="font-weight-bold" style="color: {{../COLORS.total}}">
 											<a href="{{source_total}}">{{total}}</a>
 										</span>
 									</div>
@@ -174,7 +174,7 @@
 									<div class="stats-row">
 										<span class="stats-label">Cases today</span>
 										<i class="fas fa-clock"></i>
-										<span id="stats-dtotal" class="font-weight-bold" style="color: #f3a513">
+										<span id="stats-dtotal" class="font-weight-bold" style="color: {{../COLORS.total}}">
 											{{dtotal}}
 										</span>
 									</div>
@@ -184,7 +184,7 @@
 									<div class="stats-row">
 										<span class="stats-label">Active</span>
 										<i class="fas fa-head-side-cough"></i>
-										<span id="stats-active" class="font-weight-bold" style="color: #f58020">
+										<span id="stats-active" class="font-weight-bold" style="color: {{../COLORS.active}}">
 											{{active}}
 											<span class="stats-detail">({{ percent active total }})</span>
 										</span>
@@ -195,7 +195,7 @@
 									<div class="stats-row">
 										<span class="stats-label">Severe</span>
 										<i class="fas fa-hospital-user"></i>
-										<span id="stats-serious" class="font-weight-bold" style="color: #f75027">
+										<span id="stats-serious" class="font-weight-bold" style="color: {{../COLORS.serious}}">
 											<a href="{{source_serious}}">{{serious}}</a>
 											<span class="stats-detail">({{ percent serious total }})</span>
 										</span>
@@ -206,7 +206,7 @@
 									<div class="stats-row">
 										<span class="stats-label">Deaths</span>
 										<i class="fas fa-skull"></i>
-										<span id="stats-deaths" class="font-weight-bold" style="color: #f83e3e">
+										<span id="stats-deaths" class="font-weight-bold" style="color: {{../COLORS.deaths}}">
 											<a href="{{source_deaths}}">{{deaths}}</a>
 											<span class="stats-detail">({{ percent deaths total }})</span>
 										</span>
@@ -217,7 +217,7 @@
 									<div class="stats-row">
 										<span class="stats-label">Recoveries</span>
 										<i class="far fa-smile"></i>
-										<span id="stats-recovered" class="font-weight-bold" style="color: #3dff7a">
+										<span id="stats-recovered" class="font-weight-bold" style="color: {{../COLORS.recovered}}">
 											<a href="{{source_recovered}}">{{recovered}}</a>
 											<span class="stats-detail">({{ percent recovered total }})</span>
 										</span>
@@ -228,7 +228,7 @@
 									<div class="stats-row">
 										<span class="stats-label">Tests</span>
 										<i class="fas fa-vials"></i>
-										<span id="stats-tests" class="font-weight-bold" style="color: #3d87ff">
+										<span id="stats-tests" class="font-weight-bold" style="color: {{../COLORS.tests}}">
 											<a href="{{source_tests}}">{{tests}}</a>
 											<span class="stats-detail">({{ percent total tests }} positive)</span>
 										</span>
@@ -239,7 +239,7 @@
 									<div class="stats-row">
 										<span class="stats-label">Tests Today</span>
 										<i class="fas fa-clock"></i>
-										<span id="stats-dtests" class="font-weight-bold" style="color: #3d87ff">{{dtests}}</span>
+										<span id="stats-dtests" class="font-weight-bold" style="color: {{../COLORS.tests}}">{{dtests}}</span>
 									</div>
 									{{/pos}}
 
