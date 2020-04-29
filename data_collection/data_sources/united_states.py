@@ -40,6 +40,9 @@ def import_data():
 	if upload.upload(results):
 		lastDatapointsUpdate = time.time()
 
+def import_hist():
+	pass
+
 def import_hist_states():
 	stateList = requests.get("https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv").text
 	datapoints = []

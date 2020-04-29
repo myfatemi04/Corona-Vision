@@ -39,11 +39,11 @@
 				deathsChart.update();
 				charts['deaths'] = deathsChart;
 
-				let recoveredChart = newChart("#recovered-chart", [recoveredDataset, trendDataset]);
+				{{!-- let recoveredChart = newChart("#recovered-chart", [recoveredDataset, trendDataset]);
 
 				recoveredChart.options.title.text = "Recoveries in " + label;
 				recoveredChart.update();
-				charts['recovered'] = recoveredChart;
+				charts['recovered'] = recoveredChart; --}}
 
 				let logisticChart = newChart("#predictions-logistic", logisticPredictionDatasets);
 				charts['predictions-logistic'] = logisticChart;
@@ -62,8 +62,8 @@
 						addTrendline(dtotalChart);
 						addData(deathsChart, data, ['deaths']);
 						addTrendline(deathsChart);
-						addData(recoveredChart, data, ['recovered']);
-						addTrendline(recoveredChart);
+						{{!-- addData(recoveredChart, data, ['recovered']);
+						addTrendline(recoveredChart); --}}
 						addData(logisticChart, data, ['total']);
 						let extendedDates = extendDates([...data.entry_date]);
 						$.getJSON(
@@ -187,16 +187,17 @@
 						</select>
 					</div>
 					<div>
-						<canvas id="recovered-chart"></canvas>
+						<h1>Historical recovery data temporarily unavailable</h1>
+						{{!-- <canvas id="recovered-chart"></canvas> --}}
 						{{!-- <button class="btn custom-button-color my-2" onclick="download('recovered-chart')">
 							Save Image
 						</button> --}}
 
-						<div>Scale <small>(change Y-axis type)</small></div>
+						{{!-- <div>Scale <small>(change Y-axis type)</small></div>
 						<select onchange="scale(getChart('recovered'), this.value)" name="scale-type" class="custom-input-color form-control my-2">
 							<option value="linear">Linear</option>
 							<option value="logarithmic">Logarithmic</option>
-						</select>
+						</select> --}}
 					</div>
 
 					<canvas id="predictions-logistic"></canvas>

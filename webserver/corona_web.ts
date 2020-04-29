@@ -1,6 +1,7 @@
 import "./interfaces"
+import * as corona_sql from "./corona_sql";
+import * as express from "express";
 
-const express = require('express');
 const bodyparser = require('body-parser');
 const fs = require('fs');
 const url = require('url');
@@ -8,7 +9,6 @@ const state_abbr = require('./state_abbr');
 const COLORS = require("./static/js/colors.js");
 
 const Handlebars = require('hbs');
-const corona_sql = require('./corona_sql');
 const sqlstring = require('sqlstring');
 const NewsAPI = require('newsapi');
 const iso2 = require('iso-3166-1-alpha-2');
@@ -20,21 +20,20 @@ const datatables = require('./corona_datatable_back');
 /* Register the "partials" - handlebars templates that can be included in other templates */
 Handlebars.registerPartial("navbar", fs.readFileSync("views/navbar.hbs", "utf-8"));
 Handlebars.registerPartial("styles", fs.readFileSync("views/styles.hbs", "utf-8"));
-Handlebars.registerHelper('ifeq', function (a, b, options) {
+Handlebars.registerHelper('ifeq', function (a: any, b: any, options: any) {
     if (a == b) { return options.fn(this); }
     return options.inverse(this);
 });
-Handlebars.registerHelper('percent', function(a, b) {
+Handlebars.registerHelper('percent', function(a: number, b: number): string {
     return (100 * a/b).toFixed(2) + "%";
 });
-Handlebars.registerHelper('pos', function(conditional, options) {
+Handlebars.registerHelper('pos', function(conditional: number, options: any) {
     if (conditional > 0) {
         return options.fn(this);
     } else {
         return options.inverse(this);
     }
 });
-// Handlebars.registerPartial("map_panel", fs.readFileSync("views/map_panel.hbs", "utf-8"));
 
 let app = express();
 
@@ -49,80 +48,6 @@ app.use(bodyparser.urlencoded({
 /* Use Handlebars */
 app.set('view engine', 'hbs');
 
-/* Main Page
- * The Main Page includes charts, data tables, and live stats */
-let last_update = null;
-
-const get_datapoint = async(country, province, county, group, entry_date) => {
-    try {
-        let query = "select * from datapoints where";
-        query += " entry_date=" + sqlstring.escape(entry_date);
-        if(group) query += " and `group`=" + sqlstring.escape(group);
-        if(country) query += " and country=" + sqlstring.escape(country);
-        if(!country || province) query += " and province=" + sqlstring.escape(province);
-        if(!province || county) query += " and county=" + sqlstring.escape(county);
-        query += " and total > 10";
-
-        let query2 = "select * from datapoints where "
-        query2 += " entry_date=" + sqlstring.escape(entry_date) + " and";
-        let loc_where = "";
-        loc_where += " country=" + sqlstring.escape(country);
-        loc_where += " and province=" + sqlstring.escape(province);
-        loc_where += " and county=" + sqlstring.escape(county);
-        loc_where += " and total > 10";
-        query2 += loc_where;
-
-        let last_update_result = await get_sql("select MAX(update_time) as update_time from datapoints where entry_date=" + sqlstring.escape(entry_date) + ";");
-        last_update = last_update_result[0]['update_time'];
-
-        let label = county;
-        if (!county) label = province;
-        if (!province) label = country;
-        if (!country) label = "World";
-
-        let data = await get_sql(query);
-        let location_datapoints = await get_sql(query2)
-
-        if (location_datapoints.length == 0) {
-            return null;
-        }
-
-        return {
-            location_datapoint: location_datapoints[0],
-            loc_where: loc_where,
-            label: label,
-            data: data
-        };
-    } catch (err) {
-        console.error("Error while querying for datapoints at that location!");
-        return {"error": err}
-    }
-}
-
-const childSelector = (country, province) => 
-    (!country ?
-        `country != '' and province=''` :
-        !province ?
-            `country = ${sqlstring.escape(country)} and province != ''` :
-            `country = ${sqlstring.escape(country)} and province = ${sqlstring.escape(province)} and county != ''`);
-
-const childAndParentSelector = (country, province) => 
-(!country ?
-    `province=''` :
-    !province ?
-        `country = ${sqlstring.escape(country)} and county=''` :
-        `country = ${sqlstring.escape(country)} and province = ${sqlstring.escape(province)}`);
-
-const getChildDates = async(country, province) => {
-    if (!country) country = "";
-    if (!province) province = "";
-    return await get_sql(
-        `select distinct entry_date from datapoints where ` +
-        childSelector(country, province) + 
-        ` order by entry_date desc`
-    );
-}
-
 const getLabel = (country?: string, province?: string, county?: string) => {
     let label = "World";
     if (!country) return label;
@@ -134,99 +59,58 @@ const getLabel = (country?: string, province?: string, county?: string) => {
     return label;
 }
 
-const get_all_dates = async(loc_where) => {
-    try {
-        let entry_dates_result = await get_sql("select distinct entry_date from datapoints where" + loc_where + " order by entry_date desc");
-        let entry_dates = entry_dates_result.map(x => utc_iso(x['entry_date']));
-        return {
-            first_available_day: entry_dates[entry_dates.length - 1],
-            last_available_day: entry_dates[0],
-            entry_dates: entry_dates
-        }
-    } catch (err) {
-        console.error("Error while obtaining list of dates! Error:", err);
-        return {"error": err}
-    }
-}
-
-const getDatapointFromRequest = async (req) => {
+/* Main Page
+ * The Main Page includes charts, data tables, and live stats */
+const datatablePage = async (req, res) => {
     let params = url.parse(req.url, true).query;
-    let group = params['region'] || "";
     let country = params['country'] || "";
     let province = params['province'] || "";
     let county = params['county'] || "";
     let entry_date = params['date'] || utc_iso(new Date());
-    return await get_datapoint(country, province, county, group, entry_date);
-}
+    let label = getLabel(country, province, county);
+    let data = await corona_sql.getDatapointChildren(entry_date, country, province, county);
 
-const data_table_page = async (req, res) => {
-    let params = url.parse(req.url, true).query;
-    let group = params['region'] || "";
-    let country = params['country'] || "";
-    let province = params['province'] || "";
-    let county = params['county'] || "";
-    let entry_date = params['date'] || utc_iso(new Date());
-    let datapoint_response = await get_datapoint(country, province, county, group, entry_date);
-
-    if (!datapoint_response) {
+    if (!data) {
         res.render("main_page", {error: "Location not found"});
         return;
-    } else if (datapoint_response.error) {
-        res.render("main_page", {error: datapoint_response.error});
-        return;
     }
 
-    let {location_datapoint, loc_where, label, data} = datapoint_response;
+    let lastUpdate = new Date(Math.max(...data.map(x => x.update_time.getTime())));
+    let mainDatapoint: Datapoint;
 
-    let date_response = await get_all_dates(loc_where);
-    if (!date_response) {
-        res.render("main_page", {error: "Dates couldn't be loaded"});
-        return;
-    } else if (date_response.error) {
-        res.render("main_page", {error: date_response.error});
-        return;
+    for (let datapoint of data) {
+        if (datapoint.country == country && datapoint.province == province && datapoint.county == county) {
+            mainDatapoint = datapoint;
+            break;
+        }
     }
 
-    let {first_available_day, last_available_day, entry_dates} = date_response;
+    let dates = await corona_sql.getDates(country, province, county);
 
-    location_datapoint.last_update = datatables.format_update_time(location_datapoint.update_time);
+    let firstDay = dates[0];
+    let lastDay = dates[dates.length - 1];
 
     let countries = [];
     let provinces = [];
     let counties = [];
 
-    try {
-        countries = await getCountries(entry_date);
-    } catch (err) {
-        console.error("Error when retrieving country list!", err);
-    }
-    if (country) {
-        try {
-            provinces = await getProvinces(country, entry_date);
-        } catch (err) {
-            console.error("Error when retrieving province list!", err);
-        }
-    }
-    if (province) {
-        try {
-            counties = await getCounties(country, province, entry_date);
-        } catch (err) {
-            console.error("Error when retrieving county list!", err);
-        }
-    }
-        
+    let todayStr = entry_date;
+    countries = await corona_sql.getCountries(todayStr);
+    if (country) provinces = await corona_sql.getProvinces(todayStr, country);
+    if (province) counties = await corona_sql.getCounties(todayStr, country, province);
+
     res.render("main_page", {
         ...datatables.make_rows(data, country, province, county, entry_date),
-        last_update: datatables.format_update_time(last_update),
+        last_update: datatables.format_update_time(lastUpdate),
+        mainDatapoint: mainDatapoint,
         country: country,
         province: province,
         county: county,
-        label: label,
-        location_datapoint: location_datapoint,
         entry_date: entry_date,
-        entry_dates: entry_dates,
-        isLast: (last_available_day == entry_date),
-        isFirst: (first_available_day == entry_date),
+        label: label,
+        dates: dates,
+        isLast: (lastDay == entry_date),
+        isFirst: (firstDay == entry_date),
         countries: countries,
         provinces: provinces,
         counties: counties,
@@ -238,55 +122,12 @@ app.get("/calculated", (req, res) => {
     res.render("calculated");
 });
 
-app.get("/", data_table_page);
+app.get("/", datatablePage);
 
 /* Technical info about the charts */
 app.get("/charts/info", (req, res) => {
     res.render("charts/info");
 });
-
-function noneUndefined(row) {
-    if(('country' in row) && !row.country) return false;
-    if(('province' in row) && !row.province) return false;
-    if(('county' in row) && !row.county) return false;
-    return true;
-}
-
-const getCountries = async(entryDate?: string) => {
-    try {
-        let query = "select distinct country from datapoints where total > 10";
-        if (typeof entryDate != "undefined") query += " and entry_date = " + sqlstring.escape(entryDate);
-        let countriesResult = await get_sql(query);
-        return countriesResult.filter(noneUndefined);
-    } catch (err) {
-        console.error("Error when retrieving country list!", err);
-        return [];
-    }
-}
-
-const getProvinces = async(country: string, entryDate?: string) => {
-    try {
-        let query = sqlstring.format("select distinct province from datapoints where country = ? and total > 10", [country]);
-        if (typeof entryDate != "undefined") query += " and entry_date = " + sqlstring.escape(entryDate);
-        let provincesResult = await get_sql(query);
-        return provincesResult.filter(noneUndefined);
-    } catch (err) {
-        console.error("Error when retrieving province list!", err);
-        return [];
-    }
-}
-
-const getCounties = async(country: string, province: string, entryDate?: string) => {
-    try {
-        let query = sqlstring.format("select distinct county from datapoints where country = ? and province = ? and total > 10", [country, province]);
-        if (typeof entryDate != "undefined") query += " and entry_date = " + sqlstring.escape(entryDate);
-        let countiesResult = await get_sql(query);
-        return countiesResult.filter(noneUndefined);
-    } catch (err) {
-        console.error("Error when retrieving county list!", err);
-        return [];
-    }
-}
 
 app.get("/future", async(req, res) => {
     let params = url.parse(req.url, true).query;
@@ -300,25 +141,11 @@ app.get("/future", async(req, res) => {
     let countries = [];
     let provinces = [];
     let counties = [];
-    try {
-        countries = await getCountries();
-    } catch (err) {
-        console.error("Error when retrieving country list!", err);
-    }
-    if (country) {
-        try {
-            provinces = await getProvinces(country);
-        } catch (err) {
-            console.error("Error when retrieving province list!", err);
-        }
-    }
-    if (province) {
-        try {
-            counties = await getCounties(country, province);
-        } catch (err) {
-            console.error("Error when retrieving county list!", err);
-        }
-    }
+    let todayStr = utc_iso(new Date());
+
+    countries = await corona_sql.getCountries(todayStr);
+    if (country) provinces = await corona_sql.getProvinces(todayStr, country);
+    if (province) counties = await corona_sql.getCounties(todayStr, country, province);
 
     res.render("charts/future", {
         country: country,
@@ -348,65 +175,18 @@ app.get("/disclaimer", (req, res) => {
     res.render("details/disclaimer");
 });
 
-/* Totals Table (backend)
- * Provides an HTML table that can be inserted into the main page */
-app.get("/cases/totals_table", (req, res) => {
-    let params = req.query;
-
-    // get location and date
-    let country = get(params, "country") || "";
-    let province = get(params, "province") || "";
-    let county = get(params, "county") || "";
-    let entry_date = get(params, "date") || utc_iso(new Date());
-
-    let query = "select * from datapoints";
-    
-    // dont filter if the field = 'all'
-    let where_conds = [];
-    if (country != 'all') where_conds.push("country = " + sqlstring.escape(country));
-    if (province != 'all') where_conds.push("province = " + sqlstring.escape(province));
-    if (county != 'all') where_conds.push("county = " + sqlstring.escape(county));
-    where_conds.push("total > 10");
-
-    if (where_conds.length > 0) {
-        query += " where " + where_conds.join(" and ");
-    }
-
-    query += " and entry_date = " + sqlstring.escape(entry_date);
-
-    get_sql(query, "table_" + query).then(
-        content => {
-            res.send(datatables.make_rows(content, country, province, county, entry_date).table_rows);
-        }
-    );
-});
-
 /* Totals API
  * This provides results for a given country, province, or county */
 app.get("/cases/totals", (req, res) => {
     let params = req.query;
 
     // get location and date
-    let country = get(params, "country") || "";
-    let province = get(params, "province") || "";
-    let county = get(params, "county") || "";
-    let entry_date = get(params, "date") || utc_iso(new Date());
+    let country = params.country || "";
+    let province = params.province || "";
+    let county = params.county || "";
+    let entryDate = params.date || utc_iso(new Date());
 
-    let query = "select * from datapoints";
-    
-    // dont filter if the field = 'all'
-    let where_conds = [];
-    if (country != 'all') where_conds.push("country = " + sqlstring.escape(country));
-    if (province != 'all') where_conds.push("province = " + sqlstring.escape(province));
-    if (county != 'all') where_conds.push("county = " + sqlstring.escape(county));
-
-    if (where_conds.length > 0) {
-        query += " where " + where_conds.join(" and ");
-    }
-
-    query += " and entry_date = " + sqlstring.escape(entry_date);
-
-    get_sql(query).then(
+    corona_sql.getDatapointChildren(entryDate as string, country as string, province as string, county as string).then(
         content => res.send(JSON.stringify(content))
     );
 });
@@ -436,21 +216,7 @@ app.get("/cases/totals_sequence", (req, res) => {
     let province = params.province || "";
     let county = params.county || "";
 
-    let query = "select * from datapoints";
-    
-    // dont filter if the field = 'all'
-    let where_conds = [];
-    if (country != 'all') where_conds.push("country = " + sqlstring.escape(country));
-    if (province != 'all') where_conds.push("province = " + sqlstring.escape(province));
-    if (county != 'all') where_conds.push("county = " + sqlstring.escape(county));
-
-    if (where_conds.length > 0) {
-        query += " where " + where_conds.join(" and ");
-    }
-
-    query += " order by entry_date";
-
-    get_sql(query).then(
+    corona_sql.getDatapointSequence(country as string, province as string, county as string).then(
         (content) => {
             let labels = ['total', 'recovered', 'deaths'];
             let resp: TotalsSequence = {
@@ -506,20 +272,11 @@ app.get("/cases/totals_sequence", (req, res) => {
 });
 
 /* Countries API - returns a list of all countries for a given date */
-app.get("/list/countries", (req, res) => {
-    let params = req.query;
-    let entry_date = get(params, "date") || utc_iso(new Date());
+app.get("/api/countries", (req, res) => {
+    let params = url.parse(req.url, true).query;
+    let entryDate = params.date as string || utc_iso(new Date());
 
-    // base query
-    let query = "select distinct country from datapoints where country != '' and entry_date = " + sqlstring.escape(entry_date);
-
-    // require a province if necessary
-    if ("need_province" in params && params.need_province == 1) { query += " and province != ''"; }
-
-    // alphabetical order
-    query += " order by country";
-
-    get_sql(query).then(
+    corona_sql.getCountries(entryDate).then(
         content => {
             res.json(content);
         }
@@ -527,37 +284,24 @@ app.get("/list/countries", (req, res) => {
 });
 
 /* Provinces API - gives a list of provinces for a given country and date */
-app.get("/list/provinces", (req, res) => {
-    let params = req.query;
+app.get("/api/provinces", (req, res) => {
+    let params = url.parse(req.url, true).query;
+    let entryDate = params.date as string || utc_iso(new Date());
+    let country = params.country as string || "";
 
-    // require the country
-    if (!("country" in params)) res.end();
-
-    // base query
-    let query = sqlstring.format("select distinct province from datapoints where country = ? and province != ''" , params.country);
-
-    // require a county if necessary
-    if ("need_county" in params && params.need_county == 1) { query += " and county != ''"; }
-    
-    // alphabetical order
-    query += " order by province";
-
-    get_sql(query).then(
+    corona_sql.getProvinces(entryDate, country).then(
         content => res.json(content)
     );
 });
 
 /* County API - gives a list of counties for a given country, province, and date */
-app.get("/list/county", (req, res) => {
-    let params = req.query;
+app.get("/api/counties", (req, res) => {
+    let params = url.parse(req.url, true).query;
+    let entryDate = params.date as string || utc_iso(new Date());
+    let country = params.country as string || "";
+    let province = params.province as string || "";
 
-    // require the country and province
-    if (!("country" in params) || !("province" in params)) res.end();
-
-    // base query
-    let query = sqlstring.format("select distinct county from datapoints where country = ? and province = ? and county != '' order by county", [params.country, params.province]);
-    
-    get_sql(query).then(
+    corona_sql.getCounties(entryDate, country, province).then(
         content => res.json(content)
     );
 });
@@ -565,29 +309,20 @@ app.get("/list/county", (req, res) => {
 /* Dates API - list all dates that we have on record */
 app.get("/list/dates", (req, res) => {
     let params = url.parse(req.url, true).query;
-    let query = "select distinct entry_date from datapoints";
-    if (params.country)
-        query += " where country = " + sqlstring.escape(params.country) + " and province != ''";
-    query += " order by entry_date desc";
-
-    get_sql(query).then(
-        content => res.json(content)
-    );
-});
-
-/* First Days API - returns the stats for each country on the first day of infection */
-app.get("/cases/first_days", (req, res) => {
-    let query = sqlstring.format("select * from datapoints where is_first_day = true order by entry_date;");
-    get_sql(query).then(
+    let country = params.country as string || "";
+    let province = params.province as string || "";
+    let county = params.county as string || "";
+    
+    corona_sql.getDates(country, province, county).then(
         content => res.json(content)
     );
 });
 
 /* Cases-by-date API - returns all cases (with a labelled location) for a given date. Used by the map */
 app.get("/cases/date", (req, res) => {
-    let entry_date = get(req.query, "date") || utc_iso(new Date());
-    let query = sqlstring.format("select * from datapoints where entry_date = ? and latitude != 0 and longitude != 0 and county = '' and country != ''", entry_date);
-    get_sql(query).then( 
+    let params = url.parse(req.url, true).query;
+    let date = params.date as string || utc_iso(new Date());
+    corona_sql.getHeatmap(date).then( 
         content => res.json(content)
     );
 });
@@ -616,27 +351,27 @@ where
     datapoints.country!=''
 `;
 
-let geojson_cache = {};
-let geojson_max_age = 1000 * 60 * 15; // 15-minute caching
-app.get("/geojson", (req, res) => {
-    let entry_date = req.query['date'] || utc_iso(new Date());
-    let query = sqlstring.format(geojson_query + " and datapoints.province=''", entry_date);
-    if (query in geojson_cache) {
-        let {data, update_time} = geojson_cache[query];
-        if (Date.now() - update_time < geojson_max_age) {
-            res.json(data);
-            return;
-        }
-    }
+// let geojson_cache = {};
+// let geojson_max_age = 1000 * 60 * 15; // 15-minute caching
+// app.get("/geojson", (req, res) => {
+//     let entry_date = req.query['date'] || utc_iso(new Date());
+//     let query = sqlstring.format(geojson_query + " and datapoints.province=''", entry_date);
+//     if (query in geojson_cache) {
+//         let {data, update_time} = geojson_cache[query];
+//         if (Date.now() - update_time < geojson_max_age) {
+//             res.json(data);
+//             return;
+//         }
+//     }
 
-    get_sql(query).then(
-        content => {
-            let geojson_result = geojson(content);
-            geojson_cache[query] = {data: geojson_result, update_time: Date.now()};
-            res.json(geojson_result);
-        }
-    );
-});
+//     get_sql(query).then(
+//         content => {
+//             let geojson_result = geojson(content);
+//             geojson_cache[query] = {data: geojson_result, update_time: Date.now()};
+//             res.json(geojson_result);
+//         }
+//     );
+// });
 
 function geojson(content) {
     let feature_list = [];
@@ -675,27 +410,6 @@ function geojson(content) {
 
 }
 
-app.get("/api/countries", async(req, res) => {
-    let params = url.parse(req.url, true).query;
-    let date = params['date'] || utc_iso(new Date());
-    let query = sqlstring.format(`
-        select country, total, dtotal, recovered, drecovered, deaths, ddeaths from datapoints
-        where entry_date=?
-        and country!=''
-        and province='';
-    `, date);
-    try {
-        let results = await get_sql(query);
-        let resultsJSON = {};
-        for (let result of results) {
-            resultsJSON[iso2.getCode(result.country)] = result;
-        }
-        res.json(resultsJSON);
-    } catch (err) {
-        console.error(err);
-    }
-});
-
 let mapTree = {
     'World': [
         'Argentina',
@@ -726,102 +440,75 @@ async function countryMap(req, res) {
         country = '';
     }
     let label = getLabel(country, province);
-    let dates = await getChildDates(country, province);
+    let dates = await corona_sql.getDates(country, province, "", "childRequired");
     res.render("maps/country", {
         country: country,
         province: province,
-        entryDates: dates.map(date => utc_iso(date.entry_date)),
+        entryDates: dates,
         relatedMaps: mapTree[label],
         label: label
     });
 };
 
-function childLabel(country?: string, province?: string, county?: string) {
+function getChildLabel(country?: string, province?: string, county?: string) {
     if (!country) return "country";
     if (!province) return "province";
     if (!county) return "county";
 }
 
-app.get("/api/mapdata", async (req, res) => {
+app.get("/api/mapdata", (req, res) => {
     let params = url.parse(req.url, true).query;
     let date = params.date || utc_iso(new Date());
     let country = params.country || '';
     let province = params.province || '';
     if (country == 'world') country = '';
 
-    let childLabel_ = childLabel(country, province);
-    let query = sqlstring.format(`
-        select ${childLabel_}, total, dtotal, recovered, drecovered, deaths, ddeaths from datapoints
-        where entry_date=?
-        and ` + childAndParentSelector(country, province), date);
-    try {
-        let results = await get_sql(query);
-        let resultsJSON = {
-            subregions: {},
-            overall: {}
-        };
-        for (let result of results) {
-            if (result[childLabel_]) {
-                resultsJSON.subregions[result[childLabel_]] = result;
-            } else {
-                resultsJSON.overall = result;
+    corona_sql.getDatapointChildren(date, country, province, '').then(
+        results => {
+            let resultsJSON = {
+                subregions: {},
+                overall: {}
+            };
+            let childLabel = getChildLabel(country, province);
+            for (let result of results) {
+                if (result[childLabel]) {
+                    resultsJSON.subregions[result[childLabel]] = result;
+                } else {
+                    resultsJSON.overall = result;
+                }
             }
+            res.json(resultsJSON);
         }
-        res.json(resultsJSON);
-    } catch (err) {
-        console.error(err);
-    }
+    );
 });
 
-app.get("/api/countries/csv", async(req, res) => {
-    let params = url.parse(req.url, true).query;
-    let date = params['date'] || utc_iso(new Date());
-    let query = sqlstring.format(`
-        select country, total, dtotal, recovered, drecovered, deaths, ddeaths from datapoints
-        where entry_date=?
-        and country!=''
-        and province='';
-    `, date);
-    try {
-        let results = await get_sql(query);
-        let overall = 'country,total';//,dtotal,recovered,drecovered,deaths,ddeaths
-        for (let result of results) {
-            overall += `\n${result.country},${result.total}`;
-        }
-        res.send(overall);
-    } catch (err) {
-        console.error(err);
-    }
-});
+// app.get("/api/countries/csv", async(req, res) => {
+//     let params = url.parse(req.url, true).query;
+//     let date = params['date'] || utc_iso(new Date());
+//     let query = sqlstring.format(`
+//         select country, total, dtotal, recovered, drecovered, deaths, ddeaths from datapoints
+//         where entry_date=?
+//         and country!=''
+//         and province='';
+//     `, date);
+//     try {
+//         let results = await get_sql(query);
+//         let overall = 'country,total';//,dtotal,recovered,drecovered,deaths,ddeaths
+//         for (let result of results) {
+//             overall += `\n${result.country},${result.total}`;
+//         }
+//         res.send(overall);
+//     } catch (err) {
+//         console.error(err);
+//     }
+// });
 
 /* Heatmap API - returns a list of lat/longs, and various properties. */
-let heatmap_cache = {};
-let heatmap_max_age = 1000 * 60 * 15;
 app.get("/api/heatmap", (req, res) => {
-    let entry_date = req.query['date'] || utc_iso(new Date());
-    let query = sqlstring.format(geojson_query + ` and
-    (
-        datapoints.county!='' or
-        (
-            datapoints.country!='United States' and
-            datapoints.country!='Portugal' and
-            datapoints.country!='Netherlands'
-        )
-    ) and
-    locations.latitude is not null`, entry_date);
-    if (query in heatmap_cache) {
-        let {data, update_time} = heatmap_cache[query];
-        if (Date.now() - update_time < heatmap_max_age) {
-            res.json(data);
-            return;
-        }
-    }
-
-    get_sql(query).then(
-        heatmap_result => {
-            heatmap_result = heatmap_result.filter(row => !(row.country == 'United States' && row.county == ''));
-            heatmap_cache[query] = {data: heatmap_result, update_time: Date.now()};
-            res.json(heatmap_result);
+    let entryDate = req.query['date'] || utc_iso(new Date());
+    corona_sql.getHeatmap(entryDate).then(
+        heatmapData => {
+            res.json(heatmapData);
         }
     );
 });
@@ -849,7 +536,7 @@ function removeDuplicateArticles(articles) {
 let recent_news = {};
 app.get("/news", (req, res) => {
     let possible_categories = ['business', 'entertainment', 'general', 'health', 'science', 'sports', 'technology'];
-    let category = req.query['category'] || "general";
+    let category = req.query['category'] as string || "general";
     if (!possible_categories.includes(category)) {
         category = "general";
     }
@@ -916,32 +603,5 @@ app.get("/test-gcloud", (req, res) => {
 
 const hostname = '0.0.0.0';
 const port = process.env.PORT || 4040;
-
-function get(params, field) {
-    if (field in params) return params[field];
-    else return null;
-}
-
-const sql_cache = {};
-const sql_cache_age = 60000;
-function get_sql(query: string, key?: string) {
-    if (!key) key = query;
-    return new Promise(function(resolve, reject) {
-        // if this query is in the cache, and it was updated less than a minute ago, return the cached version
-        if (sql_cache.hasOwnProperty(key) && (Date.now() - sql_cache[key].time) < sql_cache_age) {
-            resolve(sql_cache[key].content);
-        } else {
-            corona_sql.sql.query(query,
-                (err, result, fields) => {
-                    if (err) throw err;
-
-                    // updated the cache
-                    sql_cache[key] = {"content": result, "time": Date.now()};
-                    resolve(sql_cache[key].content);
-                });
-        }
-    });
-    
-}
 
 app.listen(port, () => console.log(`Server started at ${hostname}:${port}!`));

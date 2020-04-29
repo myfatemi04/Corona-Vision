@@ -166,6 +166,10 @@ code {
 	margin: 0.25rem 0px;
 }
 
+.datatable-row.odd {
+	background-color: var(--design-purple-dark);
+}
+
 .datatable-head {
 	background-color: var(--design-purple-light);
 }
