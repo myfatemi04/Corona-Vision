@@ -3,6 +3,8 @@
 	<head>
 		<title>Corona Vision</title>
 		{{> styles}}
+		<link rel="stylesheet" href="/css/datatable.css">
+		<script src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
 		<script src="/js/corona_datatables.js"></script>
 		<script src="/js/corona_chart.js"></script>
@@ -11,12 +13,13 @@
 			let country = "{{country}}";
 			let province = "{{province}}";
 			let county = "{{county}}";
-			let standardChart = null;
+			let dtotalChart = null;
 			function init() {
 				$("#countrySelector").val(country);
 				$("#provinceSelector").val(province);
 				$("#countySelector").val(county);
 				$("#date").val("{{entry_date}}");
+				$("#datatable").DataTable();
 
 				dtotalChart = newChart("#standard-chart", [dtotalsDataset]);
 
@@ -96,6 +99,13 @@
 				text-align: center;
 				text-align-last: center;
 			}
+			#datatable {
+				background-color: inherit;
+			}
+			.dateSelector > * {
+				margin-left: 1em;
+				margin-right: 1em;
+			}
 		</style>
 	</head>
 	<body onload="init()">
@@ -141,7 +151,7 @@
 									</div>
 									<div style="flex: 2;"></div>
 								</div>
-								<div style="text-align: center; font-size: 0.75em; display: flex; align-items: center;">
+								<div class="dateSelector" style="text-align: center; font-size: 0.75em; display: flex; align-items: center;">
 									<div style="flex: 2; text-align: right;">
 										{{#unless isFirst}}
 											<a href="javascript:goYesterday()">Previous day</a>
@@ -275,13 +285,8 @@
 								<li><a href="/statisticsInfo">Statistics Definitions</a></li>
 							</ul>
 						</div>
-						<table class="d-flex flex-column" id="datatable">
+						<table class="d-flex flex-column hover stripe" id="datatable">
 							<thead class="border-bottom pos-sticky datatable-head custom-bg">
-								<tr class="d-flex py-2" style="display: flex; align-items: center; text-align: center;">
-									<th style="flex: 2;">
-										<input type="text" onkeyup="filter_table()" class="custom-input-color form-control" placeholder="Search for location" id="locationSearch">
-									</th>
-								</tr>
 								<tr class="d-flex py-2" style="font-size: 0.9rem;">
 									<th style="flex: 1;">#</th>
 									<th style="flex: 4;">Location</th>

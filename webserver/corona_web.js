@@ -577,8 +577,12 @@ app.get("/cases/totals_sequence", function (req, res) {
     query += " order by entry_date";
     get_sql(query).then(function (content) {
         var labels = ['total', 'recovered', 'deaths'];
-        var resp;
-        resp.entry_date = [];
+        var resp = {
+            entry_date: [],
+            total: [],
+            recovered: [],
+            deaths: []
+        };
         for (var _i = 0, labels_1 = labels; _i < labels_1.length; _i++) {
             var label = labels_1[_i];
             resp[label] = [];

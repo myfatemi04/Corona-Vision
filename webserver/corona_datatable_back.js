@@ -23,53 +23,39 @@ function nFormatter(num, digits) {
 
 function table_col(options) {
     let number = options.number;
-    let numberString = '-';
-    let percentString = '';
+    let innerText = '-';
 
     if (number != 0 && typeof number != 'undefined') {
-        if (options.hasOwnProperty("digits")) numberString = nFormatter(number, options.digits);
-        else numberString = number;
-        if (options.hasOwnProperty("denom") && options.denom != 0) {
-            let numer = number;
-            if (options.hasOwnProperty("customNumer")) {
-                numer = options.customNumer;
-            }
-            let percent = (100 * numer / options.denom).toFixed(1);
-            percentString = "(" + percent + "%)";
+        if (options.hasOwnProperty("digits")) innerText = nFormatter(number, options.digits);
+        else innerText = number;
+
+        if (options.source) {
+            innerText = `<a href='${options.source}' style='color: inherit; text-decoration: underline;'>` + innerText + `</a>`;
         }
     }
     
     let color = options.color || COLORS.fg;
-    let flex = options.flex || "2";
+    let flex = options.flex || 2;
     let fontWeight = options.fontWeight || 800;
 
     let style = `color: ${color}; flex: ${flex}; font-weight: ${fontWeight};`;
     style += options.style || "";
 
-    if ("source" in options && options.source) {
-        if (options.source == "calculated") {
-            options.source = "javascript:alert(\"This data is aggregated from more specific sources, e.g. adding up individual state totals\");";
-        }
-        return `<td class="mx-1" style='${style}'><a href='${options.source}' style='color: inherit; text-decoration: underline;'>${numberString} ${percentString}</a></td>`;
-    }
-
-
-    return `<td class="mx-1" style='${style}'>${numberString} ${percentString}</td>`;
+    return `<td class="mx-1" style='${style}'>${innerText}</td>`;
 }
 
 let ico = ""; // <i class="fas fa-angle-right"></i>
 
 function set_country_link(entry_date, country) {
-    return `<a style="color: ${COLORS.link};" href='?date=${entry_date}&country=${country}'>${country} ${ico}</a>`;
-    // return `<a style="color: ${COLORS.link};" href='javascript:set_country("${label}")';>${label} ${ico}</a>`;
+    return `<a class='country-link' href='?date=${entry_date}&country=${country}'>${country} ${ico}</a>`;
 }
 
 function set_province_link(entry_date, country, province) {
-    return `<a style="color: ${COLORS.link};" href='?date=${entry_date}&country=${country}&province=${province}'>${province} ${ico}</a>`;
+    return `<a class='country-link' href='?date=${entry_date}&country=${country}&province=${province}'>${province} ${ico}</a>`;
 }
 
 function set_county_link(entry_date, country, province, county) {
-    return `<a style="color: ${COLORS.link};" href='?date=${entry_date}&country=${country}&province=${province}&county=${county}';>${county} ${ico}</a>`
+    return `<a class='country-link' href='?date=${entry_date}&country=${country}&province=${province}&county=${county}';>${county} ${ico}</a>`
 }
 
 function format_update_time(update_time) {
@@ -106,25 +92,19 @@ module.exports = {
         else { label_prop = ''; label_default = county; }
 
         data.sort((a, b) => (a.total > b.total) ? -1 : 1)
-
-        let i = 0;
         
-        let deselect_country_link = `<a href="?date=${entry_date}"><i class="fas fa-angle-double-left"></i> Go back</a>`;
-        let deselect_province_link = `<a href="?date=${entry_date}&country=${country}"><i class="fas fa-angle-double-left"></i> Go back</a>`;
-        let deselect_county_link = `<a href="?date=${entry_date}&country=${country}&province=${province}"><i class="fas fa-angle-double-left"></i> Go back</a>`;
+        let backText = `<i class="fas fa-angle-double-left"></i> Back`
+        let deselect_country_link = `<a href="?date=${entry_date}">${backText}</a>`;
+        let deselect_province_link = `<a href="?date=${entry_date}&country=${country}">${backText}</a>`;
+        let deselect_county_link = `<a href="?date=${entry_date}&country=${country}&province=${province}">${backText}</a>`;
 
         let html = "";
         let go_back_link = '';
         if (country != '' && country != 'all') {
             go_back_link = `${(province == '' ? deselect_country_link : (county == '' ? deselect_province_link : deselect_county_link))}`;
-            html = `
-            <tr>
-                <td class="mx-1">
-                    ${go_back_link}
-                </td>
-            </tr>`;
         }
 
+        let i = 0;
         for (let datapoint of data) {
             let label = datapoint[label_prop];
             
@@ -160,10 +140,11 @@ module.exports = {
             }
 
             let table_cols = [
+                //!label ? go_back_link : i
                 {number: i, flex: 1, color: COLORS.fg},
                 {number: label_link, color: COLORS.link, flex: 4},
                 {number: datapoint.total, source: datapoint.source_total, color: COLORS.total},
-                {number: datapoint.dtotal > 0 ? `+${datapoint.dtotal}` : ``, source: datapoint.source_total, color: COLORS.total},
+                {number: datapoint.dtotal > 0 ? datapoint.dtotal : ``, source: datapoint.source_total, color: COLORS.total},
                 {number: datapoint.recovered, color: COLORS.recovered, source: datapoint.source_recovered},
                 {number: datapoint.deaths, color: COLORS.deaths, source: datapoint.source_deaths},
                 // {number: datapoint.serious, color: COLORS.serious, source: datapoint.source_serious},

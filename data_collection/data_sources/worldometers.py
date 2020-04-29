@@ -15,6 +15,7 @@ disallowed = [
 	"Bahrain",
 	"Canada",
 	"France",
+	"Germany",
 	"India",
 	"Italy",
 	"Japan",

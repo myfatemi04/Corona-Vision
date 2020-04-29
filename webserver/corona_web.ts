@@ -453,9 +453,13 @@ app.get("/cases/totals_sequence", (req, res) => {
     get_sql(query).then(
         (content) => {
             let labels = ['total', 'recovered', 'deaths'];
-            let resp: TotalsSequence;
+            let resp: TotalsSequence = {
+                entry_date: [],
+                total: [],
+                recovered: [],
+                deaths: []
+            };
             
-            resp.entry_date = [];
             for (let label of labels) {
                 resp[label] = [];
             }
