@@ -120,7 +120,3 @@ def import_jhu_date_range(date_1, date_2):
 
 def import_jhu_historical():
 	return import_jhu_date_range(date_1=date(2020, 4, 9), date_2=date.today())
-
-data = import_jhu_date(date(2020, 4, 25))
-if data:
-	upload(data)

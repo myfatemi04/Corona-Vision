@@ -61,7 +61,7 @@ def update_overall(country, province, county, entry_date, source_link, session):
         overall_dp = Datapoint(_filter, source_link)
         session.add(overall_dp)
     
-    overall_dp.update_data(labelled, source_link)
+    overall_dp.update_data(labelled, source_link, requireIncreasing=True)
 
 def update_deltas(day, updated=None):
     compare_day = day + timedelta(days=-1)

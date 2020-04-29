@@ -151,7 +151,7 @@ class Datapoint(Base):
 	source_tests = Column(String())
 	source_hospitalized = Column(String())
 
-	def update_data(self, data, source_link):
+	def update_data(self, data, source_link: str, requireIncreasing: bool = False) -> bool:
 		change = False
 		
 		def _update(label, new_val):
@@ -168,10 +168,10 @@ class Datapoint(Base):
 			if my_val is None:
 				_update(label, data[label])
 				change = True
-			# elif label in increase_labels:
-			# 	if data[label] > my_val:
-			# 		_update(label, data[label])
-			# 		change = True
+			elif label in increase_labels and requireIncreasing == True:
+				if data[label] > my_val:
+					_update(label, data[label])
+					change = True
 			else:
 				if data[label] != my_val:
 					_update(label, data[label])

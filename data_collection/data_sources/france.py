@@ -55,7 +55,7 @@ def import_historical_data():
         datapoints.append({
             'country': "France",
             "total": row['casConfirmes'],
-            'deaths': row['deces'],
+            'deaths': row['deces'] + (_(row, 'decesEhpad') or 0),
             'serious': _(row, 'reanimation'),
             'hospitalized': _(row, 'hospitalises'),
             'recovered': _(row, 'gueris'),
@@ -78,7 +78,7 @@ def import_date(d):
                 'province': row['nom'],
                 'recovered': row['gueris'],
                 'hospitalized': row['hospitalises'],
-                'deaths': row['deces'],
+                'deaths': row['deces'] + row['decesEhpad'],
                 'entry_date': d
             })
     

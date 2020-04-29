@@ -288,6 +288,8 @@ def normalize_name(country, province='', county=''):
 	county = remove_end(county, " borough")
 	county = remove_end(county, " county")
 	county = remove_end(county, " municipality")
+	if county.lower() != 'fairfax city' and county.lower() != 'new york city':
+		county = remove_end(county, " city")
 
 	if province in china_provinces:
 		province = china_provinces[province]
