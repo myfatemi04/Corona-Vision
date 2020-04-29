@@ -9,11 +9,27 @@
 		<script src="/js/corona_datatables.js"></script>
 		<script src="/js/corona_chart.js"></script>
 		<script src="/js/corona_util.js"></script>
+		<script src="/js/copy.js"></script>
 		<script>
 			let country = "{{country}}";
 			let province = "{{province}}";
 			let county = "{{county}}";
-			let dtotalChart = null;
+			let dtotalChart;
+			
+			function copyLink(country='', province='', county='') {
+				let linkHref = `https://coronavision.us/`;
+				if (country) {
+					linkHref += '?country=' + country;
+					if (province) {
+						linkHref += '&province=' + province;
+						if (county) {
+							linkHref += '&county=' + county;
+						}
+					}
+				}
+				copyTextToClipboard(linkHref);
+			}
+
 			function init() {
 				$("#countrySelector").val(country);
 				$("#provinceSelector").val(province);
@@ -102,6 +118,7 @@
 			#datatable {
 				background-color: inherit;
 			}
+
 			.dateSelector > * {
 				margin-left: 1em;
 				margin-right: 1em;
@@ -274,36 +291,35 @@
 							</div>
 						</div>
 					</div>
-					<div style="flex: 3;" class="d-flex flex-column box">
-						<div>
-							<b>Live Coronavirus Data</b>
-							<ul>
-								<li>Click on any stat to see its source.</li>
-								<li>Data changed: {{last_update}}</li>
-								<li>Daily counts reset at UTC-0.</li>
-								<li>Click on any country's name to see a chart of cases. If we have state data for that country, we will display that too!</li>
-								<li><a href="/statisticsInfo">Statistics Definitions</a></li>
-							</ul>
+					<div style="flex: 3;" class="d-flex flex-column">
+						<div class="box">
+							<h1 class='text-center'>Live Data: {{label}} <i onclick='copyLink(country, province, county)' class="fas fa-link"></i></h1>
+							<table class="d-flex flex-column hover stripe" id="datatable">
+								<thead class="border-bottom pos-sticky datatable-head">
+									<tr class="d-flex py-2" style="font-size: 0.9rem;">
+										<th style="flex: 1;">#</th>
+										<th style="flex: 4;">Location</th>
+										<th style="flex: 2;">Total</th>
+										<th style="flex: 2;">Today</th>
+										<th style="flex: 2;">Recovered</th>
+										<th style="flex: 2;">Deaths</th>
+										<th style="flex: 2;">Tests</th>
+										{{#unless country}}
+											<th style="flex: 2;">Tests/mil</th>
+										{{/unless}}
+									</tr>
+								</thead>
+								<tbody id="tablebody">
+									{{{table_rows}}}
+								</tbody>
+								<tfoot>
+									<div class="small">
+										Data changed: {{last_update}}. Click on any stat to see its source. Daily counts reset at UTC-0.
+										<a href="/statisticsInfo">Statistics Definitions</a>
+									</div>
+								</tfoot>
+							</table>
 						</div>
-						<table class="d-flex flex-column hover stripe" id="datatable">
-							<thead class="border-bottom pos-sticky datatable-head custom-bg">
-								<tr class="d-flex py-2" style="font-size: 0.9rem;">
-									<th style="flex: 1;">#</th>
-									<th style="flex: 4;">Location</th>
-									<th style="flex: 2;">Total</th>
-									<th style="flex: 2;">Today</th>
-									<th style="flex: 2;">Recovered</th>
-									<th style="flex: 2;">Deaths</th>
-									<th style="flex: 2;">Tests</th>
-									{{#unless country}}
-										<th style="flex: 2;">Tests/mil</th>
-									{{/unless}}
-								</tr>
-							</thead>
-							<tbody id="tablebody">
-								{{{table_rows}}}
-							</tbody>
-						</table>
 					</div>
 				</div>
 			{{/if}}

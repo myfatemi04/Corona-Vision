@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css?family=Lato&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@500;700&display=swap');
 
 .lato {
 	font-family: "Lato";
@@ -15,7 +17,11 @@
 	color: #333;
 }
 
-.bold-sans {
-	font-family: "Open Sans";
-	font-weight: 800;
+.montserrat {
+	font-family: "Montserrat";
+	font-weight: 700;
+}
+
+.ubuntu {
+	font-family: "Ubuntu";
 }

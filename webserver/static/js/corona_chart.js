@@ -66,9 +66,22 @@ function extendDates(dates) {
 	}
 	for (let i = 0; i < numDays; i++) {
 		current.setUTCDate(current.getUTCDate() + 1);
-		dates.push(isoDate(current));
+		newDates.push(isoDate(current));
 	}
-	return dates;
+	return newDates;
+}
+
+function addTrendline(chart, originalIndex, trendlineIndex) {
+	if (typeof originalIndex == 'undefined') {
+		originalIndex = 0;
+	}
+	if (typeof trendlineIndex == 'undefined') {
+		trendlineIndex = 1;
+	}
+	let smoothing = 3;
+	let smoothedData = smoothData(chart.data.datasets[originalIndex].data, smoothing).slice(3, -3);
+	chart.data.datasets[trendlineIndex].data = [undefined, undefined, undefined, ...smoothedData];
+	chart.update();
 }
 
 function addData(chart, data, datasets) {
@@ -76,15 +89,12 @@ function addData(chart, data, datasets) {
 	chart.originalLabels = data.entry_date;
 	chart.data.labels = data.entry_date;
 
-	if (typeof datasets == 'undefined') {
-		datasets = ['total', 'recovered', 'deaths'];
-	}
-
 	for (let i in datasets) {
 		chart.data.datasets[i].data = data[datasets[i]];
 	}
-
-	setTimeout(() => {chart.update()}, 500);
+	
+	chart.update();
+	$(window).trigger('resize');
 }
 
 function newChart(selector, datasets) {
@@ -137,27 +147,34 @@ let deathsDataset =
 		lineTension: 0
 	};
 
+let trendDataset =
+	{
+		label: 'Trendline',
+		backgroundColor: "#ffffff55",
+		borderColor: "#ffffff",
+		fill: 'origin',
+		data: [],
+		lineTension: 0	
+	}
+
 let standardDatasets = [
 	totalsDataset,
 	recoveredDataset,
 	deathsDataset
 ];
 
-let logisticPredictionDatasets = {
-	labels: [],
-	datasets: [
-		totalsDataset,
-		{
-			label: 'Logistic prediction',
-			backgroundColor: 'grey',
-			borderColor: 'grey',
-			fill: 'origin',
-			data: [],
-			lineTension: 0,
-			hidden: false
-		}
-	]
-};
+let logisticPredictionDatasets = [
+	totalsDataset,
+	{
+		label: 'Logistic prediction',
+		backgroundColor: '#ffffff55',
+		borderColor: '#ffffff',
+		fill: 'origin',
+		data: [],
+		lineTension: 0,
+		hidden: false
+	}
+];
 
 let chartStyles = {
 	tooltips: {
@@ -170,7 +187,7 @@ let chartStyles = {
 		text: "Loading...",
 		fontColor: COLORS.fg,
 		fontSize: 30,
-		fontFamily: "Lato"
+		fontFamily: "Montserrat"
 	},
 	legend: {
 		display: true,
@@ -200,9 +217,9 @@ let plugins = [{
 	beforeDraw: function (chart, easing) {
 		var ctx = chart.chart.ctx;
 
-		ctx.save();
-		ctx.fillStyle = COLORS.bg;
-		ctx.fillRect(0, 0, $("canvas")[0].width, $("canvas")[0].height);
-		ctx.restore();
+		// ctx.save();
+		// ctx.fillStyle = "";
+		// ctx.fillRect(0, 0, $("canvas")[0].width, $("canvas")[0].height);
+		// ctx.restore();
 	}
 }];
