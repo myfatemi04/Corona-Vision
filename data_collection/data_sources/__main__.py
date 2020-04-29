@@ -1,2 +1,2 @@
-from . import france
-france.import_historical_data()
+from . import germany
+germany.import_data()

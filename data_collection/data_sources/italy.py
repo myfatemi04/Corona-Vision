@@ -46,7 +46,7 @@ def import_counties():
 			"province": province,
 			"county": county,
 			"total": total,
-			"entry_date": datetime.datetime.strptime(date[:10], "%Y-%m-%d").date()
+			# "entry_date": datetime.datetime.strptime(date[:10], "%Y-%m-%d").date()
 		})
 
 	overall = {
@@ -90,7 +90,7 @@ def import_provinces():
 			"recovered": recovered,
 			"deaths": deaths,
 			"tests": caseTests,
-			"entry_date": datetime.datetime.strptime(date[:10], "%Y-%m-%d").date()
+			# "entry_date": datetime.datetime.strptime(date[:10], "%Y-%m-%d").date()
 		})
 
 	overall = {

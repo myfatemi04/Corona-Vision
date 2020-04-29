@@ -12,6 +12,7 @@ from . import bahrain
 from . import canada
 from . import china
 from . import france
+from . import germany
 from . import india
 from . import italy
 from . import japan
@@ -33,6 +34,7 @@ live = [
 	bahrain.import_data,
 	canada.import_data,
 	france.import_data,
+	germany.import_data,
 	india.import_data,
 	italy.import_data,
 	japan.import_data,
