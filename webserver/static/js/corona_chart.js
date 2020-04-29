@@ -87,20 +87,32 @@ function addData(chart, data, datasets) {
 	setTimeout(() => {chart.update()}, 500);
 }
 
+function newChart(selector, datasets) {
+	return new Chart($(selector), {
+		type: 'line',
+		data: {
+			labels: [],
+			datasets: datasets
+		},
+		plugins: plugins,
+		options: chartStyles
+	});
+}
+
 let totalsDataset = {
 		label: 'Total cases',
-		backgroundColor: COLORS.total,
+		backgroundColor: COLORS.total + "55",
 		borderColor: COLORS.total,
-		fill: false,
+		fill: 'origin',
 		data: [],
 		lineTension: 0
 	};
 
 let dtotalsDataset = {
 		label: 'Daily total cases',
-		backgroundColor: COLORS.total,
+		backgroundColor: COLORS.total + "55",
 		borderColor: COLORS.total,
-		fill: false,
+		fill: 'origin',
 		data: [],
 		lineTension: 0
 	};
@@ -108,9 +120,9 @@ let dtotalsDataset = {
 let recoveredDataset =
 	{
 		label: 'Recovered',
-		backgroundColor: COLORS.recovered,
+		backgroundColor: COLORS.recovered + "55",
 		borderColor: COLORS.recovered,
-		fill: false,
+		fill: 'origin',
 		data: [],
 		lineTension: 0
 	};
@@ -118,9 +130,9 @@ let recoveredDataset =
 let deathsDataset =
 	{
 		label: 'Deaths',
-		backgroundColor: COLORS.deaths,
+		backgroundColor: COLORS.deaths + "55",
 		borderColor: COLORS.deaths,
-		fill: false,
+		fill: 'origin',
 		data: [],
 		lineTension: 0
 	};
@@ -139,7 +151,7 @@ let logisticPredictionDatasets = {
 			label: 'Logistic prediction',
 			backgroundColor: 'grey',
 			borderColor: 'grey',
-			fill: false,
+			fill: 'origin',
 			data: [],
 			lineTension: 0,
 			hidden: false
@@ -148,17 +160,21 @@ let logisticPredictionDatasets = {
 };
 
 let chartStyles = {
+	tooltips: {
+		mode: 'index',
+		intersect: false,
+	},
 	responsive: true,
 	title: {
 		display: true,
 		text: "Loading...",
-		fontColor: "#f5f5f5",
+		fontColor: COLORS.fg,
 		fontSize: 30,
 		fontFamily: "Lato"
 	},
 	legend: {
 		display: true,
-		labels: { fontColor: "#f5f5f5" }
+		labels: { fontColor: COLORS.fg }
 	},
 	hover: {
 		mode: 'nearest',
@@ -167,14 +183,14 @@ let chartStyles = {
 	scales: {
 		xAxes: [
 			{
-				gridLines: { color: "#f5f5f5" },
-				ticks: { fontColor: "#f5f5f5" }
+				gridLines: { color: COLORS.fg },
+				ticks: { fontColor: COLORS.fg }
 			}
 		],
 		yAxes: [
 			{
-				gridLines: { color: "#f5f5f5" },
-				ticks: { fontColor: "#f5f5f5"}
+				gridLines: { color: COLORS.fg },
+				ticks: { fontColor: COLORS.fg}
 			}
 		]
 	}
@@ -185,7 +201,7 @@ let plugins = [{
 		var ctx = chart.chart.ctx;
 
 		ctx.save();
-		ctx.fillStyle = "#212121";
+		ctx.fillStyle = COLORS.bg;
 		ctx.fillRect(0, 0, $("canvas")[0].width, $("canvas")[0].height);
 		ctx.restore();
 	}

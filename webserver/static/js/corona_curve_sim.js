@@ -75,8 +75,8 @@ function init_curve_sim() {
                 data: [],
                 lineTension: 0,
                 fill: false,
-                backgroundColor: "#f5f5f5",
-                borderColor: "#f5f5f5"
+                backgroundColor: COLORS.fg,
+                borderColor: COLORS.fg
             },
             {
                 label: "Healthcare Capacity",
@@ -97,7 +97,7 @@ function init_curve_sim() {
             title: {
                 display: true,
                 text: "Curve simulator",
-				fontColor: "#f5f5f5",
+				fontColor: COLORS.fg,
 				fontSize: 30,
 				fontStyle: "",
 				fontFamily: "Lato"
@@ -106,34 +106,34 @@ function init_curve_sim() {
 				xAxes: [
 					{
                         gridLines: {
-                            color: "#f5f5f5"
+                            color: COLORS.fg
 						},
 						ticks: {
-                            fontColor: "#f5f5f5",
+                            fontColor: COLORS.fg,
                             min: 0,
                             max: 400
                         },
                         scaleLabel: {
                             display: true,
                             labelString: "Number of days",
-                            fontColor: "#f5f5f5"
+                            fontColor: COLORS.fg
                         }
 					}
 				],
 				yAxes: [
 					{
                         gridLines: {
-                            color: "#f5f5f5"
+                            color: COLORS.fg
 						},
 						ticks: {
-                            fontColor: "#f5f5f5",
+                            fontColor: COLORS.fg,
                             max: max_size,
                             min: 0
 						},
                         scaleLabel: {
                             display: true,
                             labelString: "Number of people",
-                            fontColor: "#f5f5f5"
+                            fontColor: COLORS.fg
                         }
 					}
 				]

@@ -148,7 +148,7 @@ code {
 }
 
 .datatable-row {
-	background-color: #212121;
+	background-color: var(--color-bg-dark, #f5f5f5);
 	align-items: center;
 	font-size: 1rem;
 	display: flex;
@@ -188,6 +188,6 @@ code {
 }
 
 .infowindow code {
-	color: #212121;
+	color: var(--color-bg-dark, #f5f5f5);
 	font-size: 1rem;
 }

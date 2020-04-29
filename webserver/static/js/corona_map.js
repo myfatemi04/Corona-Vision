@@ -131,7 +131,7 @@ function init_coronamap() {
 	});
 	infowindow = new google.maps.InfoWindow({
 		content: "",
-		backgroundColor: "#212121"
+		backgroundColor: COLORS.bg
 	});
 
 	setTimeout(reload_cases, 500);
@@ -164,7 +164,7 @@ function show_location(position) {
 
 function format_infowindow_data(label, data) {
 	let formatted = `
-	<div class="lato" style="background-color: #212121;">
+	<div class="lato" style="background-color: var(--color-bg-dark, #f5f5f5);">
 		<code><b>${label}</b></code><br/>
 		<code><b>Confirmed:</b> ${data.total} (+${data.dtotal})</code><br/>
 		<code><b>Active:</b> ${data.active} (+${data.dactive})</code><br/>

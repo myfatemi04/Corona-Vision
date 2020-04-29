@@ -108,7 +108,7 @@
 				let {min, max} = dataMinMax(currentData, feature);
 				thresMin = min;
 				thresMax = max;
-				$("path").attr("fill", "#212121");
+				$("path").attr("fill", COLORS.fg);
 				for (let stateID in currentData) {
 					if (stateID) {
 						let featureValue = currentData[stateID][feature];
@@ -207,9 +207,9 @@
 			#tooltip {
 				flex-direction: column;
 				padding: 0.5em;
-				background-color: #f5f5f5;
+				background-color: var(--color-fg-light, #f5f5f5);
 				z-index: 1;
-				color: #212121;
+				color: var(--color-bg-dark, #f5f5f5);
 			}
 			#tooltip .trow {
 				display: flex;

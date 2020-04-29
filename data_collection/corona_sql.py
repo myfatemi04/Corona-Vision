@@ -168,10 +168,10 @@ class Datapoint(Base):
 			if my_val is None:
 				_update(label, data[label])
 				change = True
-			elif label in increase_labels:
-				if data[label] > my_val:
-					_update(label, data[label])
-					change = True
+			# elif label in increase_labels:
+			# 	if data[label] > my_val:
+			# 		_update(label, data[label])
+			# 		change = True
 			else:
 				if data[label] != my_val:
 					_update(label, data[label])

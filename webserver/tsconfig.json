@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "target": "ES3",
+        "watch": true
+    },
+    "include": [
+        "**/*"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}

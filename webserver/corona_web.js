@@ -51,18 +51,6 @@ app.set('view engine', 'hbs');
  * The Main Page includes charts, data tables, and live stats */
 let last_update = null;
 
-function make_next_day_link(country, province, county, entry_date) {
-    let date = new Date(entry_date);
-    date.setUTCDate(date.getUTCDate() + 1);
-    return `<a href="?country=${country}&province=${province}&county=${county}&date=${utc_iso(date)}">Next day</a>`;
-}
-
-function make_prev_day_link(country, province, county, entry_date) {
-    let date = new Date(entry_date);
-    date.setUTCDate(date.getUTCDate() - 1);
-    return `<a href="?country=${country}&province=${province}&county=${county}&date=${utc_iso(date)}">Previous day</a>`;
-}
-
 const get_datapoint = async(country, province, county, group, entry_date) => {
     try {
         let query = "select * from datapoints where";
@@ -234,8 +222,8 @@ const data_table_page = async (req, res) => {
         location_datapoint: location_datapoint,
         entry_date: entry_date,
         entry_dates: entry_dates,
-        next_day_link: (last_available_day == entry_date) ? "" : make_next_day_link(country, province, county, entry_date),
-        prev_day_link: (first_available_day == entry_date) ? "" : make_prev_day_link(country, province, county, entry_date),
+        isLast: (last_available_day == entry_date),
+        isFirst: (first_available_day == entry_date),
         countries: countries,
         provinces: provinces,
         counties: counties,

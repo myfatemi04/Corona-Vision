@@ -21,73 +21,36 @@
 				$("#provinceSelector").val(province);
 				$("#countySelector").val(county);
 
-				let totalChart = new Chart($("#total-chart")[0].getContext('2d'), {
-					type: 'line',
-					data: {
-						labels: [],
-						datasets: [totalsDataset]
-					},
-					plugins: plugins,
-					options: chartStyles
-				});
+				let totalChart = newChart("#total-chart", [totalsDataset]);
 
 				totalChart.options.title.text = "Cases in " + label;
 				totalChart.update();
 				totalChart.smoothLabels = {"total": 0};
 				charts['total'] = totalChart;
 
-				let dtotalChart = new Chart($("#dtotal-chart")[0].getContext('2d'), {
-					type: 'line',
-					data: {
-						labels: [],
-						datasets: [dtotalsDataset]
-					},
-					plugins: plugins,
-					options: chartStyles
-				});
+				let dtotalChart = newChart("#dtotal-chart", [dtotalsDataset])
 
 				dtotalChart.options.title.text = "Daily cases in " + label;
 				dtotalChart.update();
 				dtotalChart.smoothLabels = {"dtotal": 0};
 				charts['dtotal'] = dtotalChart;
 
-				let deathsChart = new Chart($("#deaths-chart")[0].getContext('2d'), {
-					type: 'line',
-					data: {
-						labels: [],
-						datasets: [deathsDataset]
-					},
-					plugins: plugins,
-					options: chartStyles
-				});
+				let deathsChart = newChart("#deaths-chart", [deathsDataset]);
 
 				deathsChart.options.title.text = "Deaths in " + label;
 				deathsChart.update();
 				deathsChart.smoothLabels = {"deaths": 0};
 				charts['deaths'] = deathsChart;
 
-				let recoveredChart = new Chart($("#recovered-chart")[0].getContext('2d'), {
-					type: 'line',
-					data: {
-						labels: [],
-						datasets: [recoveredDataset]
-					},
-					plugins: plugins,
-					options: chartStyles
-				});
+				let recoveredChart = newChart("#recovered-chart", [recoveredDataset]);
 
 				recoveredChart.options.title.text = "Recoveries in " + label;
 				recoveredChart.update();
 				recoveredChart.smoothLabels = {"recovered": 0};
 				charts['recovered'] = recoveredChart;
 
-				let logisticChart = new Chart($("#predictions-logistic")[0].getContext('2d'), {
-					type: 'line',
-					data: logisticPredictionDatasets,
-					plugins: plugins,
-					options: chartStyles
-				});
-				charts['logistic'] = logisticChart;
+				let logisticChart = newChart("#predictions-logistic", logisticPredictionDatasets);
+				charts['predictions-logistic'] = logisticChart;
 
 				logisticChart.options.title.text = "Fitting growth model...";
 				logisticChart.update();

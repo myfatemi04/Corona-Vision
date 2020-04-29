@@ -118,7 +118,7 @@
 				let {min, max} = dataMinMax(subregions, feature);
 				thresMin = min;
 				thresMax = max;
-				$("path").attr("fill", "#212121");
+				$("path").attr("fill", COLORS.fg);
 				for (let subregionID in subregions) {
 					let featureValue = subregions[subregionID][feature];
 					let featureRatio = getRatio(thresMin, thresMax, featureValue);
@@ -266,7 +266,7 @@
 	<body onload="init()">
 		<div id="header">
 			{{>navbar}}
-			<div id="mapHeader" class="text-center" style="border-bottom: 1px solid #f5f5f5;">
+			<div id="mapHeader" class="text-center" style="border-bottom: 1px solid var(--color-fg-light, #f5f5f5);">
 				<h1 style="margin: 0;">Map of {{label}}</h1>
 				Source: Local government websites, ESRI ARCGIS dashboards.<br/>
 				<a href="http://mapsvg.com/">Map data from MapSVG.com</a><br/>
@@ -274,7 +274,7 @@
 			</div>
 		</div>
 		<div id="pageContent" style="display: flex;">
-			<div id="sidebar" class="d-flex flex-column p-2" style="flex: 1; border-right: 1px solid #f5f5f5;">
+			<div id="sidebar" class="d-flex flex-column p-2" style="flex: 1; border-right: 1px solid var(--color-fg-light, #f5f5f5);">
 				<div id="tooltip">
 					<div>
 						<span id="tooltipSubregion" class="font-weight-bold"></span>
@@ -315,7 +315,7 @@
 					</select>
 				</div>
 				
-				<div style="border-top: 1px solid #f5f5f5;">
+				<div style="border-top: 1px solid var(--color-fg-light, #f5f5f5);">
 					<b>Related maps</b>
 					<ul>
 						{{#if country}}
