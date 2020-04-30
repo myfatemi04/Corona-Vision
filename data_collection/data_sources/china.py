@@ -16,28 +16,29 @@ def import_data():
         if row:
             dateStr, country, countryCode, province, provinceCode, city, cityCode, confirmed, suspected, cured, dead = row.split(",")
             date = datetime.datetime.strptime(dateStr, "%Y-%m-%d").date()
-            if countryCode == 'CN':
-                provinceEng = china_provinces[province]
-                datapoints.append({
-                    "country": "China",
-                    "province": provinceEng,
-                    "county": cityCode,
-                    "total": confirmed,
-                    "recovered": cured,
-                    "deaths": dead,
-                    "entry_date": date
-                })
-            # for some reason they switch
-            elif country == 'CN':
-                provinceEng = china_provinces[provinceCode]
-                datapoints.append({
-                    "country": "China",
-                    "province": provinceEng,
-                    "county": city,
-                    "total": confirmed,
-                    "recovered": cured,
-                    "deaths": dead,
-                    "entry_date": date
-                })
-    
+            if province == '':
+                if countryCode == 'CN':
+                    provinceEng = china_provinces[province]
+                    datapoints.append({
+                        "country": "China",
+                        "province": provinceEng,
+                        "county": cityCode,
+                        "total": int(confirmed),
+                        "recovered": int(cured),
+                        "deaths": int(dead),
+                        "entry_date": date
+                    })
+                # for some reason they switch
+                elif country == 'CN':
+                    provinceEng = china_provinces[provinceCode]
+                    datapoints.append({
+                        "country": "China",
+                        "province": provinceEng,
+                        "county": city,
+                        "total": int(confirmed),
+                        "recovered": int(cured),
+                        "deaths": int(dead),
+                        "entry_date": date
+                    })
+
     upload.upload_datapoints(datapoints, source_link=sourceURL)
