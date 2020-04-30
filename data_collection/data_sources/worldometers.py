@@ -22,7 +22,7 @@ disallowed = [
 	"Netherlands",
 	"Portugal",
 	"South Korea",
-	"Spain"
+	"Spain",
 	"United States",
 ]
 
