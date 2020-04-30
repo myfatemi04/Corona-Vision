@@ -28,11 +28,6 @@ disallowed = [
 
 def import_data():
 	global lastDatapointsUpdate
-	if time.time() - lastDatapointsUpdate < minWait:
-		print("Not uploading because elapsed < minWait")
-		return
-	else:
-		print("Loading from Worldometers...")
 
 	results = import_table(
 		"http://www.worldometers.info/coronavirus",

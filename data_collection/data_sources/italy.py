@@ -9,11 +9,6 @@ minWait = 600
 
 def import_data():
 	global lastDatapointsUpdate
-	if time.time() - lastDatapointsUpdate < minWait:
-		print("Not uploading Italy because elapsed < minWait")
-		return
-	else:
-		print("Loading from Italy...")
 
 	import_provinces()
 	import_counties()

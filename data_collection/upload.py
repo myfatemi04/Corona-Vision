@@ -1,4 +1,4 @@
-from corona_sql import Session, Datapoint, Location, Hospital, try_commit
+from corona_sql import Session, Datapoint, Location, Hospital, try_commit, silent_mode
 from sqlalchemy import or_, between, func
 from datetime import date
 import data_caching
@@ -21,7 +21,9 @@ upload(data):
 def upload(data):
     import sys
     import traceback
-    print("\rUploading content...            ", end='\r')
+    if not silent_mode:
+        print("\rUploading content...            ", end='\r')
+    
     datapoints_updated = False
     if data:
         for table, rows in data.items():
@@ -33,11 +35,14 @@ def upload(data):
             except Exception as e:
                 traceback.print_tb(e.__traceback__)
                 sys.stderr.write("Error during {}s upload {} {}".format( table, type(e), e ))
-    print("\rDone uploading          ", end='\r')
+    
+    if not silent_mode:
+        print("\rDone uploading          ", end='\r')
     return datapoints_updated
 
 def upload_locations(locations):
-    print("\rUploading locations", end="\r")
+    if not silent_mode:
+        print("\rUploading locations", end="\r")
     session = Session()
     locations = prepare_data.prepare_locations(locations)
     cache = data_caching.get_location_cache(locations, session)
@@ -50,14 +55,17 @@ def upload_locations(locations):
             seen.add(t)
             Location.add_location_data(location_row, cache, session)
     
-    print("\rCommitting locations             ", end='\r')
+    if not silent_mode:
+        print("\rCommitting locations             ", end='\r')
     try_commit(session)
 
 def upload_datapoints(datapoints: typing.List, source_link: str, recount=True) -> bool:
     import recounting
-    if not recount:
-        print("Not recounting datapoints")
-    print("\rUploading datapoints...             ", end='\r')
+
+    if not silent_mode:
+        if not recount:
+            print("Not recounting datapoints")
+        print("\rUploading datapoints...             ", end='\r')
     
     session = Session()
     datapoints = prepare_data.prepare_datapoints(datapoints)
@@ -75,9 +83,11 @@ def upload_datapoints(datapoints: typing.List, source_link: str, recount=True) -
                 was_updated = True
     
     if recount:
-        print("\rRecounting             ", end='\r')
+        if not silent_mode:
+            print("\rRecounting             ", end='\r')
         recounting.recount(updates, session=session, source_link=source_link, cache=cache)
 
-    print("\rCommitting             ", end='\r')
+    if not silent_mode:
+        print("\rCommitting             ", end='\r')
     try_commit(session)
     return was_updated

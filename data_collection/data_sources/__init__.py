@@ -27,31 +27,32 @@ from . import worldometers
 from . import usa_testing
 
 live = [
-	albania.import_data,
-	argentina.import_data,
-	australia.import_data,
-	azerbaijan.import_data,
-	bahrain.import_data,
-	canada.import_data,
-	france.import_data,
-	germany.import_data,
-	india.import_data,
-	italy.import_data,
-	japan.import_data,
-	netherlands.import_data,
-	portugal.import_data,
-	south_korea.import_data,
-	spain.import_data,
-	united_states.import_data,
-	worldometers.import_data,
+	albania,
+	argentina,
+	australia,
+	azerbaijan,
+	bahrain,
+	canada,
+	france,
+	germany,
+	india,
+	italy,
+	japan,
+	netherlands,
+	portugal,
+	south_korea,
+	spain,
+	united_states,
+	worldometers,
 
-	usa_testing.import_data
+	usa_testing
 ]
 
 def import_group(l):
-	for fn in l:
+	for module in l:
 		try:
-			fn()
+			print("Importing data from", module.__name__, "...")
+			module.import_data()
 		except Exception as e:
 			sys.stderr.write("Exception during group data import: {} [type {}]".format(e, type(e)))
 			traceback.print_tb(e.__traceback__)

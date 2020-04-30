@@ -11,11 +11,6 @@ name = "Germany"
 
 def import_data():
     global lastDatapointsUpdate
-    if time.time() - lastDatapointsUpdate < minWait:
-        print(f"Not uploading {name} because elapsed < minWait")
-        return
-    else:
-        print(f"Loading from {name}...")
 
     sourceLink = 'https://www.zeit.de/wissen/gesundheit/coronavirus-echtzeit-karte-deutschland-landkreise-infektionen-ausbreitung#karte'
     jsonURL = 'https://interactive.zeit.de/cronjobs/2020/corona/germany.json'

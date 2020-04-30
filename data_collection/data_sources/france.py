@@ -11,12 +11,6 @@ name = "France"
 
 def import_data():
     global lastDatapointsUpdate
-    from datetime import datetime, timedelta
-    if time.time() - lastDatapointsUpdate < minWait:
-        print(f"Not uploading {name} because elapsed < minWait")
-        return
-    else:
-        print(f"Loading from {name}...")
     
     # france_today = datetime.utcnow() + timedelta(hours=2)
     # import_date(france_today)

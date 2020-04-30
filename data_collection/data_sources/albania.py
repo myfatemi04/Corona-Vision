@@ -5,14 +5,10 @@ import time
 from data_sources import minWait
 
 lastDatapointsUpdate = 0
+name = "Albania"
 
 def import_data():
     global lastDatapointsUpdate
-    if time.time() - lastDatapointsUpdate < minWait:
-        print("Not uploading Albania because elapsed < minWait")
-        return
-    else:
-        print("Loading from Albania...")
 
     rq = requests.get('https://coronavirus.al/api/qarqet.php')
     j = rq.json()

@@ -9,11 +9,6 @@ lastDatapointsUpdate = 0
 
 def import_data():
 	global lastDatapointsUpdate
-	if time.time() - lastDatapointsUpdate < minWait:
-		print("Not uploading United States because elapsed < minWait")
-		return
-	else:
-		print("Loading from United States...")
 
 	results = import_geojson(
 		source_url="https://coronavirus-resources.esri.com/datasets/628578697fb24d8ea4c32fa0c5ae1843_0?geometry=112.752%2C22.406%2C19.764%2C64.233&showData=true",

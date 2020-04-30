@@ -8,11 +8,6 @@ name = "Spain"
 
 def import_data():
     global lastDatapointsUpdate
-    if time.time() - lastDatapointsUpdate < minWait:
-        print(f"Not uploading {name} because elapsed < minWait")
-        return
-    else:
-        print(f"Loading from {name}...")
 
     rq = requests.get("https://covid19.isciii.es/resources/ccaa.csv")
     datapoints = []

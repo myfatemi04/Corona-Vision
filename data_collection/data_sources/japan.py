@@ -10,11 +10,6 @@ lastDatapointsUpdate = 0
 
 def import_data():
     global lastDatapointsUpdate
-    if time.time() - lastDatapointsUpdate < minWait:
-        print("Not uploading Japan because elapsed < minWait")
-        return
-    else:
-        print("Loading from Japan...")
 
     datapoints = []
     j = requests.get("https://data.covid19japan.com/summary/latest.json").json()

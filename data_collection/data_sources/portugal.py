@@ -8,11 +8,6 @@ lastDatapointsUpdate = 0
 
 def import_data():
 	global lastDatapointsUpdate
-	if time.time() - lastDatapointsUpdate < minWait:
-		print("Not uploading Portugal because elapsed < minWait")
-		return
-	else:
-		print("Loading from Portugal...")
 
 	results = import_gis(
 		"http://services.arcgis.com/CCZiGSEQbAxxFVh3/ArcGIS/rest/services/COVID19_Concelhos_V/FeatureServer/0/",

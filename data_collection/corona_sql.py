@@ -14,6 +14,8 @@ from decimal import Decimal
 import standards
 import location_data
 
+silent_mode = True
+
 # Keep the actual SQL URL private
 sql_uri = os.environ['DATABASE_URL']
 engine = create_engine(sql_uri, encoding='utf-8', pool_pre_ping=True)

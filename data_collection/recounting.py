@@ -1,4 +1,4 @@
-from corona_sql import Datapoint, Session, try_commit
+from corona_sql import Datapoint, Session, try_commit, silent_mode
 from datetime import datetime, date, timedelta
 from sqlalchemy import func
 
@@ -18,7 +18,8 @@ def recount(updated, source_link, session, cache=None):
     unique_days = set()
     location_cache = data_caching.get_location_cache(updated, session=session)
 
-    print("\rRecounting...", end="\r")
+    if not silent_mode:
+        print("\rRecounting...", end="\r")
 
     for country, province, county, entry_date in sorted(updated, reverse=True):
         i += 1
@@ -27,14 +28,13 @@ def recount(updated, source_link, session, cache=None):
 
         unique_days.add(entry_date)
         if county == '':
-            # print(f"Recounting {i}/{len(updated)}", end='\r')#" {(country, province, county)} {entry_date}                              ", end='\r')
             update_overall(country, province, county, entry_date, source_link, session)
             Location.add_location_data({"country": country, "province": province, "county": county}, cache=location_cache, session=session)
 
     # we no longer need to update daily changes; we do it on-the-fly instead
-    # for day in sorted(unique_days):
-    #     # we tell it what was updated so we can skip things that weren't
-    #     update_deltas(day, updated)
+    # but this is just for keeping track
+    for day in sorted(unique_days):
+        update_deltas(day, updated)
 
 def filter_children(results, country, province, county):
     if not country: # sum entire world
@@ -73,7 +73,8 @@ def update_deltas(day, updated=None):
     today_dict = {d.t: d for d in today_datapoints}
     yesterday_dict = {d.location_tuple(): d for d in yesterday_datapoints}
 
-    print("Updating deltas    ", end='\r')
+    if not silent_mode:
+        print("Updating deltas    ", end='\r')
 
     i = skipped = 0
     for data_tuple, today_dp in today_dict.items():
@@ -105,5 +106,6 @@ def update_deltas(day, updated=None):
         
         today_dp.update_differences(most_recent_dp)
 
-    print("Committing deltas", end='\r')
+    if not silent_mode:
+        print("Committing deltas", end='\r')
     try_commit(sess)

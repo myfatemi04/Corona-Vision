@@ -11,11 +11,6 @@ name = "Australia"
 
 def import_data():
     global lastDatapointsUpdate
-    if time.time() - lastDatapointsUpdate < minWait:
-        print(f"Not uploading {name} because elapsed < minWait")
-        return
-    else:
-        print(f"Loading from {name}...")
 
     # if upload.upload(result):
     #     lastDatapointsUpdate = time.time()

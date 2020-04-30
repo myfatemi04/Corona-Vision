@@ -1,2 +1,2 @@
-from . import united_states
-united_states.import_hist()
+from . import usa_testing
+usa_testing.import_historical_data()

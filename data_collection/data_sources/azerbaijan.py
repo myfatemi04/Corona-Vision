@@ -11,11 +11,6 @@ name = "Azerbaijan"
 
 def import_data():
     global lastDatapointsUpdate
-    if time.time() - lastDatapointsUpdate < minWait:
-        print(f"Not uploading {name} because elapsed < minWait")
-        return
-    else:
-        print(f"Loading from {name}...")
     
     url = "https://koronavirusinfo.az/az/page/statistika/azerbaycanda-cari-veziyyet"
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')

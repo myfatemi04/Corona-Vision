@@ -9,11 +9,6 @@ lastDatapointsUpdate = 0
 
 def import_data():
 	global lastDatapointsUpdate
-	if time.time() - lastDatapointsUpdate < minWait:
-		print("Not uploading Live USA testing because elapsed < minWait")
-		return
-	else:
-		print("Loading from live USA testing...")
 
 	rq = requests.get("https://covidtracking.com/api/v1/states/current.json")
 	j = rq.json()

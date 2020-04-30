@@ -7,11 +7,6 @@ from data_sources import minWait
 lastDatapointsUpdate = 0
 def import_data():
 	global lastDatapointsUpdate
-	if time.time() - lastDatapointsUpdate < minWait:
-		print("Not uploading Netherlands because elapsed < minWait")
-		return
-	else:
-		print("Loading from Netherlands...")
 
 	results = import_gis(
 		"https://services.arcgis.com/nSZVuSZjHpEZZbRo/arcgis/rest/services/Coronavirus_RIVM_vlakken_actueel/FeatureServer/0//",

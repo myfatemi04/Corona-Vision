@@ -10,12 +10,7 @@ lastDatapointsUpdate = 0
 
 def import_data():
     global lastDatapointsUpdate
-    if time.time() - lastDatapointsUpdate < minWait:
-        print("Not uploading Andorra because elapsed < minWait")
-        return
-    else:
-        print("Loading from Andorra...")
-
+    
     url = "https://www.govern.ad/covid/taula.php"
 
     soup = BeautifulSoup(requests.get(url).text, "html.parser")

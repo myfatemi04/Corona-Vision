@@ -8,14 +8,10 @@ from data_sources import minWait
 from datetime import date, datetime, timedelta
 
 lastDatapointsUpdate = 0
+name = "Argentina"
 
 def import_data() -> None:
     global lastDatapointsUpdate
-    if time.time() - lastDatapointsUpdate < minWait:
-        print("Not uploading Argentina because elapsed < minWait")
-        return
-    else:
-        print("Loading from Argentina...")
 
     # use argentina date
     ar_time = datetime.now() + timedelta(hours=-3)
