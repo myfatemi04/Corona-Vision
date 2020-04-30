@@ -29,14 +29,19 @@ select
     today.county,
     today.total,
     yesterday.total as yesterday_total,
+    today.total - yesterday.total as dtotal,
     today.recovered,
     yesterday.recovered as yesterday_recovered,
+    today.recovered - yesterday.recovered as drecovered,
     today.deaths,
     yesterday.deaths as yesterday_deaths,
+    today.deaths - yesterday.deaths as ddeaths,
     today.serious,
     yesterday.serious as yesterday_serious,
+    today.serious - yesterday.serious as dserious,
     today.tests,
     yesterday.tests as yesterday_tests,
+    today.tests - yesterday.tests as dtests,
     today.source_total,
     today.source_recovered,
     today.source_deaths,
@@ -147,22 +152,30 @@ function getHeatmap(entryDate: string): Promise<Datapoint[]> {
 
         let query = `
             SELECT
-                data.country,
-                data.province,
-                data.county,
-                data.total,
-                data.deaths,
-                data.recovered,
+                today.country,
+                today.province,
+                today.county,
+                today.total,
+                today.deaths,
+                today.recovered,
+                today.total - yesterday.total as dtotal,
                 loc.latitude,
                 loc.longitude
-            FROM datapoints data
+            FROM datapoints today
             INNER JOIN locations loc
             ON
-                loc.country=data.country AND
-                loc.province=data.province AND
-                loc.county=data.county
+                loc.country=today.country AND
+                loc.province=today.province AND
+                loc.county=today.county
+            LEFT JOIN datapoints yesterday
+            ON
+                yesterday.country=today.country AND
+                yesterday.province=today.province AND
+                yesterday.county=today.county AND
+                date(yesterday.entry_date)=date(today.entry_date - interval 1 day)
             WHERE
-                data.entry_date = ?
+                today.entry_date = ? and
+                loc.latitude is not null
         `;
 
         let formatted = sqlstring.format(query, [entryDate]);
@@ -191,7 +204,7 @@ function getDates(country: string = '', province: string = '', county: string = 
                 entry_date
             FROM datapoints today
             ${where(country, province, county, type)}
-            ORDER BY entry_date
+            ORDER BY entry_date desc
         `;
 
         con.query(query, (err, result, fields) => {
@@ -301,9 +314,7 @@ function getDatapointSequence(country: string = '', province: string = '', count
         }
 
         let query = `
-            SELECT
-                *
-            FROM datapoints today
+            ${DAILY_CHANGE_QUERY}
             ${where(country, province, county)}
             ORDER BY today.entry_date
         `;

@@ -27,7 +27,7 @@
 				totalChart.update();
 				charts['total'] = totalChart;
 
-				let dtotalChart = newChart("#dtotal-chart", [dtotalsDataset, trendDataset])
+				let dtotalChart = newChart("#dtotal-chart", [totalsDataset, trendDataset])
 
 				dtotalChart.options.title.text = "Daily cases in " + label;
 				dtotalChart.update();
@@ -39,11 +39,23 @@
 				deathsChart.update();
 				charts['deaths'] = deathsChart;
 
-				{{!-- let recoveredChart = newChart("#recovered-chart", [recoveredDataset, trendDataset]);
+				let ddeathsChart = newChart("#ddeaths-chart", [deathsDataset, trendDataset]);
+
+				ddeathsChart.options.title.text = "Daily deaths in " + label;
+				ddeathsChart.update();
+				charts['ddeaths'] = ddeathsChart;
+
+				let recoveredChart = newChart("#recovered-chart", [recoveredDataset, trendDataset]);
 
 				recoveredChart.options.title.text = "Recoveries in " + label;
 				recoveredChart.update();
-				charts['recovered'] = recoveredChart; --}}
+				charts['recovered'] = recoveredChart;
+
+				let drecoveredChart = newChart("#drecovered-chart", [recoveredDataset, trendDataset]);
+
+				drecoveredChart.options.title.text = "Daily recoveries in " + label;
+				drecoveredChart.update();
+				charts['drecovered'] = drecoveredChart;
 
 				let logisticChart = newChart("#predictions-logistic", logisticPredictionDatasets);
 				charts['predictions-logistic'] = logisticChart;
@@ -58,12 +70,22 @@
 						// addData(totalChart, data, ['total']); // positive cases/tests
 						addData(totalChart, data, ['total']);
 						addTrendline(totalChart);
+
 						addData(dtotalChart, data, ['dtotal']);
 						addTrendline(dtotalChart);
+
 						addData(deathsChart, data, ['deaths']);
 						addTrendline(deathsChart);
-						{{!-- addData(recoveredChart, data, ['recovered']);
-						addTrendline(recoveredChart); --}}
+
+						addData(ddeathsChart, data, ['ddeaths']);
+						addTrendline(ddeathsChart);
+
+						addData(recoveredChart, data, ['recovered']);
+						addTrendline(recoveredChart);
+
+						addData(drecoveredChart, data, ['drecovered']);
+						addTrendline(drecoveredChart);
+
 						addData(logisticChart, data, ['total']);
 						let extendedDates = extendDates([...data.entry_date]);
 						$.getJSON(
@@ -87,9 +109,6 @@
 
 			function logPredict(fit, x) {
 				return fit.MAX/(1 + Math.exp(-(x - fit.T_INF)/(fit.T_RISE + fit.LIN * x)));
-				{{!-- return fit.MAX/(1 + Math.exp(-(x - fit.T_INF)/(fit.T_RISE * (1 + Math.exp((x - fit.T_INF)/fit.LIN))))); --}}
-				{{!-- return fit.MAX/(1 + Math.exp(-(x - fit.T_INF)/(fit.T_RISE * (1 + fit.LIN * (x - fit.T_INF) / fit.T_RISE)))); --}}
-				{{!-- return fit.MAX/(1 + Math.exp(-(x - fit.T_INF)/fit.T_RISE)); --}}
 			}
 
 			function isoDate(date) {
@@ -129,14 +148,14 @@
 						<select id="countrySelector" class="custom-input-color form-control m-2" onchange="setCountry()">
 							<option value="">Worldwide</option>
 							{{#each countries}}
-								<option value="{{this.country}}">{{this.country}}</option>
+								<option value="{{this}}">{{this}}</option>
 							{{/each}}
 						</select>
 						{{#if provinces}}
 							<select id="provinceSelector" class="custom-input-color form-control m-2" onchange="setProvince()">
 								<option value="">Nationwide</option>
 								{{#each provinces}}
-									<option value="{{this.province}}">{{this.province}}</option>
+									<option value="{{this}}">{{this}}</option>
 								{{/each}}
 							</select>
 						{{/if}}
@@ -144,16 +163,13 @@
 							<select id="countySelector" class="custom-input-color form-control m-2" onchange="setCounty()">
 								<option value="">Statewide</option>
 								{{#each counties}}
-									<option value="{{this.county}}">{{this.county}}</option>
+									<option value="{{this}}">{{this}}</option>
 								{{/each}}
 							</select>
 						{{/if}}
 					</div>
 					<div>
 						<canvas id="total-chart"></canvas>
-						{{!-- <button class="btn custom-button-color my-2" onclick="download('total-chart')">
-							Save Image
-						</button> --}}
 
 						<div>Scale <small>(change Y-axis type)</small></div>
 						<select onchange="scale(getChart('total'), this.value)" name="scale-type" class="custom-input-color form-control my-2">
@@ -163,22 +179,16 @@
 					</div>
 					<div>
 						<canvas id="dtotal-chart"></canvas>
-						{{!-- <button class="btn custom-button-color my-2" onclick="download('dtotal-chart')">
-							Save Image
-						</button> --}}
 
 						<div>Scale <small>(change Y-axis type)</small></div>
 						<select onchange="scale(getChart('dtotal'), this.value)" name="scale-type" class="custom-input-color form-control my-2">
 							<option value="linear">Linear</option>
 							<option value="logarithmic">Logarithmic</option>
 						</select>
-
 					</div>
+
 					<div>
 						<canvas id="deaths-chart"></canvas>
-						{{!-- <button class="btn custom-button-color my-2" onclick="download('deaths-chart')">
-							Save Image
-						</button> --}}
 
 						<div>Scale <small>(change Y-axis type)</small></div>
 						<select onchange="scale(getChart('deaths'), this.value)" name="scale-type" class="custom-input-color form-control my-2">
@@ -187,17 +197,32 @@
 						</select>
 					</div>
 					<div>
-						<h1>Historical recovery data temporarily unavailable</h1>
-						{{!-- <canvas id="recovered-chart"></canvas> --}}
-						{{!-- <button class="btn custom-button-color my-2" onclick="download('recovered-chart')">
-							Save Image
-						</button> --}}
+						<canvas id="ddeaths-chart"></canvas>
 
-						{{!-- <div>Scale <small>(change Y-axis type)</small></div>
+						<div>Scale <small>(change Y-axis type)</small></div>
+						<select onchange="scale(getChart('ddeaths'), this.value)" name="scale-type" class="custom-input-color form-control my-2">
+							<option value="linear">Linear</option>
+							<option value="logarithmic">Logarithmic</option>
+						</select>
+					</div>
+
+					<div>
+						<canvas id="recovered-chart"></canvas>
+
+						<div>Scale <small>(change Y-axis type)</small></div>
 						<select onchange="scale(getChart('recovered'), this.value)" name="scale-type" class="custom-input-color form-control my-2">
 							<option value="linear">Linear</option>
 							<option value="logarithmic">Logarithmic</option>
-						</select> --}}
+						</select>
+					</div>
+					<div>
+						<canvas id="drecovered-chart"></canvas>
+
+						<div>Scale <small>(change Y-axis type)</small></div>
+						<select onchange="scale(getChart('drecovered'), this.value)" name="scale-type" class="custom-input-color form-control my-2">
+							<option value="linear">Linear</option>
+							<option value="logarithmic">Logarithmic</option>
+						</select>
 					</div>
 
 					<canvas id="predictions-logistic"></canvas>

@@ -37,7 +37,7 @@
 				$("#date").val("{{entry_date}}");
 				$("#datatable").DataTable();
 
-				dtotalChart = newChart("#standard-chart", [dtotalsDataset]);
+				dtotalChart = newChart("#standard-chart", [totalsDataset]);
 
 				let label = country || "World";
 				if (province) label = province + ", " + label;

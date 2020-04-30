@@ -1,5 +1,5 @@
 
-minWait = 60 * 360
+minWait = 60 * 5
 
 import traceback
 import sys

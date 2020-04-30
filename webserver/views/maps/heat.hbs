@@ -83,7 +83,7 @@
 					(data) => {
 						if (!hasDates) {
 							for (let result of data) {
-								let datestr = result.entry_date.substring(0, 10)
+								let datestr = result.substring(0, 10);
 								$("#date")[0].innerHTML += `<option value="${datestr}">${datestr}</option>`;
 							}
 							hasDates = true;

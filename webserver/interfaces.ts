@@ -16,4 +16,6 @@ interface Datapoint {
     total: number;
     recovered: number;
     deaths: number;
+    serious: number;
+    tests: number;
 }

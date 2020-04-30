@@ -31,9 +31,10 @@ def recount(updated, source_link, session, cache=None):
             update_overall(country, province, county, entry_date, source_link, session)
             Location.add_location_data({"country": country, "province": province, "county": county}, cache=location_cache, session=session)
 
-    for day in sorted(unique_days):
-        # we tell it what was updated so we can skip things that weren't
-        update_deltas(day, updated)
+    # we no longer need to update daily changes; we do it on-the-fly instead
+    # for day in sorted(unique_days):
+    #     # we tell it what was updated so we can skip things that weren't
+    #     update_deltas(day, updated)
 
 def filter_children(results, country, province, county):
     if not country: # sum entire world

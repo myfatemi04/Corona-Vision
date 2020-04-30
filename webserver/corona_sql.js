@@ -17,7 +17,7 @@ var sequencesCache = {};
 var countriesCache = {};
 var provincesCache = {};
 var countiesCache = {};
-var DAILY_CHANGE_QUERY = "\nselect\n    today.entry_date,\n    today.update_time,\n    today.country,\n    today.province,\n    today.county,\n    today.total,\n    yesterday.total as yesterday_total,\n    today.recovered,\n    yesterday.recovered as yesterday_recovered,\n    today.deaths,\n    yesterday.deaths as yesterday_deaths,\n    today.serious,\n    yesterday.serious as yesterday_serious,\n    today.tests,\n    yesterday.tests as yesterday_tests,\n    today.source_total,\n    today.source_recovered,\n    today.source_deaths,\n    today.source_serious,\n    today.source_tests\nfrom datapoints today\nleft join datapoints yesterday on \n    date(yesterday.entry_date) = date(today.entry_date - interval 1 day) and\n    yesterday.country=today.country and\n    yesterday.province=today.province and\n    yesterday.county=today.county\n";
+var DAILY_CHANGE_QUERY = "\nselect\n    today.entry_date,\n    today.update_time,\n    today.country,\n    today.province,\n    today.county,\n    today.total,\n    yesterday.total as yesterday_total,\n    today.total - yesterday.total as dtotal,\n    today.recovered,\n    yesterday.recovered as yesterday_recovered,\n    today.recovered - yesterday.recovered as drecovered,\n    today.deaths,\n    yesterday.deaths as yesterday_deaths,\n    today.deaths - yesterday.deaths as ddeaths,\n    today.serious,\n    yesterday.serious as yesterday_serious,\n    today.serious - yesterday.serious as dserious,\n    today.tests,\n    yesterday.tests as yesterday_tests,\n    today.tests - yesterday.tests as dtests,\n    today.source_total,\n    today.source_recovered,\n    today.source_deaths,\n    today.source_serious,\n    today.source_tests\nfrom datapoints today\nleft join datapoints yesterday on \n    date(yesterday.entry_date) = date(today.entry_date - interval 1 day) and\n    yesterday.country=today.country and\n    yesterday.province=today.province and\n    yesterday.county=today.county\n";
 function where(country, province, county, type) {
     if (country === void 0) { country = ''; }
     if (province === void 0) { province = ''; }
@@ -101,7 +101,7 @@ function getHeatmap(entryDate) {
                 resolve(content);
             }
         }
-        var query = "\n            SELECT\n                data.country,\n                data.province,\n                data.county,\n                data.total,\n                data.deaths,\n                data.recovered,\n                loc.latitude,\n                loc.longitude\n            FROM datapoints data\n            INNER JOIN locations loc\n            ON\n                loc.country=data.country AND\n                loc.province=data.province AND\n                loc.county=data.county\n            WHERE\n                data.entry_date = ?\n        ";
+        var query = "\n            SELECT\n                today.country,\n                today.province,\n                today.county,\n                today.total,\n                today.deaths,\n                today.recovered,\n                today.total - yesterday.total as dtotal,\n                loc.latitude,\n                loc.longitude\n            FROM datapoints today\n            INNER JOIN locations loc\n            ON\n                loc.country=today.country AND\n                loc.province=today.province AND\n                loc.county=today.county\n            LEFT JOIN datapoints yesterday\n            ON\n                yesterday.country=today.country AND\n                yesterday.province=today.province AND\n                yesterday.county=today.county AND\n                date(yesterday.entry_date)=date(today.entry_date - interval 1 day)\n            WHERE\n                today.entry_date = ? and\n                loc.latitude is not null\n        ";
         var formatted = sqlstring.format(query, [entryDate]);
         con.query(formatted, function (err, result, fields) {
             if (err)
@@ -125,7 +125,7 @@ function getDates(country, province, county, type) {
                 resolve(content);
             }
         }
-        var query = "\n            SELECT DISTINCT\n                entry_date\n            FROM datapoints today\n            " + where(country, province, county, type) + "\n            ORDER BY entry_date\n        ";
+        var query = "\n            SELECT DISTINCT\n                entry_date\n            FROM datapoints today\n            " + where(country, province, county, type) + "\n            ORDER BY entry_date desc\n        ";
         con.query(query, function (err, result, fields) {
             if (err)
                 reject(err);
@@ -208,7 +208,7 @@ function getDatapointSequence(country, province, county) {
                 resolve(content);
             }
         }
-        var query = "\n            SELECT\n                *\n            FROM datapoints today\n            " + where(country, province, county) + "\n            ORDER BY today.entry_date\n        ";
+        var query = "\n            " + DAILY_CHANGE_QUERY + "\n            " + where(country, province, county) + "\n            ORDER BY today.entry_date\n        ";
         con.query(query, function (err, result, fields) {
             if (err)
                 reject(err);

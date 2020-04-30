@@ -98,11 +98,17 @@ function addData(chart, data, datasets) {
 }
 
 function newChart(selector, datasets) {
+	let newDatasets = [];
+	for (let dataset of datasets) {
+		let newDataset = {...dataset};
+		newDataset.data = [];
+		newDatasets.push(newDataset);
+	}
 	return new Chart($(selector), {
 		type: 'line',
 		data: {
 			labels: [],
-			datasets: datasets
+			datasets: newDatasets
 		},
 		plugins: plugins,
 		options: chartStyles
@@ -111,15 +117,6 @@ function newChart(selector, datasets) {
 
 let totalsDataset = {
 		label: 'Total cases',
-		backgroundColor: COLORS.total + "55",
-		borderColor: COLORS.total,
-		fill: 'origin',
-		data: [],
-		lineTension: 0
-	};
-
-let dtotalsDataset = {
-		label: 'Daily total cases',
 		backgroundColor: COLORS.total + "55",
 		borderColor: COLORS.total,
 		fill: 'origin',

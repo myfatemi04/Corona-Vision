@@ -85,7 +85,7 @@ module.exports = {
         // if the province isn't specified, we are listing provinces
         else if (province == '') { label_prop = 'province'; label_default = country; }
 
-        // if the county isn't specified, we are listing county
+        // if the county isn't specified, we are listing counties
         else if (county == '') { label_prop = 'county'; label_default = province; }
 
         // if all are specified, we are listing a single entry
@@ -138,16 +138,15 @@ module.exports = {
                     }
                 }
             }
-
+            
+            let dailyTotal = datapoint.total - datapoint.yesterday_total;
             let table_cols = [
-                //!label ? go_back_link : i
                 {number: i, flex: 1, color: COLORS.fg},
                 {number: label_link, color: COLORS.link, flex: 4},
                 {number: datapoint.total, source: datapoint.source_total, color: COLORS.total},
-                {number: datapoint.dtotal > 0 ? datapoint.dtotal : ``, source: datapoint.source_total, color: COLORS.total},
+                {number: dailyTotal > 0 ? dailyTotal : ``, source: datapoint.source_total, color: COLORS.total},
                 {number: datapoint.recovered, color: COLORS.recovered, source: datapoint.source_recovered},
                 {number: datapoint.deaths, color: COLORS.deaths, source: datapoint.source_deaths},
-                // {number: datapoint.serious, color: COLORS.serious, source: datapoint.source_serious},
                 {number: datapoint.tests, color: COLORS.tests, source: datapoint.source_tests}
             ];
 

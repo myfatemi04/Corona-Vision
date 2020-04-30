@@ -173,7 +173,7 @@ class Datapoint(Base):
 					_update(label, data[label])
 					change = True
 			else:
-				if data[label] != my_val:
+				if data[label] != my_val and data[label]:
 					_update(label, data[label])
 					change = True
 
