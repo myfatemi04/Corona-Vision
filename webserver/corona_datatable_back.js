@@ -55,12 +55,12 @@ function set_province_link(entry_date, country, province) {
 }
 
 function set_county_link(entry_date, country, province, county) {
-    return `<a class='country-link' href='?date=${entry_date}&country=${country}&province=${province}&county=${county}';>${county} ${ico}</a>`
+    return `<a class='country-link' href='?date=${entry_date}&country=${country}&province=${province}&county=${county}';>${county} ${ico}</a>`;
 }
 
 function format_update_time(update_time) {
     let diff = Date.now() - update_time;
-    let {ms, s, m, h, d} = {ms: diff, s: diff/1000, m: diff/60000, h: diff/3600000, d: diff/86400000}
+    let {ms, s, m, h, d} = {ms: diff, s: diff/1000, m: diff/60000, h: diff/3600000, d: diff/86400000};
     if (s < 1) {
         return Math.round(ms) + "ms ago";
     }
@@ -91,9 +91,9 @@ module.exports = {
         // if all are specified, we are listing a single entry
         else { label_prop = ''; label_default = county; }
 
-        data.sort((a, b) => (a.total > b.total) ? -1 : 1)
+        data.sort((a, b) => (a.total > b.total) ? -1 : 1);
         
-        let backText = `<i class="fas fa-angle-double-left"></i> Back`
+        let backText = `<i class="fas fa-angle-double-left"></i> Back`;
         let deselect_country_link = `<a href="?date=${entry_date}">${backText}</a>`;
         let deselect_province_link = `<a href="?date=${entry_date}&country=${country}">${backText}</a>`;
         let deselect_county_link = `<a href="?date=${entry_date}&country=${country}&province=${province}">${backText}</a>`;
@@ -130,8 +130,8 @@ module.exports = {
             if (label_prop == 'country') {
                 let countryInfo = countryjs.info(label, "name");
                     if (typeof countryInfo != 'undefined') {
-                    let population = countryInfo['population'];
-                    let area = countryInfo['area'];
+                    let population = countryInfo.population;
+                    let area = countryInfo.area;
                     if (population) {
                         let mils = population / 1000000;
                         tests_mil = (datapoint.tests/mils).toFixed(0);
@@ -166,4 +166,4 @@ module.exports = {
         }
         return {table_rows: html, go_back_link: go_back_link};
     }
-}
+};
