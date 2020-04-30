@@ -149,6 +149,7 @@ def remove_end(string, end):
 	return string
 
 china_provinces = {
+	"": "",
 	"北京市": "Beijing",
 	"天津市": "Tianjin",
 	"河北省": "Hebei",

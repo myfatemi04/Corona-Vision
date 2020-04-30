@@ -1,2 +1,2 @@
-from . import italy
-italy.import_provinces_historical()
+from . import china
+china.import_data()
