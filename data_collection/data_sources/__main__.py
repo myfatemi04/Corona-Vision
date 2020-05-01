@@ -1,2 +1,2 @@
-from . import china
-china.import_data()
+from . import canada
+canada.import_news()

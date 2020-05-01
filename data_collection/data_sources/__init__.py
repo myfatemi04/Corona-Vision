@@ -20,6 +20,7 @@ from . import netherlands
 from . import portugal
 from . import south_korea
 from . import spain
+from . import turkey
 from . import united_states
 
 from . import worldometers
@@ -32,17 +33,20 @@ live = [
 	australia,
 	azerbaijan,
 	bahrain,
+	brazil,
 	canada,
 	france,
 	germany,
 	india,
 	italy,
 	japan,
+	russia,
 	netherlands,
 	portugal,
 	south_korea,
 	spain,
 	united_states,
+	turkey,
 	worldometers,
 
 	usa_testing

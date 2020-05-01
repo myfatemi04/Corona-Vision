@@ -14,7 +14,7 @@ from decimal import Decimal
 import standards
 import location_data
 
-silent_mode = True
+silent_mode = False
 
 # Keep the actual SQL URL private
 sql_uri = os.environ['DATABASE_URL']

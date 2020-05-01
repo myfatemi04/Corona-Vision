@@ -1,0 +1,21 @@
+Countries we have already:
+USA
+Spain
+Italy
+UK
+France
+Germany
+
+Countries we need:
+Turkey: https://covid19.saglik.gov.tr/
+Russia: https://xn--80aesfpebagmfblc0a.xn--p1ai/information/
+Iran: 
+Brazil:
+ - JSON data: https://xx9p7hp1p7.execute-api.us-east-1.amazonaws.com/prod/PortalMapa
+ - source: https://covid.saude.gov.br/
+ - header required: x-parse-application-id: unAFkcaNDeXajurGB7LChj8SgQYS2ptm
+
+Canada:
+ curl "https://stats.ctvnews.ca/covidDapi/getAllCovidData" ^
+  -H "referer: https://www.ctvnews.ca/health/coronavirus/tracking-every-case-of-covid-19-in-canada-1.4852102" ^
+ source url: https://www.ctvnews.ca/health/coronavirus/tracking-every-case-of-covid-19-in-canada-1.4852102

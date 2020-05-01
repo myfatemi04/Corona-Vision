@@ -2,8 +2,7 @@ import requests
 import json_extractor
 import upload
 import time
-from bs4 import BeautifulSoup
-from import_gis import import_gis
+import datetime
 from data_sources import minWait
 
 lastDatapointsUpdate = 0
@@ -24,35 +23,38 @@ def intify(x):
 
 def import_news():
     global lastDatapointsUpdate
-    url = "https://www.ctvnews.ca/health/coronavirus/tracking-every-case-of-covid-19-in-canada-1.4852102"
-    soup = BeautifulSoup(requests.get(url).text, 'html.parser')
-    provinces = soup.select(".covid-province-container")
+    import string
+    sourceURL = "https://www.ctvnews.ca/health/coronavirus/tracking-every-case-of-covid-19-in-canada-1.4852102"
+    jsonURL = "https://stats.ctvnews.ca/covidDapi/getAllCovidData"
+
+    # referer is required for authorization
+    headers = {
+        "referer": "https://www.ctvnews.ca/health/coronavirus/tracking-every-case-of-covid-19-in-canada-1.4852102"
+    }
+
     datapoints = []
-    for province_container in provinces:
-        province = province_container.select_one("h2").contents[0].strip()
-        tds = lambda x: x.select("tbody")[-1].select("td")
-        totals_table = tds(province_container.select_one(".cases-table"))
-        active_recovered_deaths_table = tds(province_container.select_one(".status-table"))
-        tests_table = tds(province_container.select_one(".results-table"))
-        
-        datapoint = {
-            'country': 'Canada',
-            'province': province
-        }
+    content = requests.get(jsonURL, headers=headers).json()
+    for row in content:
+        entryDate = datetime.datetime.strptime(row['date'], "%Y-%m-%d").date()
+        provinces = row['data']
+        for data in provinces:
+            province = string.capwords(data['provinceLabel'])
 
-        total = intify(totals_table[0].text)
-        recovered = intify(active_recovered_deaths_table[1].text)
-        deaths = intify(active_recovered_deaths_table[2].text)
-        tests = intify(tests_table[0].text)
-
-        if total: datapoint['total'] = total
-        if recovered: datapoint['recovered'] = recovered
-        if deaths: datapoint['deaths'] = deaths
-        if tests: datapoint['tests'] = tests
-
-        datapoints.append(datapoint)
+            total = data['totalCases']
+            recovered = data['recoveries'] if 'recoveries' in data else None
+            deaths = data['deaths'] if 'deaths' in data else None
+            tests = data['totalTests'] if 'totalTests' in data else None
+            datapoints.append({
+                "entry_date": entryDate,
+                "country": "Canada",
+                "province": province,
+                "total": total,
+                "recovered": recovered,
+                "deaths": deaths,
+                "tests": tests
+            })
     
-    if upload.upload_datapoints(datapoints, url):
+    if upload.upload_datapoints(datapoints, sourceURL):
         lastDatapointsUpdate = time.time()
 
 def import_gov():
