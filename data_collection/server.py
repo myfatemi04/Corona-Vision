@@ -9,6 +9,8 @@ def hello():
 	return "Data import server"
 
 def loop():
+	import corona_sql
+	corona_sql.silent_mode = True
 	while True:
 		data_sources.import_live()
 

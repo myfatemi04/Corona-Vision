@@ -141,8 +141,8 @@ var datatablePage = function (req, res) { return __awaiter(void 0, void 0, void 
                 return [4 /*yield*/, corona_sql.getDates(country, province, county)];
             case 2:
                 dates = _a.sent();
-                firstDay = dates[0];
-                lastDay = dates[dates.length - 1];
+                firstDay = dates[dates.length - 1];
+                lastDay = dates[0];
                 countries = [];
                 provinces = [];
                 counties = [];
@@ -184,15 +184,6 @@ app.get("/future", function (req, res) { return __awaiter(void 0, void 0, void 0
                 country = params.country || "";
                 province = params.province || "";
                 county = params.county || "";
-                if (typeof country == "object") {
-                    country = country[0];
-                }
-                if (typeof province == "object") {
-                    province = province[0];
-                }
-                if (typeof county == "object") {
-                    county = county[0];
-                }
                 countries = [];
                 provinces = [];
                 counties = [];
@@ -265,7 +256,7 @@ function utc_iso(date) {
     return year + "-" + month + "-" + day;
 }
 /* Totals Sequence API
- * Gives the most recent data, with missing dates __not__ filled in (yet) */
+ * Gives the most recent data, with missing dates filled in */
 app.get("/cases/totals_sequence", function (req, res) {
     var params = req.query;
     // get location and date

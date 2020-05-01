@@ -87,8 +87,8 @@ const datatablePage = async (req, res) => {
 
     let dates = await corona_sql.getDates(country, province, county);
 
-    let firstDay = dates[0];
-    let lastDay = dates[dates.length - 1];
+    let firstDay = dates[dates.length - 1];
+    let lastDay = dates[0];
 
     let countries = [];
     let provinces = [];
@@ -131,12 +131,9 @@ app.get("/charts/info", (req, res) => {
 
 app.get("/future", async(req, res) => {
     let params = url.parse(req.url, true).query;
-    let country = params.country || "";
-    let province = params.province || "";
-    let county = params.county || "";
-    if (typeof country == "object") { country = country[0]; }
-    if (typeof province == "object") { province = province[0]; }
-    if (typeof county == "object") { county = county[0]; }
+    let country = params.country as string || "";
+    let province = params.province as string || "";
+    let county = params.county as string || "";
     
     let countries = [];
     let provinces = [];
@@ -207,7 +204,7 @@ function utc_iso(date) {
 }
 
 /* Totals Sequence API
- * Gives the most recent data, with missing dates __not__ filled in (yet) */
+ * Gives the most recent data, with missing dates filled in */
 app.get("/cases/totals_sequence", (req, res) => {
     let params = req.query;
 

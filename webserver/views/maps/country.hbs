@@ -140,11 +140,14 @@
 						if ($(window).width() > 1000) {
 							$("#pageContent").css("display", "flex");
 							$("#pageContent").height($(window).height() - $("#header").height());
+							$("#svgMap").width($(window).width() * 2 / 3);
 							$("#svgMap").height($("#pageContent").height());
 							$("svg").width($("#svgMap").width());
 							$("svg").height($("#svgMap").height());
 						} else {
 							$("#pageContent").css("display", "block");
+							$("#svgMap").width($(window).width());
+							$("#svgMap").height($("#pageContent").height());
 							$("svg").width($("#svgMap").width());
 							$("svg").height("100%");
 						}
@@ -162,12 +165,13 @@
 						response.text().then(
 							text => {
 								$("#svgMap").html(text);
+
+								let svgWidth = $("svg").attr("width");
+								let svgHeight = $("svg").attr("height");
+								$("svg").attr("viewBox", `0 0 ${svgWidth} ${svgHeight}`);
+
 								addSubregionListeners();
 								setDate($("#date").val(), resetTooltip);
-								svgZoomObject = svgPanZoom('svg', {
-									dblClickZoomEnabled: false,
-									zoomScaleSensitivity: 0.5
-								});
 								$(window).trigger('resize');
 							}
 						)
@@ -183,11 +187,13 @@
 				return `
 					<div class="trow">
 						<div class="font-weight-bold">${label}</div>
-						<div>${content || "Unknown"}</div>
+						<div>${content > 0 ? content : "Unknown"}</div>
 					</div>`
 			}
 
 			function setTooltipInfo(subregion, content) {
+				$("#tooltip").show();
+
 				lastTooltipName = subregion;
 				let html = '';
 				if (content) {
@@ -196,7 +202,8 @@
 					html += generateHTML("Deaths", content.deaths);
 					html += generateHTML("Recoveries", content.recovered);
 					if (relatedMaps.includes(subregion)) {
-						html += `<a href="/maps/${country?country+"/":""}${subregion}">Click for map of ${subregion}</a>`;
+						let newMapURL = `"/maps/${country?country+"/":""}`;
+						html += `<b>Double click for map</b>`;
 					}
 				} else {
 					html += '<i>No data found</i>';
@@ -205,30 +212,56 @@
 				$("#tooltipSubregion").html(subregion);
 			}
 
+			function hideTooltip() {
+				$("#tooltip").hide();
+			}
+
+			function moveTooltip(x, y) {
+				let tooltipWidth = $("#tooltip").width();
+				let tooltipHeight = $("#tooltip").height();
+				$("#tooltip").css({"left": x - tooltipWidth / 2, "top": y - tooltipHeight - 25});
+			}
+
 			function addSubregionListeners() {
-				// 'path' tags are for countries
-				// #svgMap is triggered even if you aren't directly tapping it
-				$("#svgMap")[0].addEventListener('touchend', function(e) {
-					if (e.path[0].tagName != 'path') {
-						resetTooltip();
-					}
+				$("#svgMap").on('mouseover', hideTooltip);
+				$("#tooltip").on('mouseenter', function(e) {
+					moveTooltip(e.pageX, e.pageY);
 				});
-				$("#svgMap")[0].addEventListener('click', function(e) {
-					if (e.path[0].tagName != 'path') {
-						resetTooltip();
-					}
-				});
+
 				for (let subregion of $("#svgMap path")) {
 					let subregionName = subregion.getAttribute("title");
 					if (typeof subregionName != 'undefined') {
+						subregion.addEventListener('touchstart', function(e) {
+							setTooltipInfo(subregionName, subregions[subregionName]);
+							moveTooltip(e.touches[0].pageX, e.touches[0].pageY);
+						});
 						subregion.addEventListener('touchend', function(e) {
+							console.log("touch ended");
+							hideTooltip();
+						});
+						subregion.addEventListener('mouseenter', function(e) {
 							setTooltipInfo(subregionName, subregions[subregionName]);
 						});
-						subregion.addEventListener('click', function(e) {
-							setTooltipInfo(subregionName, subregions[subregionName]);
+						subregion.addEventListener('mousemove', function(e) {
+							moveTooltip(e.pageX, e.pageY);
 						});
+
+						if (relatedMaps.includes(subregionName)) {
+							let newMapURL = "/maps/";
+							if (country) {
+								newMapURL += country + "/";
+							}
+							newMapURL += subregionName;
+							subregion.addEventListener('dblclick', function(e) {
+								window.location = newMapURL;
+							});
+						}
 					}
 				}
+			}
+
+			function redirect(url) {
+				window.location = url;
 			}
 		</script>
 		<style>
@@ -275,7 +308,7 @@
 		</div>
 		<div id="pageContent" style="display: flex;">
 			<div id="sidebar" class="d-flex flex-column p-2" style="flex: 1; border-right: 1px solid var(--color-fg-light, #f5f5f5);">
-				<div id="tooltip">
+				<div id="tooltip" style="position: absolute; display: none; background-color: var(--color-bg-dark)">
 					<div>
 						<span id="tooltipSubregion" class="font-weight-bold"></span>
 					</div>
@@ -316,27 +349,22 @@
 				</div>
 				
 				<div style="border-top: 1px solid var(--color-fg-light, #f5f5f5);">
-					<b>Related maps</b>
-					<ul>
+					<b>Related maps</b><br/>
+					<select onchange="redirect(this.value)">
+						<option value="">Choose one</option>
 						{{#if country}}
-							<li>
-								<a href="/maps/world">World Map</a>
-							</li>
+							<option value="/maps/world">World Map</option>
 						{{/if}}
 						{{#if province}}
-							<li>
-								<a href="/maps/{{country}}">{{country}} Map</a>
-							</li>
+							<option value="/maps/{{country}}">{{country}} Map</option>
 						{{/if}}
 						{{#each relatedMaps}}
-							<li>
-								<a href="/maps/{{#if ../country}}{{../country}}/{{/if}}{{this}}">{{this}}</a>
-							</li>
+							<option value="/maps/{{#if ../country}}{{../country}}/{{/if}}{{this}}">{{this}}</option>
 						{{/each}}
-					</ul>
+					</select>
 				</div>
 			</div>
-			<div id="mapWrapper" style="flex: 4;">
+			<div id="mapWrapper" style="flex: 2;">
 				<div id="svgMap"></div>
 			</div>
 		</div>

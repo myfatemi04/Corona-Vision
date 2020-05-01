@@ -32,7 +32,7 @@ from . import usa_testing
 live = [
 	albania,
 	argentina,
-	australia,
+	# australia,
 	azerbaijan,
 	bahrain,
 	brazil,
