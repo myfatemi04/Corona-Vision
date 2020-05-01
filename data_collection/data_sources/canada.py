@@ -4,6 +4,7 @@ import upload
 import time
 import datetime
 from data_sources import minWait
+from bs4 import BeautifulSoup
 
 lastDatapointsUpdate = 0
 name = "Canada"
