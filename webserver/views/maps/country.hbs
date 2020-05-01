@@ -39,7 +39,7 @@
 			let svgZoomObject = null;
 			let country = "{{country}}";
 			let province = "{{province}}";
-			let lastTooltipName = "{{label}}";
+			let lastTooltipName;
 
 			// we store this because the date can change
 			let feature = "total";
@@ -50,9 +50,8 @@
 			}
 
 			function triggerTooltipUpdate() {
-				if (lastTooltipName == "{{label}}") {
-					resetTooltip();
-				} else {
+				updateWorldInfo();
+				if (lastTooltipName) {
 					setTooltipInfo(lastTooltipName, subregions[lastTooltipName]);
 				}
 			}
@@ -171,7 +170,7 @@
 								$("svg").attr("viewBox", `0 0 ${svgWidth} ${svgHeight}`);
 
 								addSubregionListeners();
-								setDate($("#date").val(), resetTooltip);
+								setDate($("#date").val(), triggerTooltipUpdate);
 								$(window).trigger('resize');
 							}
 						)
@@ -179,8 +178,19 @@
 				);
 			}
 			
-			function resetTooltip() {
-				setTooltipInfo('{{label}}', overall)
+			function updateWorldInfo() {
+				let label = '{{label}}';
+				let content = overall;
+				let html = '';
+				if (content) {
+					html += generateHTML("Cases", content.total);
+					html += generateHTML("Cases today", content.dtotal);
+					html += generateHTML("Deaths", content.deaths);
+					html += generateHTML("Recoveries", content.recovered);
+				} else {
+					html += '<i>No data found</i>';
+				}
+				$("#worldInfo").html(html);
 			}
 
 			function generateHTML(label, content) {
@@ -192,8 +202,6 @@
 			}
 
 			function setTooltipInfo(subregion, content) {
-				$("#tooltip").show();
-
 				lastTooltipName = subregion;
 				let html = '';
 				if (content) {
@@ -232,14 +240,15 @@
 					let subregionName = subregion.getAttribute("title");
 					if (typeof subregionName != 'undefined') {
 						subregion.addEventListener('touchstart', function(e) {
+							$("#tooltip").show();
 							setTooltipInfo(subregionName, subregions[subregionName]);
 							moveTooltip(e.touches[0].pageX, e.touches[0].pageY);
 						});
 						subregion.addEventListener('touchend', function(e) {
-							console.log("touch ended");
 							hideTooltip();
 						});
 						subregion.addEventListener('mouseenter', function(e) {
+							$("#tooltip").show();
 							setTooltipInfo(subregionName, subregions[subregionName]);
 						});
 						subregion.addEventListener('mousemove', function(e) {
@@ -284,10 +293,10 @@
 				flex-direction: column;
 				padding: 0.5em;
 			}
-			#tooltip .trow {
+			.trow {
 				display: flex;
 			}
-			#tooltip .trow div {
+			.trow div {
 				flex: 1;
 				padding: 0 0.5em;
 			}
@@ -297,6 +306,13 @@
 		</style>
 	</head>
 	<body onload="init()">
+		<div id="tooltip" style="position: absolute; display: none; background-color: var(--color-bg-dark)">
+			<div>
+				<span id="tooltipSubregion" class="font-weight-bold"></span>
+			</div>
+			<div id="tooltipRows">
+			</div>
+		</div>
 		<div id="header">
 			{{>navbar}}
 			<div id="mapHeader" class="text-center" style="border-bottom: 1px solid var(--color-fg-light, #f5f5f5);">
@@ -308,12 +324,9 @@
 		</div>
 		<div id="pageContent" style="display: flex;">
 			<div id="sidebar" class="d-flex flex-column p-2" style="flex: 1; border-right: 1px solid var(--color-fg-light, #f5f5f5);">
-				<div id="tooltip" style="position: absolute; display: none; background-color: var(--color-bg-dark)">
-					<div>
-						<span id="tooltipSubregion" class="font-weight-bold"></span>
-					</div>
-					<div id="tooltipRows">
-					</div>
+				<div>
+					<b>{{label}}</b>
+					<div id="worldInfo"></div>
 				</div>
 				<noscript>
 					This website requires JavaScript to run.

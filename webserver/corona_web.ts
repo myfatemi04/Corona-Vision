@@ -431,8 +431,8 @@ app.get("/maps/:country", countryMap);
 app.get("/maps/:country/:province", countryMap);
 
 async function countryMap(req, res) {
-    let country = req.params.country;
-    let province = req.params.province;
+    let country = req.params.country as string || '';
+    let province = req.params.province as string || '';
     if (country.toLowerCase() == 'world') {
         country = '';
     }

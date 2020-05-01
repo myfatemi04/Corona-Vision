@@ -433,8 +433,8 @@ function countryMap(req, res) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    country = req.params.country;
-                    province = req.params.province;
+                    country = req.params.country || '';
+                    province = req.params.province || '';
                     if (country.toLowerCase() == 'world') {
                         country = '';
                     }
