@@ -59,7 +59,7 @@ def import_hist_counties():
 	datapoints = []
 	for row in countyList.split("\n")[1:]:
 		dateStr, county, province, fips, cases, deaths = row.split(",")
-		if dateStr > '2020-04-20':
+		if dateStr > '2020-04-28':
 			datapoints.append({
 				'entry_date': datetime.strptime(dateStr, "%Y-%m-%d").date(),
 				'country': 'United States',

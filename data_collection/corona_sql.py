@@ -181,7 +181,6 @@ class Datapoint(Base):
 
 		if change:
 			self.update_time = datetime.utcnow()
-			print("Updated!")
 
 		return change
 	

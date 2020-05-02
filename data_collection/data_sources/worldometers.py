@@ -44,15 +44,15 @@ def import_data():
 		}
 	)
 
-	def delif(result, key):
-		if key in result:
-			del result[key]
+	# def delif(result, key):
+	# 	if key in result:
+	# 		del result[key]
 	
-	newDatapoints = []
-	for result in results['datapoint']:
-		result['country'], _, _ = standards.normalize_name(result['country'], '', '')
-		if result['country'] not in disallowed:
-			newDatapoints.append(result)
+	# newDatapoints = []
+	# for result in results['datapoint']:
+	# 	result['country'], _, _ = standards.normalize_name(result['country'], '', '')
+	# 	if result['country'] not in disallowed:
+	# 		newDatapoints.append(result)
 
-	if upload.upload_datapoints(newDatapoints, "http://www.worldometers.info/coronavirus"):			
+	if upload.upload_datapoints(results['datapoint'], "http://www.worldometers.info/coronavirus"):			
 		lastDatapointsUpdate = time.time()
