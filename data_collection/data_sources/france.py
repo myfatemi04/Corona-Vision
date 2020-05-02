@@ -22,11 +22,13 @@ def import_dashboard():
     url = "https://dashboard.covid19.data.gouv.fr/data/code-FRA.json"
     rq = requests.get(url).json()
     latest = rq[-1]
+    
+    _ = lambda x, y: x[y] if y in x else None
 
     datapoint = {
         'country': "France",
         "total": latest['casConfirmes'],
-        'deaths': latest['deces'],
+        'deaths': latest['deces'] + (_(latest, 'decesEhpad') or 0),
         'serious': latest['reanimation'],
         'hospitalized': latest['hospitalises'],
         'recovered': latest['gueris'],
