@@ -11,8 +11,8 @@
 *Czechia https://onemocneni-aktualne.mzcr.cz/covid-19
 *Norway https://redutv-api.vg.no/corona/v1/sheets/norway-region-data?exclude=cases//https://www.vg.no/spesial/2020/corona/?utm_source=coronav
 -R�union http://www.reunion.gouv.fr/point-de-situation-du-02-05-2020-1-nouveau-cas-a6577.html
-Niger https://coronavirus.ne/
-Burkina Faso https://www.facebook.com/1444809365833949/photos/a.1590964164551801/2516955465285995/?type=3&theater
+*Niger https://coronavirus.ne/
+-Burkina Faso https://www.facebook.com/1444809365833949/photos/a.1590964164551801/2516955465285995/?type=3&theater
 Bermuda https://www.gov.bm/coronavirus
 Uruguay https://www.gub.uy/sistema-nacional-emergencias/comunicacion/comunicados/informe-situacion-relacion-coronavirus-covid-19-uruguay-del-02052020
 Colombia https://twitter.com/MinSaludCol/status/1256706378971963392

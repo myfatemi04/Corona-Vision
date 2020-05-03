@@ -10,6 +10,7 @@ from . import argentina
 from . import azerbaijan
 from . import bahrain
 from . import brazil
+from . import bermuda
 from . import canada
 from . import china
 from . import czechia
@@ -19,6 +20,7 @@ from . import india
 from . import italy
 from . import japan
 from . import netherlands
+from . import niger
 from . import nigeria
 from . import norway
 from . import portugal
@@ -38,6 +40,7 @@ live = [
 	# australia,
 	azerbaijan,
 	bahrain,
+	bermuda,
 	brazil,
 	canada,
 	czechia,
@@ -47,6 +50,7 @@ live = [
 	italy,
 	japan,
 	netherlands,
+	niger,
 	nigeria,
 	norway,
 	portugal,
