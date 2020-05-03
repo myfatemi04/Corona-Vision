@@ -30,7 +30,7 @@ def import_data():
                     "total": number
                 })
     
-    if upload.upload_datapoints(datapoints, "https://www.health.gov.au/news/health-alerts/novel-coronavirus-2019-ncov-health-alert"):
+    if upload.upload_datapoints(datapoints):
         lastDatapointsUpdate = time.time()
 
 if __name__ == "__main__":

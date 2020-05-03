@@ -32,11 +32,10 @@ from . import turkey
 from . import united_states
 from . import uganda
 
-from us_states import virginia
-
 from . import worldometers
-
 from . import usa_testing
+
+from . import us_states
 
 live = [
 	albania,
@@ -68,8 +67,7 @@ live = [
 	worldometers,
 
 	usa_testing,
-
-	virginia.import_data
+	us_states
 ]
 
 def import_group(l):

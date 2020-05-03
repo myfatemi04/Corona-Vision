@@ -22,5 +22,5 @@ def import_data():
             "recovered": row['recovered']
         })
     
-    if upload.upload_datapoints(datapoints, "https://covid19japan.com/"):
+    if upload.upload_datapoints(datapoints):
         lastDatapointsUpdate = time.time()

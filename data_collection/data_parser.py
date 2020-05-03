@@ -20,10 +20,10 @@ def get_elem(soup, selector_chain):
 def import_table(url, table_selector, table_labels, rows=slice(None, None, None)):
 	soup = BeautifulSoup(requests.get(url).text, "html.parser")
 	df = pd.read_html(get_elem(soup, table_selector).prettify(), keep_default_na=False, na_values=['_'])[0]
-	return import_df(df=df, table_labels=table_labels, rows=rows, source_link=url)
+	return import_df(df=df, table_labels=table_labels, rows=rows)
 
-def import_df(df, table_labels, rows, source_link):
-	content = {'source_link': source_link, 'datapoint': []}
+def import_df(df, table_labels, rows):
+	content = {'datapoint': []}
 
 	defaults = get_defaults()
 
@@ -35,7 +35,7 @@ def import_df(df, table_labels, rows, source_link):
 		
 	return content
 
-def import_json(url, source_link, table_labels, namespace=['features'], allow=[], use_datestr=False):
+def import_json(url, table_labels, namespace=['features'], allow=[], use_datestr=False):
 	if use_datestr:
 		url = date.today().strftime(url)
 	resp = requests.get(url)
@@ -46,7 +46,7 @@ def import_json(url, source_link, table_labels, namespace=['features'], allow=[]
 
 	defaults = get_defaults()
 
-	content = {'source_link': source_link}
+	content = {}
 
 	for table in table_labels.keys():
 		content[table] = []

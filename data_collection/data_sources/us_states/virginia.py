@@ -11,8 +11,9 @@ def import_data():
     queryURL = "https://www.vdh.virginia.gov/content/uploads/sites/182/2020/03/VDH-COVID-19-PublicUseDataset-Cases.csv"
     sourceURL = "http://vdh.virginia.gov/coronavirus/"
 
-    txt = requests.get(queryURL).text
+    text = requests.get(queryURL, verify=False).text
     
+
 
     # if upload.upload(result):
     #     lastDatapointsUpdate = time.time()

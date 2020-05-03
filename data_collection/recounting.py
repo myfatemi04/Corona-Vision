@@ -10,7 +10,7 @@ Step 2. Sum up whatever needs to be summed up-- provinces, counties, etc.
 Step 3. Update the parent datapoint
 
 """
-def recount(updated, source_link, session, cache=None):
+def recount(updated, session, cache=None):
     import data_caching
     from corona_sql import Location, try_commit
     
@@ -28,7 +28,7 @@ def recount(updated, source_link, session, cache=None):
 
         unique_days.add(entry_date)
         if county == '':
-            update_overall(country, province, county, entry_date, source_link, session)
+            update_overall(country, province, county, entry_date, session)
             Location.add_location_data({"country": country, "province": province, "county": county}, cache=location_cache, session=session)
 
     # we no longer need to update daily changes; we do it on-the-fly instead
@@ -49,7 +49,7 @@ def filter_children(results, country, province, county):
 
 stat_labels = ['total', 'deaths', 'recovered', 'serious', 'tests', 'hospitalized']
 sums = tuple(func.sum(getattr(Datapoint, label)) for label in stat_labels)
-def update_overall(country, province, county, entry_date, source_link, session):
+def update_overall(country, province, county, entry_date, session):
     results = session.query(*sums).filter_by(entry_date=entry_date)
     results = filter_children(results, country, province, county)
     result = results.first()
@@ -61,10 +61,10 @@ def update_overall(country, province, county, entry_date, source_link, session):
 
     overall_dp = session.query(Datapoint).filter_by(**_filter).first()
     if not overall_dp:
-        overall_dp = Datapoint(_filter, source_link)
+        overall_dp = Datapoint(_filter)
         session.add(overall_dp)
     
-    overall_dp.update_data(labelled, source_link, requireIncreasing=True)
+    overall_dp.update_data(labelled, requireIncreasing=True)
 
 def update_deltas(day, updated=None):
     compare_day = day + timedelta(days=-1)

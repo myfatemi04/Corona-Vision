@@ -17,7 +17,7 @@ def import_data():
     print(soup)
     print(soup.findAll(".col-12"))
 
-    # if upload.upload_datapoints([datapoint], "https://www.govern.ad/coronavirus"):
+    # if upload.upload_datapoints([datapoint]):
     #     lastDatapointsUpdate = time.time()
 
 if __name__ == "__main__":

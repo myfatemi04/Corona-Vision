@@ -27,7 +27,7 @@ def import_data():
             "recovered": stateStats['recovered']
         })
 
-    if upload.upload_datapoints(datapoints, sourceLink):
+    if upload.upload_datapoints(datapoints):
         lastDatapointsUpdate = time.time()
         
 if __name__ == "__main__":

@@ -20,7 +20,7 @@ def import_data():
                 "total": int(split[1])
             })
     
-    if upload.upload_datapoints(datapoints, "https://covid19.isciii.es/"):
+    if upload.upload_datapoints(datapoints):
         lastDatapointsUpdate = time.time()
 
 if __name__ == "__main__":

@@ -32,7 +32,7 @@ def import_data():
             'longitude': float(row['lon'])
         })
     
-    if upload.upload_datapoints(datapoints, 'https://coronavirus.al/statistika/'):
+    if upload.upload_datapoints(datapoints):
         lastDatapointsUpdate = time.time()
         
     upload.upload_locations(locations)

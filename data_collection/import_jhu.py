@@ -29,8 +29,7 @@ def import_csv_data(csv_text, entry_date):
 	
 	content = {
 		'datapoint': [],
-		'location': [],
-		'source_link': "https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports"
+		'location': []
 	}
 
 	df.sort_values(by=[col for col in [county_col, province_col, country_col] if col], ascending=False)

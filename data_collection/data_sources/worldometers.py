@@ -54,7 +54,7 @@ def import_data():
 	# 	if result['country'] not in disallowed:
 	# 		newDatapoints.append(result)
 
-	if upload.upload_datapoints(results['datapoint'], "http://www.worldometers.info/coronavirus"):			
+	if upload.upload_datapoints(results['datapoint']):			
 		lastDatapointsUpdate = time.time()
 
 def getSources():

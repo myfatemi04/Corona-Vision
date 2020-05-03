@@ -23,7 +23,7 @@ def import_data():
         "tests": int(stats[5].text.replace(",", "")),
     }
 
-    if upload.upload_datapoints([datapoint], url):
+    if upload.upload_datapoints([datapoint]):
         lastDatapointsUpdate = time.time()
 
 if __name__ == "__main__":

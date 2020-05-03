@@ -108,7 +108,7 @@ def import_pdf(content: bytes, entry_date: date) -> None:
         
         i = i + 1
 
-    if upload.upload_datapoints(datapoints, "https://www.argentina.gob.ar/coronavirus/informe-diario"):
+    if upload.upload_datapoints(datapoints):
         lastDatapointsUpdate = time.time()
 
 if __name__ == "__main__":

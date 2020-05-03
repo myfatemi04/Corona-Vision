@@ -13,8 +13,7 @@ DATA UPLOADS
 upload(data):
     data = {
         'locations': [],
-        'datapoints': [],
-        'source_link': "https://.../"
+        'datapoints': []
     }
 
 """
@@ -31,7 +30,7 @@ def upload(data):
                 if table == 'location':
                     upload_locations(rows)
                 elif table == 'datapoint':
-                    datapoints_updated = upload_datapoints(rows, data['source_link'])
+                    datapoints_updated = upload_datapoints(rows)
             except Exception as e:
                 traceback.print_tb(e.__traceback__)
                 sys.stderr.write("Error during {}s upload {} {}".format( table, type(e), e ))
@@ -59,12 +58,10 @@ def upload_locations(locations):
         print("\rCommitting locations             ", end='\r')
     try_commit(session)
 
-def upload_datapoints(datapoints: typing.List, source_link: str, recount=True) -> bool:
+def upload_datapoints(datapoints: typing.List) -> bool:
     import recounting
 
     if not silent_mode:
-        if not recount:
-            print("Not recounting datapoints")
         print("\rUploading datapoints...             ", end='\r')
     
     session = Session()
@@ -77,15 +74,14 @@ def upload_datapoints(datapoints: typing.List, source_link: str, recount=True) -
         t = datapoint_data['country'], datapoint_data['province'], datapoint_data['county'], datapoint_data['entry_date'].isoformat()
         if t not in seen:
             seen.add(t)
-            updated_datapoint, this_datapoint_updated = Datapoint.add_datapoint_data(datapoint_data=datapoint_data, source_link=source_link, session=session, cache=cache)
+            updated_datapoint, this_datapoint_updated = Datapoint.add_datapoint_data(datapoint_data=datapoint_data, session=session, cache=cache)
             updates.update(updated_datapoint.ripples())
             if this_datapoint_updated:
                 was_updated = True
     
-    if recount:
-        if not silent_mode:
-            print("\rRecounting             ", end='\r')
-        recounting.recount(updates, session=session, source_link=source_link, cache=cache)
+    if not silent_mode:
+        print("\rRecounting             ", end='\r')
+    recounting.recount(updates, session=session, cache=cache)
 
     if not silent_mode:
         print("\rCommitting             ", end='\r')

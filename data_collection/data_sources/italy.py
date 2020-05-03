@@ -46,8 +46,7 @@ def import_counties():
 
 	overall = {
 		'datapoint': datapoints,
-		'location': locations,
-		'source_link': sourceLink
+		'location': locations
 	}
 
 	if upload.upload(overall):
@@ -90,8 +89,7 @@ def import_provinces():
 
 	overall = {
 		'datapoint': datapoints,
-		'location': locations,
-		'source_link': sourceLink
+		'location': locations
 	}
 
 	if upload.upload(overall):
@@ -137,8 +135,7 @@ def import_provinces_historical():
 
 	overall = {
 		'datapoint': datapoints,
-		'location': locations,
-		'source_link': sourceLink
+		'location': locations
 	}
 
 	if upload.upload(overall):

@@ -24,7 +24,7 @@ def import_data():
 
     datapoint['deaths'] = datapoint['total'] - active - datapoint['recovered']
     
-    if upload.upload_datapoints([datapoint], url):
+    if upload.upload_datapoints([datapoint]):
         lastDatapointsUpdate = time.time()
 
 if __name__ == "__main__":

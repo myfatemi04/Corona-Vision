@@ -24,13 +24,10 @@ def fix_location_names():
         if real_name:
             print("Found a duplicate")
             # update the row that has the real name, and remove the row with the fake name
-            for label in ['total', 'deaths', 'recovered', 'active', 'num_tests', 'serious']:
+            for label in ['total', 'deaths', 'recovered', 'tests', 'serious']:
                 if getattr(old_name, label) > getattr(real_name, label):
                     setattr(real_name, label, getattr(old_name, label))
-            
-            for l in ['dtotal', 'ddeaths', 'drecovered', 'dactive', 'dserious', 'latitude', 'longitude', 'source_total', 'source_deaths', 'source_recovered', 'source_num_tests', 'source_serious']:
-                if not getattr(real_name, l) and getattr(old_name, l):
-                    setattr(real_name, l, getattr(old_name, l))
+                    
             session.delete(old_name)
         else:
             print("Found no duplicates")

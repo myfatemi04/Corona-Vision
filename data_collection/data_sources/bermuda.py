@@ -26,7 +26,7 @@ def import_data():
         "deaths": deaths
     }
     
-    if upload.upload_datapoints([datapoint], url):
+    if upload.upload_datapoints([datapoint]):
         lastDatapointsUpdate = time.time()
 
 if __name__ == "__main__":

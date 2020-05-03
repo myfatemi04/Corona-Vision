@@ -41,4 +41,4 @@ def import_data():
                         "entry_date": date
                     })
 
-    upload.upload_datapoints(datapoints, source_link=sourceURL)
+    upload.upload_datapoints(datapoints)

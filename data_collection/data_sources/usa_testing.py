@@ -23,7 +23,7 @@ def import_data():
 			'recovered': row['recovered'] or 0
 		})
 	
-	if upload.upload_datapoints(datapoints, "https://covidtracking.com"):
+	if upload.upload_datapoints(datapoints):
 		lastDatapointsUpdate = time.time()
 
 	upload.upload_locations(locations)
@@ -34,7 +34,6 @@ def import_historical_data():
 	print("Uploading historical USA testing data...")
 	results = import_json(
 		url="https://covidtracking.com/api/v1/states/daily.json",
-		source_link="https://covidtracking.com",
 		table_labels={
 			"datapoint": {
 				"entry_date": ["date", "::str", "::ymd"],

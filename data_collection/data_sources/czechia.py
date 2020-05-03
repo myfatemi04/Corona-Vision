@@ -19,7 +19,7 @@ def import_data():
         'deaths': int(soup.select_one("#count-dead").text.replace(" ", "")),
     }
     
-    if upload.upload_datapoints([datapoint], url):
+    if upload.upload_datapoints([datapoint]):
         lastDatapointsUpdate = time.time()
 
 if __name__ == "__main__":

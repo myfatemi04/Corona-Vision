@@ -34,19 +34,12 @@ create table datapoints (
 	tests integer default 0,
 	hospitalized integer default 0,
 
-	dtotal integer default 0,
-	drecovered integer default 0,
-	ddeaths integer default 0,
-	dserious integer default 0,
-	dtests integer default 0,
-	dhospitalized integer default 0,
-
-	source_total TEXT,
-	source_recovered TEXT,
-	source_deaths TEXT,
-	source_serious TEXT,
-	source_tests TEXT,
-	source_hospitalized TEXT,
+	-- source_total TEXT,
+	-- source_recovered TEXT,
+	-- source_deaths TEXT,
+	-- source_serious TEXT,
+	-- source_tests TEXT,
+	-- source_hospitalized TEXT,
 
 	PRIMARY KEY(country, province, county, entry_date)
 ) COLLATE utf8_bin;

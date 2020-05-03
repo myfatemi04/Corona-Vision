@@ -113,12 +113,8 @@ class Location(Base):
 class Datapoint(Base):
 	__tablename__ = "datapoints"
 
-	def __init__(self, data, source_link):
+	def __init__(self, data):
 		super().__init__(**data)
-		
-		for label in stat_labels:
-			if getattr(self, label) is not None:
-				setattr(self, "source_" + label, source_link)
 
 	# columns about the date/time of the datapoint
 	entry_date = Column(String(16), primary_key=True)
@@ -137,29 +133,12 @@ class Datapoint(Base):
 	serious = Column(Integer, default=0)
 	tests = Column(Integer, default=0)
 	hospitalized = Column(Integer, default=0)
-	
-	dtotal = Column(Integer, default=0)
-	drecovered = Column(Integer, default=0)
-	ddeaths = Column(Integer, default=0)
-	dserious = Column(Integer, default=0)
-	dtests = Column(Integer, default=0)
-	dhospitalized = Column(Integer, default=0)
 
-	# used mostly for provincial data
-	source_total = Column(String())
-	source_recovered = Column(String())
-	source_deaths = Column(String())
-	source_serious = Column(String())
-	source_tests = Column(String())
-	source_hospitalized = Column(String())
-
-	def update_data(self, data, source_link: str, requireIncreasing: bool = False) -> bool:
+	def update_data(self, data, requireIncreasing: bool = False) -> bool:
 		change = False
 		
 		def _update(label, new_val):
 			setattr(self, label, new_val)
-			if label in stat_labels:
-				setattr(self, "source_" + label, source_link)
 
 		for label in stat_labels:
 			if label not in data or data[label] is None:
@@ -196,7 +175,7 @@ class Datapoint(Base):
 					setattr(self, "d" + label, None)
 
 	@staticmethod
-	def add_datapoint_data(datapoint_data, source_link, session, cache=None):
+	def add_datapoint_data(datapoint_data, session, cache=None):
 		import prepare_data
 		was_changed = False
 		datapoint_data = prepare_data.prepare_datapoint_data(datapoint_data)
@@ -204,9 +183,9 @@ class Datapoint(Base):
 			t = datapoint_data['country'], datapoint_data['province'], datapoint_data['county'], datapoint_data['entry_date'].isoformat()
 			if t in cache:
 				datapoint = cache[t]
-				was_changed = datapoint.update_data(data=datapoint_data, source_link=source_link)
+				was_changed = datapoint.update_data(data=datapoint_data, )
 			else:
-				datapoint = Datapoint(data=datapoint_data, source_link=source_link)
+				datapoint = Datapoint(data=datapoint_data)
 				session.add(datapoint)
 				cache[datapoint.t] = datapoint
 				was_changed = True
@@ -220,9 +199,9 @@ class Datapoint(Base):
 			).first()
 
 			if datapoint is not None:
-				was_changed = datapoint.update_data(data=datapoint_data, source_link=source_link)
+				was_changed = datapoint.update_data(data=datapoint_data)
 			else:
-				datapoint = Datapoint(data=datapoint_data, source_link=source_link)
+				datapoint = Datapoint(data=datapoint_data)
 				session.add(datapoint)
 				was_changed = True
 			return datapoint, was_changed

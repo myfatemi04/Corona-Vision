@@ -39,7 +39,7 @@ def import_data():
         })
 
     upload.upload_locations(locations)
-    if upload.upload_datapoints(datapoints, source_link=sourceURL):
+    if upload.upload_datapoints(datapoints):
         lastDatapointsUpdate = time.time()
 
 if __name__ == "__main__":

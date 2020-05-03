@@ -16,7 +16,7 @@ def import_data():
         "country": ,
     }
     
-    if upload.upload_datapoints([datapoint], url):
+    if upload.upload_datapoints([datapoint]):
         lastDatapointsUpdate = time.time()
 
 if __name__ == "__main__":

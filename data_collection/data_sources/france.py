@@ -35,7 +35,7 @@ def import_dashboard():
         'tests': None
     }
 
-    if upload.upload_datapoints([datapoint], "https://dashboard.covid19.data.gouv.fr/"):
+    if upload.upload_datapoints([datapoint]):
         lastDatapointsUpdate = time.time()
 
 def import_historical_data():
@@ -61,7 +61,7 @@ def import_historical_data():
 
     print(datapoints)
 
-    upload.upload_datapoints(datapoints, "https://dashboard.covid19.data.gouv.fr/")
+    upload.upload_datapoints(datapoints)
 
 def import_date(d):
     global lastDatapointsUpdate
@@ -82,7 +82,7 @@ def import_date(d):
                 'entry_date': d
             })
 
-    if upload.upload_datapoints(datapoints, "https://dashboard.covid19.data.gouv.fr/"):
+    if upload.upload_datapoints(datapoints):
         lastDatapointsUpdate = time.time()
 
 if __name__ == "__main__":

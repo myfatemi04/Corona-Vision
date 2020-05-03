@@ -31,7 +31,7 @@ def import_data():
         "recovered": int(recovered.replace(".", ""))
     }
     
-    if upload.upload_datapoints([datapoint], url):
+    if upload.upload_datapoints([datapoint]):
         lastDatapointsUpdate = time.time()
 
 if __name__ == "__main__":

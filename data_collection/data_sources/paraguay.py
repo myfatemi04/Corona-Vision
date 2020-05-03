@@ -14,4 +14,4 @@ def import_data():
         "recovered": int(stats[2].text.strip())
     }
 
-    upload.upload_datapoints([datapoint], url)
+    upload.upload_datapoints([datapoint])

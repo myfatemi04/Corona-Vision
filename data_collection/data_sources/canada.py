@@ -55,7 +55,7 @@ def import_news():
                 "tests": tests
             })
     
-    if upload.upload_datapoints(datapoints, sourceURL):
+    if upload.upload_datapoints(datapoints):
         lastDatapointsUpdate = time.time()
 
 def import_gov():
@@ -77,7 +77,7 @@ def import_gov():
                 'deaths': deaths
             })
     
-    if upload.upload_datapoints(datapoints, url):
+    if upload.upload_datapoints(datapoints):
         lastDatapointsUpdate = time.time()
 
 if __name__ == "__main__":
