@@ -41,7 +41,7 @@ select
     today.serious - yesterday.serious as dserious,
     today.tests,
     yesterday.tests as yesterday_tests,
-    today.tests - yesterday.tests as dtests,
+    today.tests - yesterday.tests as dtests
 from datapoints today
 left join datapoints yesterday on 
     date(yesterday.entry_date) = date(today.entry_date - interval 1 day) and
