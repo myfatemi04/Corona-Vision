@@ -29,9 +29,9 @@ function table_col(options) {
         if (options.hasOwnProperty("digits")) innerText = nFormatter(number, options.digits);
         else innerText = number;
 
-        if (options.source) {
-            innerText = `<a href='${options.source}' style='color: inherit; text-decoration: underline;'>` + innerText + `</a>`;
-        }
+        // if (options.source) {
+        //     innerText = `<a href='${options.source}' style='color: inherit; text-decoration: underline;'>` + innerText + `</a>`;
+        // }
     }
     
     let color = options.color || COLORS.fg;
@@ -143,11 +143,11 @@ module.exports = {
             let table_cols = [
                 {number: i, flex: 1, color: COLORS.fg},
                 {number: label_link, color: COLORS.link, flex: 4},
-                {number: datapoint.total, source: datapoint.source_total, color: COLORS.total},
-                {number: dailyTotal > 0 ? dailyTotal : ``, source: datapoint.source_total, color: COLORS.total},
-                {number: datapoint.recovered, color: COLORS.recovered, source: datapoint.source_recovered},
-                {number: datapoint.deaths, color: COLORS.deaths, source: datapoint.source_deaths},
-                {number: datapoint.tests, color: COLORS.tests, source: datapoint.source_tests}
+                {number: datapoint.total, color: COLORS.total},
+                {number: dailyTotal > 0 ? dailyTotal : ``, color: COLORS.total},
+                {number: datapoint.recovered, color: COLORS.recovered},
+                {number: datapoint.deaths, color: COLORS.deaths},
+                {number: datapoint.tests, color: COLORS.tests}
             ];
 
             if (label_prop == "country") {

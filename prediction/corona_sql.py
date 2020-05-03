@@ -77,21 +77,6 @@ class Datapoint(Base):
 	serious = Column(Integer, default=0)
 	tests = Column(Integer, default=0)
 	hospitalized = Column(Integer, default=0)
-	
-	dtotal = Column(Integer, default=0)
-	drecovered = Column(Integer, default=0)
-	ddeaths = Column(Integer, default=0)
-	dserious = Column(Integer, default=0)
-	dtests = Column(Integer, default=0)
-	dhospitalized = Column(Integer, default=0)
-
-	# used mostly for provincial data
-	source_total = Column(String())
-	source_recovered = Column(String())
-	source_deaths = Column(String())
-	source_serious = Column(String())
-	source_tests = Column(String())
-	source_hospitalized = Column(String())
 
 def time_series(country, province, county):
 	session = Session()

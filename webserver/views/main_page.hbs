@@ -196,7 +196,7 @@
 									<div class="stats-row">
 										<span class="stats-label">Cases</span>
 										<span id="stats-total" class="font-weight-bold" style="color: {{../COLORS.total}}">
-											<a href="{{source_total}}">{{total}}</a>
+											{{total}}
 										</span>
 									</div>
 									{{/pos}}
@@ -224,7 +224,7 @@
 									<div class="stats-row">
 										<span class="stats-label">Severe</span>
 										<span id="stats-serious" class="font-weight-bold" style="color: {{../COLORS.serious}}">
-											<a href="{{source_serious}}">{{serious}}</a>
+											{{serious}}
 											<span class="stats-detail">({{ percent serious total }})</span>
 										</span>
 									</div>
@@ -234,7 +234,7 @@
 									<div class="stats-row">
 										<span class="stats-label">Deaths</span>
 										<span id="stats-deaths" class="font-weight-bold" style="color: {{../COLORS.deaths}}">
-											<a href="{{source_deaths}}">{{deaths}}</a>
+											{{deaths}}
 											<span class="stats-detail">({{ percent deaths total }})</span>
 										</span>
 									</div>
@@ -244,7 +244,7 @@
 									<div class="stats-row">
 										<span class="stats-label">Recoveries</span>
 										<span id="stats-recovered" class="font-weight-bold" style="color: {{../COLORS.recovered}}">
-											<a href="{{source_recovered}}">{{recovered}}</a>
+											{{recovered}}
 											<span class="stats-detail">({{ percent recovered total }})</span>
 										</span>
 									</div>
@@ -254,7 +254,7 @@
 									<div class="stats-row">
 										<span class="stats-label">Tests</span>
 										<span id="stats-tests" class="font-weight-bold" style="color: {{../COLORS.tests}}">
-											<a href="{{source_tests}}">{{tests}}</a>
+											{{tests}}
 											<span class="stats-detail">({{ percent total tests }} positive)</span>
 										</span>
 									</div>
