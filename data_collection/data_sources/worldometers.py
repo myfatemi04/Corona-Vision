@@ -56,3 +56,23 @@ def import_data():
 
 	if upload.upload_datapoints(results['datapoint'], "http://www.worldometers.info/coronavirus"):			
 		lastDatapointsUpdate = time.time()
+
+def getSources():
+	from bs4 import BeautifulSoup
+	import datetime
+
+	textContent = requests.get("http://www.worldometers.info/coronavirus").text
+	soup = BeautifulSoup(textContent, "html.parser")
+
+	# select whichever news date is "today"
+	firstNews = soup.select_one(time.strftime("#newsdate%Y-%m-%d"))
+	
+	# find list elements
+	elements = firstNews.select("li")
+
+	for elem in elements:
+		country = elem.select_one("strong > a")
+		newsSource = elem.select_one(".news_source_a")
+		if country and newsSource:
+			print(country.text, newsSource['href'])
+	

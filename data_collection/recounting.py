@@ -12,7 +12,7 @@ Step 3. Update the parent datapoint
 """
 def recount(updated, source_link, session, cache=None):
     import data_caching
-    from corona_sql import Location
+    from corona_sql import Location, try_commit
     
     i = 0
     unique_days = set()
@@ -33,8 +33,10 @@ def recount(updated, source_link, session, cache=None):
 
     # we no longer need to update daily changes; we do it on-the-fly instead
     # but this is just for keeping track
-    for day in sorted(unique_days):
-        update_deltas(day, updated)
+    # for day in sorted(unique_days):
+    #     update_deltas(day, updated)
+    
+    try_commit(session)
 
 def filter_children(results, country, province, county):
     if not country: # sum entire world

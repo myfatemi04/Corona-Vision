@@ -1,21 +1,23 @@
 import requests
 import upload
 import time
-from bs4 import BeautifulSoup
 from data_sources import minWait
 
 lastDatapointsUpdate = 0
+name = "Australia"
 
 def import_data():
     global lastDatapointsUpdate
 
-    url = 
-    soup = BeautifulSoup(requests.get(url).text, 'html.parser')
-    stats = soup.select(    )
+    url = "https://redutv-api.vg.no/corona/v1/sheets/norway-region-data?exclude=cases"
+    json = requests.get(url).json()
+    country_data = json['metadata']
     datapoint = {
-        "country": ,
+        'country': 'Norway',
+        'total': country_data['confirmed']['total'],
+        'deaths': country_data['dead']['total']
     }
-    
+
     if upload.upload_datapoints([datapoint], url):
         lastDatapointsUpdate = time.time()
 

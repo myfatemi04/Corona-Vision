@@ -1,0 +1,142 @@
+* = done
+- = skipped lol
+*Argentina https://www.infobae.com/sociedad/2020/05/02/coronavirus-en-la-argentina-confirmaron-12-nuevas-muertes-y-149-casos-en-las-ultimas-24-horas/
+-the DR Congo https://mailchi.mp/bc548f8d5209/covid-19-bulletin-n-40-du-samedi-02-mai-3926077
+-El Salvador https://covid19.gob.sv/
+*the United States http://reno.maps.arcgis.com/apps/opsdashboard/index.html#/dfaef27aede1414b89abf393b2ccb994
+-Liberia https://www.facebook.com/pg/National-Public-Health-Institute-of-Liberia-NPHIL-164280647325112/posts/?ref=page_internal
+*Canada https://www.ctvnews.ca/mobile/health/coronavirus/tracking-every-case-of-covid-19-in-canada-1.4852102
+*Nigeria https://covid19.ncdc.gov.ng/
+-Burundi https://twitter.com/mspls_bdi/status/1256534363984072704/photo/1
+*Czechia https://onemocneni-aktualne.mzcr.cz/covid-19
+*Norway https://redutv-api.vg.no/corona/v1/sheets/norway-region-data?exclude=cases//https://www.vg.no/spesial/2020/corona/?utm_source=coronav
+-R�union http://www.reunion.gouv.fr/point-de-situation-du-02-05-2020-1-nouveau-cas-a6577.html
+Niger https://coronavirus.ne/
+Burkina Faso https://www.facebook.com/1444809365833949/photos/a.1590964164551801/2516955465285995/?type=3&theater
+Bermuda https://www.gov.bm/coronavirus
+Uruguay https://www.gub.uy/sistema-nacional-emergencias/comunicacion/comunicados/informe-situacion-relacion-coronavirus-covid-19-uruguay-del-02052020
+Colombia https://twitter.com/MinSaludCol/status/1256706378971963392
+Brazil https://twitter.com/minsaude/status/1256704351231451140
+Germany https://interaktiv.tagesspiegel.de/lab/karte-sars-cov-2-in-deutschland-landkreise/
+Tunisia https://www.facebook.com/pg/santetunisie.rns.tn/posts/?ref=page_internal
+C�te d'Ivoire https://www.facebook.com/pg/Mshpci/posts/?ref=page_internal
+Guinea https://anss-guinee.org/
+Uganda https://covid19.gou.go.ug/
+Gabon https://infocovid.ga/
+Comoros https://stopcoronavirus.km/actualit%C3%A9s/2020/05/02/deux-nouveaux-cas-test%C3%A9s-positifs-au-covid-19/
+Maldives https://www.facebook.com/275523432577600/posts/1928492950613965/
+Grenada https://facebook.com/story.php?story_fbid=1111736875873137&id=285442564821627
+Montenegro https://www.coronainfocg.me/
+Sudan https://www.facebook.com/1827289127544057/photos/a.2159000517706248/2589293691343593/?type=3&theater
+Venezuela https://www.vtv.gob.ve/en-venezuela-se-registran-10-nuevos-casos-de-covid-19-para-elevar-la-cifra-total-de-contagios-a-345/
+Israel https://t.me/MOHreport/4417
+Channel Islands https://www.itv.com/news/channel/2020-03-12/live-updates-number-of-coronavirus-cases-in-the-channel-islands/
+Peru https://www.gob.pe/institucion/minsa/noticias/143615-minsa-casos-confirmados-por-coronavirus-covid-19-ascienden-a-42-534-comunicado-n-85
+Rwanda https://twitter.com/RwandaHealth/status/1256653749722009600?s=19
+India https://www.mohfw.gov.in/
+Switzerland https://www.bag.admin.ch/bag/de/home/krankheiten/ausbrueche-epidemien-pandemien/aktuelle-ausbrueche-epidemien/novel-cov/situation-schweiz-und-international.html
+Tajikistan https://khovar.tj/2020/05/habari-favr-shumori-olat-oi-tasdi-shudai-giriftor-ba-koronavirus-dar-to-ikiston-ba-32-adad-rasid/
+Chad https://www.alwihdainfo.com/Tchad-Covid-19-un-total-de-10-deces-et-39-gueris-sur-117-cas_a86842.html
+Cuba https://salud.msp.gob.cu/?p=5049
+Costa Rica https://delfino.cr/2020/05/costa-rica-registra-8-nuevos-casos-de-covid-19-total-sube-a-733-con-372-curados
+South Africa https://twitter.com/DrZweliMkhize/status/1256648009921822721?s=19
+Andorra https://Gobierno de Andorra
+Gambia https://www.facebook.com/104069874574776/posts/132532418395188/
+Pakistan http://covid.gov.pk/
+France https://dashboard.covid19.data.gouv.fr/
+Angola https://m.portalangop.co.ao/angola/pt_pt/mobile/noticias/saude/2020/4/18/Covid-Angola-regista-mais-casos-positivos,7ffd5d9e-c13a-4efb-a010-d15b69cced8b.html?version=mobile
+Yemen https://twitter.com/YSNECCOVID19/status/1256648537867198464
+Uzbekistan https://coronavirus.uz/ru
+Bahrain https://www.moh.gov.bh/COVID19
+Cabo Verde https://covid19.cv
+the United Arab Emirates https://gulfnews.com/uae/uae-announces-561-new-coronavirus-cases-8-deaths-1.1588417543803
+Mali http://malijet.com/la_societe_malienne_aujourdhui/la_sante_au_mali/index.1.html
+Malawi https://www.covid19.health.gov.mw 
+Ireland https://www.gov.ie/en/press-release/5cb99f-statement-from-the-national-public-health-emergency-team-saturday-2-/
+Kazakhstan https://www.coronavirus2020.kz/
+Sri Lanka http://epid.gov.lk/web/index.php?lang=en
+Ecuador https://www.gestionderiesgos.gob.ec/wp-content/uploads/2020/05/INFOGRAFIA-NACIONALCOVI-19-COE-NACIONAL-02052020-08h00.pdf
+Egypt https://www.facebook.com/113432613540693/posts/161951955355425/
+Somalia https://www.facebook.com/667727723350416/posts/2744433689013132/
+Morocco http://www.covidmaroc.ma/Pages/AccueilAR.aspx
+Turkey https://twitter.com/drfahrettinkoca/status/1256620750045351940?s=21
+the United Kingdom https://twitter.com/DHSCgovuk/status/1256618829746253824
+Luxembourg https://msan.gouvernement.lu/de/dossiers/2020/corona-virus.html
+Romania https://stirioficiale.ro/informatii/informare-de-presa-2-mai-2020-ora-12-23pm
+Iraq https://www.facebook.com/156490947738645/posts/2914952365225809/?d=n
+Italy https://github.com/pcm-dpc/COVID-19/blob/master/schede-riepilogative/regioni/dpc-covid19-ita-scheda-regioni-20200502.pdf
+Singapore https://www.moh.gov.sg/news-highlights/details/447-new-cases-of-covid-19-infection
+Chile https://cdn.digital.gob.cl/public_files/Campa%C3%B1as/Corona-Virus/Reportes/02.05.2020_Reporte_Covid19v2.pdf
+the Dominican Republic https://www.diariolibre.com/actualidad/salud/infografia-las-cifras-del-coronavirus-en-republica-dominicana-BK18129769
+Jordan https://royanews.tv/news/212897
+Cameroon http://covid19.minsante.cm/
+Greece https://www.newsit.gr/ellada/tsiodras-8-nea-krousmata-koronoiou-kai-143-nekroi-synolika-LIVE-i-enimerosi/3022739/
+Algeria https://www.facebook.com/102375559823414/posts/3519971978063738/
+Cyprus https://cyprus-mail.com/2020/05/02/coronavirus-seven-new-cases-announced-on-saturday/
+Senegal http://www.sante.gouv.sn/
+Kenya https://twitter.com/MOH_Kenya/status/1256564623895146497
+Argentina https://www.google.com/url?sa=t&source=web&rct=j&url=https://m.youtube.com/watch%3Fv%3DuBEPGWVNuss&ved=2ahUKEwjf_dPIs5XpAhUDG7kGHdhGAroQo7QBMAh6BAgJEAE&usg=AOvVaw3ipPBNwZESDOf4uZPMaKOI
+Bulgaria https://coronavirus.bg/bg/
+Moldova https://msmps.gov.md/ro/content/72-cazuri-de-covid-19-inregistrate-ultimele-24-de-ore?fbclid=IwAR2vu4FwrQwc4s61k0bbZIFe-A3yYSlmLk9p9FPOZQHq5aLMV_zoRe71LOQ
+Eswatini https://twitter.com/EswatiniGovern1/status/1256584725701054464?s=19
+Oman https://twitter.com/OmaniMOH/status/1256570355285622785
+Ghana https://ghanahealthservice.org/covid19/
+Serbia https://covid19.rs/
+Saudi Arabia https://covid19.moh.gov.sa
+Portugal https://covid19.min-saude.pt/wp-content/uploads/2020/05/61_DGS_boletim_20200502_V2.pdf
+Denmark https://www.sst.dk/da/corona/tal-og-overvaagning
+the Republic of North Macedonia https://twitter.com/VFilipche/status/1256555414793093122
+Isle of Man https://covid19.gov.im/general-information/latest-updates/
+Croatia https://www.koronavirus.hr/najnovije/ukupno-dosad-2088-osoba-zarazenih-koronavirusom/35
+Sweden https://experience.arcgis.com/experience/09f821667ce64bf7be6f9f87457ed9aa
+Bosnia and Herzegovina http://mcp.gov.ba/
+the Netherlands https://www.rivm.nl/coronavirus-covid-19/actueel
+Sierra Leone https://www.facebook.com/mic.gov.sl/photos/a.310063372915015/621866411734708/?type=3&theater
+Spain https://www.mscbs.gob.es/profesionales/saludPublica/ccayes/alertasActual/nCov-China/documentos/Actualizacion_93_COVID-19.pdf
+Kuwait https://twitter.com/kuwait_moh/status/1256544565672148992?s=21
+Azerbaijan https://koronavirusinfo.az/az
+Austria https://www.bmi.at
+Poland https://twitter.com/MZ_GOV_PL/status/1256539855150026755
+Madagascar https://www.facebook.com/orangeactu/photos/a.1380589932211150/2575066042763527/?type=3&theater
+Malta https://timesofmalta.com/articles/view/watch-live-daily-coronavirus-briefing.789554
+Qatar https://www.moph.gov.qa/english/Pages/Coronavirus2019.aspx
+Zambia https://www.facebook.com/mohzambia/photos/a.773733439467982/1576625705845414/?type=3&theater
+Djibouti https://facebook.com/minister.sante.dj/photos/a.983719351666999/3048362075202706/?type=3&source=48
+Slovenia https://www.facebook.com/VladaRepublikeSlovenije/photos/pcb.3348734358488112/3348733975154817/?type=3&theater
+Iran https://en.irna.ir/news/83772703/Official-COVID19-kills-65-more-in-Iran
+Lebanon https://corona.ministryinfo.gov.lb
+Finland https://experience.arcgis.com/experience/92e9bb33fac744c9a084381fc35aa3c7
+Indonesia https://covid19.go.id/peta-sebaran
+Albania https://coronavirus.al/statistika/
+Belarus http://stopcovid.belta.by/
+Afghanistan https://tolonews.com/health/179-new-coronavirus-cases-reported-afghanistan-total-2469
+Belgium https://covid-19.sciensano.be/sites/default/files/Covid19/Meest%20recente%20update.pdf
+Russia https://xn--80aesfpebagmfblc0a.xn--p1ai
+Bangladesh https://en.somoynews.tv/7631/news/Coronavirus-cases-in-Bangladesh-keep-soaring-552-more-reported
+Malaysia https://twitter.com/KKMPutrajaya/status/1256503023469125634/photo/1
+Australia https://www.health.gov.au/news/health-alerts/novel-coronavirus-2019-ncov-health-alert/coronavirus-covid-19-current-situation-and-case-numbers
+Slovakia https://www.korona.gov.sk/en/coronavirus-covid-19-in-the-slovak-republic-in-numbers/
+the Philippines https://www.facebook.com/OfficialDOHgov/photos/a.157979910879936/3279762805368282/?type=3&theater
+Lithuania https://koronastop.lrv.lt/en/
+Estonia https://www.terviseamet.ee/et/uudised/covid-19-blogi-02-mai-oopaevaga-lisandus-5-positiivset-testi
+Latvia https://twitter.com/SPKCentrs/status/1256475459308716033
+Georgia https://stopcov.ge/en/
+Armenia https://ncdc.am/coronavirus/confirmed-cases-by-days/
+Ukraine https://www.facebook.com/phc.org.ua/posts/1883467851777934
+Taiwan https://www.cdc.gov.tw/Bulletin/Detail/bJVsQHE6lCY1CMTi1gMcpQ?typeid=9
+Hungary https://koronavirus.gov.hu/cikkek/2942-fore-nott-beazonositott-fertozottek-szama-es-elhunyt-12-kronikus-beteg
+Thailand https://www.thaienquirer.com/12606/thailand-discovers-six-new-coronavirus-infections-sixth-straight-day-of-single-digit-infections/
+El Salvador https://covid19.gob.sv
+Kyrgyzstan http://www.med.kg/en/
+Mongolia https://www.facebook.com/www.mohs.mn/photos/a.229051507510239/1016359218779460/?type=3&theater
+Honduras https://twitter.com/saludhn/status/1256427021170888705
+Bahamas https://www.facebook.com/MOHBahamas/
+Bolivia https://www.boliviasegura.gob.bo
+Paraguay https://twitter.com/msaludpy?ref_src=twsrc%5Etfw%7Ctwcamp%5Eembeddedtimeline%7Ctwterm%5Eprofile%3AMazzoleniJulio&ref_url=https%3A%2F%2Fwww.mspbs.gov.py%2Fcovid-19.php
+New Zealand https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-current-situation/covid-19-current-cases
+South Korea http://ncov.mohw.go.kr/tcmBoardView.do?brdId=&brdGubun=&dataGubun=&ncvContSeq=354327&contSeq=354327&board_id=&gubun=ALL
+Guatemala https://twitter.com/GuatemalaGob/status/1256389299920146433
+Panama https://geosocial.maps.arcgis.com/apps/opsdashboard/index.html#/2c6e932c690d467b85375af52b614472
+Jamaica https://twitter.com/christufton/status/1256365309436583936/photo/3
+Mexico https://coronavirus.gob.mx/datos/
+China http://www.nhc.gov.cn/xcs/yqtb/202005/3e2bc587447f458c809f10897bb4327e.shtml

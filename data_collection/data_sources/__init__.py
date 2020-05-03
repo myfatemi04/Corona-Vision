@@ -12,14 +12,17 @@ from . import bahrain
 from . import brazil
 from . import canada
 from . import china
+from . import czechia
 from . import france
 from . import germany
 from . import india
 from . import italy
 from . import japan
-from . import russia
 from . import netherlands
+from . import nigeria
+from . import norway
 from . import portugal
+from . import russia
 from . import south_korea
 from . import spain
 from . import turkey
@@ -37,14 +40,17 @@ live = [
 	bahrain,
 	brazil,
 	canada,
+	czechia,
 	france,
 	germany,
 	india,
 	italy,
 	japan,
-	russia,
 	netherlands,
+	nigeria,
+	norway,
 	portugal,
+	russia,
 	south_korea,
 	spain,
 	united_states,

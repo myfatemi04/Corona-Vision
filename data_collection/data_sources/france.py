@@ -59,6 +59,8 @@ def import_historical_data():
             'entry_date': datetime.strptime(row['date'], "%Y-%m-%d").date()
         })
 
+    print(datapoints)
+
     upload.upload_datapoints(datapoints, "https://dashboard.covid19.data.gouv.fr/")
 
 def import_date(d):
@@ -66,6 +68,8 @@ def import_date(d):
     url = d.strftime("https://dashboard.covid19.data.gouv.fr/data/date-%Y-%m-%d.json")
 
     datapoints = []
+    
+    _ = lambda x, y: x[y] if y in x else None
 
     for row in requests.get(url).json():
         if row['code'].startswith("REG"):
@@ -74,10 +78,10 @@ def import_date(d):
                 'province': row['nom'],
                 'recovered': row['gueris'],
                 'hospitalized': row['hospitalises'],
-                'deaths': row['deces'] + row['decesEhpad'],
+                'deaths': row['deces'] + (_(row, 'decesEhpad') or 0),
                 'entry_date': d
             })
-    
+
     if upload.upload_datapoints(datapoints, "https://dashboard.covid19.data.gouv.fr/"):
         lastDatapointsUpdate = time.time()
 
