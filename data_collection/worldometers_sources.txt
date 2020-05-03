@@ -13,15 +13,15 @@
 -R�union http://www.reunion.gouv.fr/point-de-situation-du-02-05-2020-1-nouveau-cas-a6577.html
 *Niger https://coronavirus.ne/
 -Burkina Faso https://www.facebook.com/1444809365833949/photos/a.1590964164551801/2516955465285995/?type=3&theater
-Bermuda https://www.gov.bm/coronavirus
-Uruguay https://www.gub.uy/sistema-nacional-emergencias/comunicacion/comunicados/informe-situacion-relacion-coronavirus-covid-19-uruguay-del-02052020
-Colombia https://twitter.com/MinSaludCol/status/1256706378971963392
-Brazil https://twitter.com/minsaude/status/1256704351231451140
-Germany https://interaktiv.tagesspiegel.de/lab/karte-sars-cov-2-in-deutschland-landkreise/
-Tunisia https://www.facebook.com/pg/santetunisie.rns.tn/posts/?ref=page_internal
-C�te d'Ivoire https://www.facebook.com/pg/Mshpci/posts/?ref=page_internal
-Guinea https://anss-guinee.org/
-Uganda https://covid19.gou.go.ug/
+*Bermuda https://www.gov.bm/coronavirus
+-Uruguay https://www.gub.uy/sistema-nacional-emergencias/comunicacion/comunicados/informe-situacion-relacion-coronavirus-covid-19-uruguay-del-02052020
+-Colombia https://twitter.com/MinSaludCol/status/1256706378971963392
+-Brazil https://twitter.com/minsaude/status/1256704351231451140
+*Germany https://interaktiv.tagesspiegel.de/lab/karte-sars-cov-2-in-deutschland-landkreise/
+-Tunisia https://www.facebook.com/pg/santetunisie.rns.tn/posts/?ref=page_internal
+-C�te d'Ivoire https://www.facebook.com/pg/Mshpci/posts/?ref=page_internal
+-Guinea https://anss-guinee.org/
+*Uganda https://covid19.gou.go.ug/
 Gabon https://infocovid.ga/
 Comoros https://stopcoronavirus.km/actualit%C3%A9s/2020/05/02/deux-nouveaux-cas-test%C3%A9s-positifs-au-covid-19/
 Maldives https://www.facebook.com/275523432577600/posts/1928492950613965/

@@ -11,7 +11,7 @@ def import_data():
 
     url = 
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
-    stats = soup.select(    )
+    
     datapoint = {
         "country": ,
     }

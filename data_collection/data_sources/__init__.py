@@ -15,6 +15,7 @@ from . import canada
 from . import china
 from . import czechia
 from . import france
+from . import gabon
 from . import germany
 from . import india
 from . import italy
@@ -29,6 +30,7 @@ from . import south_korea
 from . import spain
 from . import turkey
 from . import united_states
+from . import uganda
 
 from . import worldometers
 
@@ -45,6 +47,7 @@ live = [
 	canada,
 	czechia,
 	france,
+	gabon,
 	germany,
 	india,
 	italy,
@@ -57,8 +60,9 @@ live = [
 	russia,
 	south_korea,
 	spain,
-	united_states,
 	turkey,
+	united_states,
+	uganda,
 	worldometers,
 
 	usa_testing
