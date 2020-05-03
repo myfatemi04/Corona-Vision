@@ -45,6 +45,10 @@ def import_csv_data(csv_text, entry_date):
 		province = row[province_col] if not pd.isnull(row[province_col]) else ''
 		county = row[county_col] if county_col else ''
 
+		## FOR DEBUG ##
+		if ("Korea" not in country):
+			continue
+
 		# STEP 2 #
 		total = row[total_col]
 		deaths = row[death_col]
@@ -118,4 +122,4 @@ def import_jhu_date_range(date_1, date_2):
 		current_date += next_date
 
 def import_jhu_historical():
-	return import_jhu_date_range(date_1=date(2020, 4, 9), date_2=date.today())
+	return import_jhu_date_range(date_1=date(2020, 3, 10), date_2=date.today())

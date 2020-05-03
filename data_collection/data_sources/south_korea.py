@@ -1,29 +1,38 @@
 import requests
-import time
+import json_extractor
 import upload
-from import_gis import import_gis
+import time
 from data_sources import minWait
+from bs4 import BeautifulSoup
 
 lastDatapointsUpdate = 0
 
 def import_data():
     global lastDatapointsUpdate
 
-    results = import_gis(
-		"https://services2.arcgis.com/RiHDI9SnFmD3Itzs/arcgis/rest/services/%EC%8B%9C%EB%8F%84%EB%B3%84_%EC%BD%94%EB%A1%9C%EB%82%98/FeatureServer/0/",
-		{
-			"location": {
-				"country": "South Korea",
-				"province": ["CTP_ENG_NM"]
-			},
-			"datapoint": {
-				"country": "South Korea",
-				"province": ["CTP_ENG_NM"],
-				"total": ["발생자수"],
-				"deaths": ["사망자수"],
-			}
-		}
-	)
+    url = "http://ncov.mohw.go.kr/en/bdBoardList.do?brdId=16&brdGubun=162&dataGubun=&ncvContSeq=&contSeq=&board_id="
+    soup = BeautifulSoup(requests.get(url).text, "html.parser")
+    body = soup.select_one("table.num tbody")
+    rows = body.select("tr")
 
-    if upload.upload(results):
-    	lastDatapointsUpdate = time.time()
+    datapoints = []
+    for row in rows:
+        if "total" in row.text.lower():
+            continue
+        stats = row.select("td")
+
+        province = row.select_one("th").text
+        total = stats[3].text
+        recovered = stats[5].text
+        deaths = stats[6].text
+        
+        datapoints.append({
+            "country": "South Korea",
+            "province": province,
+            "total": int(total.replace(",", "")),
+            "recovered": int(recovered.replace(",", "")),
+            "deaths": int(deaths.replace(",", ""))
+        })
+
+    if upload.upload_datapoints(datapoints):
+        lastDatapointsUpdate = time.time()

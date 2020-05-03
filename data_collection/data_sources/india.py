@@ -2,28 +2,39 @@ import requests
 import json_extractor
 import upload
 import time
-import upload
-from import_gis import import_gis
 from data_sources import minWait
+from bs4 import BeautifulSoup
 
 lastDatapointsUpdate = 0
 
 def import_data():
     global lastDatapointsUpdate
 
-    results = import_gis(
-        gis_url="https://utility.arcgis.com/usrsvcs/servers/83b36886c90942ab9f67e7a212e515c8/rest/services/Corona/DailyCasesMoHUA/MapServer/0/",
-        table_labels={
-            "datapoint": {
-                "country": "India",
-                "province": ["state_name"],
-                "total": ["confirmedcases"],
-                "recovered": ["cured_discharged_migrated"],
-                "deaths": ["deaths"]
-            }
-        },
-        use_geometry=False
-    )
+    url = "https://www.mohfw.gov.in/"
+    soup = BeautifulSoup(requests.get(url).text, "html.parser")
+    body = soup.select_one("#state-data tbody")
+    rows = body.select("tr")
 
-    if upload.upload(results):
+    datapoints = []
+    for row in rows:
+        if "total" in row.text.lower():
+            continue
+        stats = row.select("td")
+        if len(stats) < 5:
+            continue
+
+        province = stats[1].text
+        total = stats[2].text
+        recovered = stats[3].text
+        deaths = stats[4].text
+        
+        datapoints.append({
+            "country": "India",
+            "province": province,
+            "total": int(total),
+            "recovered": int(recovered),
+            "deaths": int(deaths)
+        })
+
+    if upload.upload_datapoints(datapoints):
         lastDatapointsUpdate = time.time()
