@@ -22,21 +22,21 @@
 -C�te d'Ivoire https://www.facebook.com/pg/Mshpci/posts/?ref=page_internal
 -Guinea https://anss-guinee.org/
 *Uganda https://covid19.gou.go.ug/
-Gabon https://infocovid.ga/
-Comoros https://stopcoronavirus.km/actualit%C3%A9s/2020/05/02/deux-nouveaux-cas-test%C3%A9s-positifs-au-covid-19/
-Maldives https://www.facebook.com/275523432577600/posts/1928492950613965/
-Grenada https://facebook.com/story.php?story_fbid=1111736875873137&id=285442564821627
-Montenegro https://www.coronainfocg.me/
-Sudan https://www.facebook.com/1827289127544057/photos/a.2159000517706248/2589293691343593/?type=3&theater
-Venezuela https://www.vtv.gob.ve/en-venezuela-se-registran-10-nuevos-casos-de-covid-19-para-elevar-la-cifra-total-de-contagios-a-345/
-Israel https://t.me/MOHreport/4417
-Channel Islands https://www.itv.com/news/channel/2020-03-12/live-updates-number-of-coronavirus-cases-in-the-channel-islands/
-Peru https://www.gob.pe/institucion/minsa/noticias/143615-minsa-casos-confirmados-por-coronavirus-covid-19-ascienden-a-42-534-comunicado-n-85
-Rwanda https://twitter.com/RwandaHealth/status/1256653749722009600?s=19
-India https://www.mohfw.gov.in/
-Switzerland https://www.bag.admin.ch/bag/de/home/krankheiten/ausbrueche-epidemien-pandemien/aktuelle-ausbrueche-epidemien/novel-cov/situation-schweiz-und-international.html
-Tajikistan https://khovar.tj/2020/05/habari-favr-shumori-olat-oi-tasdi-shudai-giriftor-ba-koronavirus-dar-to-ikiston-ba-32-adad-rasid/
-Chad https://www.alwihdainfo.com/Tchad-Covid-19-un-total-de-10-deces-et-39-gueris-sur-117-cas_a86842.html
+*Gabon https://infocovid.ga/
+    Comoros https://stopcoronavirus.km/actualit%C3%A9s/2020/05/02/deux-nouveaux-cas-test%C3%A9s-positifs-au-covid-19/
+    Maldives https://www.facebook.com/275523432577600/posts/1928492950613965/
+    Grenada https://facebook.com/story.php?story_fbid=1111736875873137&id=285442564821627
+    Montenegro https://www.coronainfocg.me/
+    Sudan https://www.facebook.com/1827289127544057/photos/a.2159000517706248/2589293691343593/?type=3&theater
+    Venezuela https://www.vtv.gob.ve/en-venezuela-se-registran-10-nuevos-casos-de-covid-19-para-elevar-la-cifra-total-de-contagios-a-345/
+    Israel https://t.me/MOHreport/4417
+    Channel Islands https://www.itv.com/news/channel/2020-03-12/live-updates-number-of-coronavirus-cases-in-the-channel-islands/
+-Peru https://www.gob.pe/institucion/minsa/noticias/143615-minsa-casos-confirmados-por-coronavirus-covid-19-ascienden-a-42-534-comunicado-n-85
+-Rwanda https://twitter.com/RwandaHealth/status/1256653749722009600?s=19
+*India https://www.mohfw.gov.in/
+*Switzerland https://www.bag.admin.ch/bag/de/home/krankheiten/ausbrueche-epidemien-pandemien/aktuelle-ausbrueche-epidemien/novel-cov/situation-schweiz-und-international.html
+*Tajikistan https://khovar.tj/2020/05/habari-favr-shumori-olat-oi-tasdi-shudai-giriftor-ba-koronavirus-dar-to-ikiston-ba-32-adad-rasid/
+*Chad https://www.alwihdainfo.com/Tchad-Covid-19-un-total-de-10-deces-et-39-gueris-sur-117-cas_a86842.html
 Cuba https://salud.msp.gob.cu/?p=5049
 Costa Rica https://delfino.cr/2020/05/costa-rica-registra-8-nuevos-casos-de-covid-19-total-sube-a-733-con-372-curados
 South Africa https://twitter.com/DrZweliMkhize/status/1256648009921822721?s=19
