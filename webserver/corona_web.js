@@ -120,7 +120,7 @@ var datatablePage = function (req, res) { return __awaiter(void 0, void 0, void 
             case 1:
                 data = _a.sent();
                 if (!data) {
-                    res.render("main_page", { error: "Location not found" });
+                    res.render("error", { error: "Location not found" });
                     return [2 /*return*/];
                 }
                 lastUpdate = new Date(Math.max.apply(Math, data.map(function (x) { return x.update_time.getTime(); })));
@@ -208,8 +208,8 @@ app.get("/future", function (req, res) { return __awaiter(void 0, void 0, void 0
         }
     });
 }); });
-// /* Map Page
-//  * The Map Page includes a map of the most recent cases, to the county level. */
+/* Map Page
+ * The Map Page includes a map of the most recent cases, to the county level. */
 app.get("/maps/circle", function (req, res) {
     res.render("maps/circle");
 });
@@ -481,26 +481,6 @@ app.get("/api/mapdata", function (req, res) {
         res.json(resultsJSON);
     });
 });
-// app.get("/api/countries/csv", async(req, res) => {
-//     let params = url.parse(req.url, true).query;
-//     let date = params['date'] || utc_iso(new Date());
-//     let query = sqlstring.format(`
-//         select country, total, dtotal, recovered, drecovered, deaths, ddeaths from datapoints
-//         where entry_date=?
-//         and country!=''
-//         and province='';
-//     `, date);
-//     try {
-//         let results = await get_sql(query);
-//         let overall = 'country,total';//,dtotal,recovered,drecovered,deaths,ddeaths
-//         for (let result of results) {
-//             overall += `\n${result.country},${result.total}`;
-//         }
-//         res.send(overall);
-//     } catch (err) {
-//         console.error(err);
-//     }
-// });
 /* Heatmap API - returns a list of lat/longs, and various properties. */
 app.get("/api/heatmap", function (req, res) {
     var entryDate = req.query['date'] || utc_iso(new Date());

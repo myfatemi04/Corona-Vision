@@ -62,7 +62,7 @@ const datatablePage = async (req, res) => {
     let data = await corona_sql.getDatapointChildren(entry_date, country, province, county);
 
     if (!data) {
-        res.render("main_page", {error: "Location not found"});
+        res.render("error", {error: "Location not found"});
         return;
     }
 
@@ -470,27 +470,6 @@ app.get("/api/mapdata", (req, res) => {
     );
 });
 
-// app.get("/api/countries/csv", async(req, res) => {
-//     let params = url.parse(req.url, true).query;
-//     let date = params['date'] || utc_iso(new Date());
-//     let query = sqlstring.format(`
-//         select country, total, dtotal, recovered, drecovered, deaths, ddeaths from datapoints
-//         where entry_date=?
-//         and country!=''
-//         and province='';
-//     `, date);
-//     try {
-//         let results = await get_sql(query);
-//         let overall = 'country,total';//,dtotal,recovered,drecovered,deaths,ddeaths
-//         for (let result of results) {
-//             overall += `\n${result.country},${result.total}`;
-//         }
-//         res.send(overall);
-//     } catch (err) {
-//         console.error(err);
-//     }
-// });
-
 /* Heatmap API - returns a list of lat/longs, and various properties. */
 app.get("/api/heatmap", (req, res) => {
     let entryDate = req.query['date'] || utc_iso(new Date());
@@ -500,7 +479,6 @@ app.get("/api/heatmap", (req, res) => {
         }
     );
 });
-
 
 /* What To Do Page - gives information about how to make homemade masks, general social distancing tips,
  * and organizations that you can donate to to help healthcare workers. */

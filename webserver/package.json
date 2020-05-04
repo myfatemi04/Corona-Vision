@@ -28,6 +28,7 @@
     "@types/mysql": "^2.15.10",
     "@types/node": "^13.13.4",
     "@types/sqlstring": "^2.2.1",
+    "browserify": "^16.5.1",
     "countryjs": "^1.8.0",
     "express": "^4.17.1",
     "hbs": "^4.1.1",
