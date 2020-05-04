@@ -8,22 +8,7 @@ lastDatapointsUpdate = 0
 minWait = 60
 
 disallowed = [
-	"Albania",
-	"Argentina",
-	"Australia",
-	"Azerbaijan",
-	"Bahrain",
-	"Canada",
-	"France",
-	"Germany",
-	"India",
-	"Italy",
-	"Japan",
-	"Netherlands",
-	"Portugal",
-	"South Korea",
-	"Spain",
-	"United States",
+	"France"    # clear data disputes between the countries
 ]
 
 def import_data():
@@ -48,13 +33,13 @@ def import_data():
 	# 	if key in result:
 	# 		del result[key]
 	
-	# newDatapoints = []
-	# for result in results['datapoint']:
-	# 	result['country'], _, _ = standards.normalize_name(result['country'], '', '')
-	# 	if result['country'] not in disallowed:
-	# 		newDatapoints.append(result)
+	newDatapoints = []
+	for result in results['datapoint']:
+		result['country'], _, _ = standards.normalize_name(result['country'], '', '')
+		if result['country'] not in disallowed:
+			newDatapoints.append(result)
 
-	if upload.upload_datapoints(results['datapoint']):			
+	if upload.upload_datapoints(newDatapoints):			
 		lastDatapointsUpdate = time.time()
 
 def getSources():

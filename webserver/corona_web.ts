@@ -2,17 +2,13 @@ import "./interfaces"
 import * as corona_sql from "./corona_sql";
 import * as express from "express";
 
-const bodyparser = require('body-parser');
 const fs = require('fs');
 const url = require('url');
 const state_abbr = require('./state_abbr');
 const COLORS = require("./static/js/colors.js");
 
 const Handlebars = require('hbs');
-const sqlstring = require('sqlstring');
 const NewsAPI = require('newsapi');
-const iso2 = require('iso-3166-1-alpha-2');
-
 const newsapi = new NewsAPI(process.env.NEWS_API_KEY);
 
 const datatables = require('./corona_datatable_back');
@@ -39,11 +35,6 @@ let app = express();
 
 /* Static data url */
 app.use(express.static('static'));
-
-/* For POST request body */
-app.use(bodyparser.urlencoded({
-    extended: true
-}));
 
 /* Use Handlebars */
 app.set('view engine', 'hbs');
@@ -154,8 +145,8 @@ app.get("/future", async(req, res) => {
     });
 });
 
-// /* Map Page
-//  * The Map Page includes a map of the most recent cases, to the county level. */
+/* Map Page
+ * The Map Page includes a map of the most recent cases, to the county level. */
 app.get("/maps/circle", (req, res) => {
     res.render("maps/circle");
 });

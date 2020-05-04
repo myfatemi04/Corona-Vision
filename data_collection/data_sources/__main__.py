@@ -1,7 +1,8 @@
 import corona_sql
 corona_sql.silent_mode = False
 
-
+from . import france
+france.import_data()
 
 # import import_jhu
 # import upload

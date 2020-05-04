@@ -9,3 +9,4 @@ mysqlclient
 html5lib
 lxml
 pypdf2
+xlrd

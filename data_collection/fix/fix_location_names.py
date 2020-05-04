@@ -68,4 +68,4 @@ def remove_duplicates():
     print("Committing...")
     session.commit()
 
-fix_location_names()
+# fix_location_names()

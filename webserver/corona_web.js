@@ -57,15 +57,12 @@ exports.__esModule = true;
 require("./interfaces");
 var corona_sql = require("./corona_sql");
 var express = require("express");
-var bodyparser = require('body-parser');
 var fs = require('fs');
 var url = require('url');
 var state_abbr = require('./state_abbr');
 var COLORS = require("./static/js/colors.js");
 var Handlebars = require('hbs');
-var sqlstring = require('sqlstring');
 var NewsAPI = require('newsapi');
-var iso2 = require('iso-3166-1-alpha-2');
 var newsapi = new NewsAPI(process.env.NEWS_API_KEY);
 var datatables = require('./corona_datatable_back');
 /* Register the "partials" - handlebars templates that can be included in other templates */
@@ -91,10 +88,6 @@ Handlebars.registerHelper('pos', function (conditional, options) {
 var app = express();
 /* Static data url */
 app.use(express.static('static'));
-/* For POST request body */
-app.use(bodyparser.urlencoded({
-    extended: true
-}));
 /* Use Handlebars */
 app.set('view engine', 'hbs');
 var getLabel = function (country, province, county) {
