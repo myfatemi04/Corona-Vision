@@ -25,30 +25,30 @@ def import_date(now):
     # source: https://www.mass.gov/info-details/covid-19-response-reporting#covid-19-cases-in-massachusetts-
 
     response = requests.get(queryURL)
+    if response.status_code == 200:
+        bytesio = io.BytesIO(response.content)
 
-    bytesio = io.BytesIO(response.content)
+        myzip = zipfile.ZipFile(bytesio)
+        counties = myzip.open("County.csv").readlines()
 
-    myzip = zipfile.ZipFile(bytesio)
-    counties = myzip.open("County.csv").readlines()
+        datapoints = []
+        
+        for county in counties[1:]:
+            county = county.decode("utf-8").strip()
+            dateStr, county, totalStr, deathsStr = county.split(",")
+            dateVal = datetime.datetime.strptime(dateStr, "%m/%d/%Y").date()
+            if dateVal != now.date():
+                continue
+            datapoints.append({
+                "entry_date": dateVal,
+                "country": "United States",
+                "province": "Massachusetts",
+                "total": int(totalStr or 0),
+                "deaths": int(deathsStr or 0)
+            })
 
-    datapoints = []
-    
-    for county in counties[1:]:
-        county = county.decode("utf-8").strip()
-        dateStr, county, totalStr, deathsStr = county.split(",")
-        dateVal = datetime.datetime.strptime(dateStr, "%m/%d/%Y").date()
-        if dateVal != now.date():
-            continue
-        datapoints.append({
-            "entry_date": dateVal,
-            "country": "United States",
-            "province": "Massachusetts",
-            "total": int(totalStr or 0),
-            "deaths": int(deathsStr or 0)
-        })
-
-    if upload.upload_datapoints(datapoints):
-        lastDatapointsUpdate = time.time()
+        if upload.upload_datapoints(datapoints):
+            lastDatapointsUpdate = time.time()
 
 if __name__ == "__main__":
     import_data()
