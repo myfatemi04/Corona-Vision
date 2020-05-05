@@ -10,7 +10,7 @@ def import_data():
     global lastDatapointsUpdate
 
     url = "https://redutv-api.vg.no/corona/v1/sheets/norway-region-data?exclude=cases"
-    json = requests.get(url).json()
+    json = requests.get(url, timeout=10).json()
     country_data = json['metadata']
     datapoint = {
         'country': 'Norway',

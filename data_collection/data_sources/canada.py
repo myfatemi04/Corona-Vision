@@ -34,7 +34,7 @@ def import_news():
     }
 
     datapoints = []
-    content = requests.get(jsonURL, headers=headers).json()
+    content = requests.get(jsonURL, headers=headers, timeout=10).json()
     for row in content:
         entryDate = datetime.datetime.strptime(row['date'], "%Y-%m-%d").date()
         provinces = row['data']
@@ -61,7 +61,7 @@ def import_news():
 def import_gov():
     global lastDatapointsUpdate
     url = "https://www.canada.ca/en/public-health/services/diseases/2019-novel-coronavirus-infection.html"
-    soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+    soup = BeautifulSoup(requests.get(url, timeout=10).text, 'html.parser')
     stats = soup.select("#dataTable tbody tr")
     datapoints = []
     for row in stats:

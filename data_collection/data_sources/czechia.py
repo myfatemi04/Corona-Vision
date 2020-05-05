@@ -10,7 +10,7 @@ def import_data():
     global lastDatapointsUpdate
 
     url = "https://onemocneni-aktualne.mzcr.cz/covid-19"
-    soup = BeautifulSoup(requests.get(url).text, "html.parser")
+    soup = BeautifulSoup(requests.get(url, timeout=10).text, "html.parser")
     datapoint = {
         'country': 'Czechia',
         'tests': int(soup.select_one("#count-test").text.replace(" ", "")),

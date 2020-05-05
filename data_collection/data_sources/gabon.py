@@ -15,7 +15,7 @@ def import_data():
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.129 Safari/537.36"
     }
 
-    soup = BeautifulSoup(requests.get(url, headers=headers).text, 'html.parser')
+    soup = BeautifulSoup(requests.get(url, headers=headers, timeout=10).text, 'html.parser')
     stats = soup.select(".vc_col-sm-3 > .vc_column-inner")
 
     tests = int(stats[0].select("p")[1].text)

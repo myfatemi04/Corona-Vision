@@ -13,7 +13,7 @@ def import_data():
     global lastDatapointsUpdate
 
     url = "https://covid19.saglik.gov.tr/"
-    soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+    soup = BeautifulSoup(requests.get(url, timeout=10).text, 'html.parser')
     stats = soup.select("li.baslik-k > :nth-child(2)")
 
     tests = stats[0].text

@@ -13,7 +13,7 @@ def import_data():
     global lastDatapointsUpdate
     
     url = "https://koronavirusinfo.az/az/page/statistika/azerbaycanda-cari-veziyyet"
-    soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+    soup = BeautifulSoup(requests.get(url, timeout=10).text, 'html.parser')
     stats = soup.select(".gray_little_statistic strong")
     datapoint = {
         "country": "Azerbaijan",

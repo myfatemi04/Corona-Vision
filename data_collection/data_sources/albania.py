@@ -10,7 +10,7 @@ name = "Albania"
 def import_data():
     global lastDatapointsUpdate
 
-    rq = requests.get('https://coronavirus.al/api/qarqet.php')
+    rq = requests.get('https://coronavirus.al/api/qarqet.php', timeout=10)
     j = rq.json()
     datapoints = []
     locations = []

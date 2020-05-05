@@ -18,7 +18,7 @@ def get_elem(soup, selector_chain):
 	return elem
 
 def import_table(url, table_selector, table_labels, rows=slice(None, None, None)):
-	soup = BeautifulSoup(requests.get(url).text, "html.parser")
+	soup = BeautifulSoup(requests.get(url, timeout=10).text, "html.parser")
 	df = pd.read_html(get_elem(soup, table_selector).prettify(), keep_default_na=False, na_values=['_'])[0]
 	return import_df(df=df, table_labels=table_labels, rows=rows)
 
@@ -38,7 +38,7 @@ def import_df(df, table_labels, rows):
 def import_json(url, table_labels, namespace=['features'], allow=[], use_datestr=False):
 	if use_datestr:
 		url = date.today().strftime(url)
-	resp = requests.get(url)
+	resp = requests.get(url, timeout=10)
 
 	features = find_json(resp.json(), namespace)
 	if type(features) != list:

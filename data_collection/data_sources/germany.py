@@ -15,7 +15,7 @@ def import_data():
     sourceLink = 'https://www.zeit.de/wissen/gesundheit/coronavirus-echtzeit-karte-deutschland-landkreise-infektionen-ausbreitung#karte'
     jsonURL = 'https://interactive.zeit.de/cronjobs/2020/corona/germany.json'
 
-    jsonContent = requests.get(jsonURL).json()
+    jsonContent = requests.get(jsonURL, timeout=10).json()
     datapoints = []
     for state in jsonContent['states']['items']:
         stateStats = state['currentStats']

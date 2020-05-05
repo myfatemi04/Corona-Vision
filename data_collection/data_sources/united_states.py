@@ -38,7 +38,7 @@ def import_hist():
 	pass
 
 def import_hist_states():
-	stateList = requests.get("https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv").text
+	stateList = requests.get("https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv", timeout=10).text
 	#"https://github.com/nytimes/covid-19-data"
 	datapoints = []
 	for row in stateList.split("\n")[1:]:
@@ -55,7 +55,7 @@ def import_hist_states():
 	upload.upload_datapoints(datapoints)
 
 def import_hist_counties():
-	countyList = requests.get("https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv").text
+	countyList = requests.get("https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv", timeout=10).text
 	datapoints = []
 	for row in countyList.split("\n")[1:]:
 		dateStr, county, province, fips, cases, deaths = row.split(",")
@@ -74,7 +74,7 @@ def import_hist_counties():
 
 def import_uk():
 	#"https://github.com/tomwhite/covid-19-uk-data/tree/master/data"
-	ukSeries = requests.get("https://raw.githubusercontent.com/tomwhite/covid-19-uk-data/master/data/covid-19-totals-uk.csv").text
+	ukSeries = requests.get("https://raw.githubusercontent.com/tomwhite/covid-19-uk-data/master/data/covid-19-totals-uk.csv", timeout=10).text
 	datapoints = []
 	for row in ukSeries.split("\n")[1:]:
 		if row:

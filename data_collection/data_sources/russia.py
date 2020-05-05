@@ -13,7 +13,7 @@ def import_data():
     global lastDatapointsUpdate
 
     url = "https://xn--80aesfpebagmfblc0a.xn--p1ai/"
-    soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+    soup = BeautifulSoup(requests.get(url, timeout=10).text, 'html.parser')
     stats = soup.select(".cv-countdown__item-value span")
     
     total = stats[1]

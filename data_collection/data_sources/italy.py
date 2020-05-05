@@ -22,7 +22,7 @@ def import_counties():
 	csvSource = "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-province/dpc-covid19-ita-province-latest.csv"
 	sourceLink = "https://github.com/pcm-dpc/COVID-19/blob/master/dati-province/dpc-covid19-ita-province-latest.csv"
 
-	rq = requests.get(csvSource)
+	rq = requests.get(csvSource, timeout=10)
 	dataframe = pd.read_csv(io.StringIO(rq.text))
 
 	datapoints = []
@@ -61,7 +61,7 @@ def import_provinces():
 	csvSource = "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-regioni/dpc-covid19-ita-regioni-latest.csv"
 	sourceLink = "https://github.com/pcm-dpc/COVID-19/blob/master/dati-regioni/dpc-covid19-ita-regioni-latest.csv"
 
-	rq = requests.get(csvSource)
+	rq = requests.get(csvSource, timeout=10)
 	dataframe = pd.read_csv(io.StringIO(rq.text))
 
 	datapoints = []
@@ -104,7 +104,7 @@ def import_provinces_historical():
 	csvSource = "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-regioni/dpc-covid19-ita-regioni.csv"
 	sourceLink = "https://github.com/pcm-dpc/COVID-19/blob/master/dati-regioni/dpc-covid19-ita-regioni.csv"
 
-	rq = requests.get(csvSource)
+	rq = requests.get(csvSource, timeout=10)
 	dataframe = pd.read_csv(io.StringIO(rq.text))
 
 	datapoints = []

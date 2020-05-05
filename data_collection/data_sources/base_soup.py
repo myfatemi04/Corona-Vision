@@ -10,7 +10,7 @@ def import_data():
     global lastDatapointsUpdate
 
     url = 
-    soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+    soup = BeautifulSoup(requests.get(url, timeout=10).text, 'html.parser')
     
     datapoint = {
         "country": ,

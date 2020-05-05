@@ -12,7 +12,7 @@ def import_data():
 
     datapoints = []
 
-    for row in requests.get(rawURL).text.split("\n")[1:]:
+    for row in requests.get(rawURL, timeout=10).text.split("\n")[1:]:
         if row:
             dateStr, country, countryCode, province, provinceCode, city, cityCode, confirmed, suspected, cured, dead = row.split(",")
             date = datetime.datetime.strptime(dateStr, "%Y-%m-%d").date()

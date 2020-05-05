@@ -46,7 +46,7 @@ def getSources():
 	from bs4 import BeautifulSoup
 	import datetime
 
-	textContent = requests.get("http://www.worldometers.info/coronavirus").text
+	textContent = requests.get("http://www.worldometers.info/coronavirus", timeout=10).text
 	soup = BeautifulSoup(textContent, "html.parser")
 
 	# select whichever news date is "today"

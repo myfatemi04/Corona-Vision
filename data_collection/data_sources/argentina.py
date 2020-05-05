@@ -20,12 +20,12 @@ def import_data() -> None:
     urlv = ar_date.strftime("https://www.argentina.gob.ar/sites/default/files/%d-%m-%y-reporte-vespertino-covid-19.pdf")
     urlm = ar_date.strftime("https://www.argentina.gob.ar/sites/default/files/%d-%m-%y-reporte-matutino-covid-19.pdf")
     
-    rq_evening = requests.get(urlv)
+    rq_evening = requests.get(urlv, timeout=10)
     if rq_evening.status_code == 200:
         import_pdf(rq_evening.content, ar_date)
     else:
         print(f"\r{rq_evening.status_code} on evening report download")
-        rq_morning = requests.get(urlm)
+        rq_morning = requests.get(urlm, timeout=10)
         if rq_morning.status_code == 200:
             import_pdf(rq_morning.content, ar_date)
         else:

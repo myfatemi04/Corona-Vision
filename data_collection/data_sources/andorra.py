@@ -13,7 +13,7 @@ def import_data():
     
     url = "https://www.govern.ad/covid/taula.php"
 
-    soup = BeautifulSoup(requests.get(url).text, "html.parser")
+    soup = BeautifulSoup(requests.get(url, timeout=10).text, "html.parser")
     print(soup)
     print(soup.findAll(".col-12"))
 

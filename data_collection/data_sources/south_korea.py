@@ -11,7 +11,7 @@ def import_data():
     global lastDatapointsUpdate
 
     url = "http://ncov.mohw.go.kr/en/bdBoardList.do?brdId=16&brdGubun=162&dataGubun=&ncvContSeq=&contSeq=&board_id="
-    soup = BeautifulSoup(requests.get(url).text, "html.parser")
+    soup = BeautifulSoup(requests.get(url, timeout=10).text, "html.parser")
     body = soup.select_one("table.num tbody")
     rows = body.select("tr")
 

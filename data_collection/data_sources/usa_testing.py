@@ -10,7 +10,7 @@ lastDatapointsUpdate = 0
 def import_data():
 	global lastDatapointsUpdate
 
-	rq = requests.get("https://covidtracking.com/api/v1/states/current.json")
+	rq = requests.get("https://covidtracking.com/api/v1/states/current.json", timeout=10)
 	j = rq.json()
 	datapoints = []
 	locations = []

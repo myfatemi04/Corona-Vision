@@ -24,7 +24,7 @@ def import_date(now):
     queryURL = f"https://www.mass.gov/doc/covid-19-raw-data-{month}-{day}-{year}/download"
     # source: https://www.mass.gov/info-details/covid-19-response-reporting#covid-19-cases-in-massachusetts-
 
-    response = requests.get(queryURL)
+    response = requests.get(queryURL, timeout=10)
     if response.status_code == 200:
         bytesio = io.BytesIO(response.content)
 

@@ -19,7 +19,7 @@ def import_data():
     jsonURL = "https://xx9p7hp1p7.execute-api.us-east-1.amazonaws.com/prod/PortalMapa"
     sourceURL = "https://covid.saude.gov.br/"
 
-    content = requests.get(jsonURL, headers=headers).json()
+    content = requests.get(jsonURL, headers=headers, timeout=10).json()
     datapoints = []
     locations = []
 

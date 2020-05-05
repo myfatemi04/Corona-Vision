@@ -15,7 +15,7 @@ def import_data():
     }
 
     url = "https://coronavirus.ne/"
-    soup = BeautifulSoup(requests.get(url, headers=headers).text, 'html.parser')
+    soup = BeautifulSoup(requests.get(url, headers=headers, timeout=10).text, 'html.parser')
     stats = soup.select(  ".vcex-milestone-time"  )
     total = json.loads(stats[0]['data-options'])['endVal']
     deaths = json.loads(stats[1]['data-options'])['endVal']

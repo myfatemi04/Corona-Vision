@@ -21,7 +21,7 @@ def import_gis(gis_url, table_labels, use_geometry=False, geometry_precision=6):
 def import_geojson(query_url, table_labels, use_geometry=True):
     content = {}
 
-    geojson = requests.get(query_url).json()
+    geojson = requests.get(query_url, timeout=10).json()
 
     defaults = get_defaults()
     for table in table_labels.keys():

@@ -11,7 +11,7 @@ def import_data():
     queryURL = "https://services7.arcgis.com/Z0rixLlManVefxqY/arcgis/rest/services/DailyCaseCounts/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&outFields=*"
     sourceURL = "https://www.nj.gov/health/cd/topics/covid2019_dashboard.shtml"
 
-    json = requests.get(queryURL).json()
+    json = requests.get(queryURL, timeout=10).json()
     datapoints = []
 
     for feature in json['features']:

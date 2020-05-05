@@ -11,7 +11,7 @@ def import_data():
     global lastDatapointsUpdate
 
     url = "https://covid19.ncdc.gov.ng/"
-    soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+    soup = BeautifulSoup(requests.get(url, timeout=10).text, 'html.parser')
     stats = soup.select(".card-body > h2")
     tests = stats[0].text
     total = stats[1].text

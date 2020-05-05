@@ -11,7 +11,7 @@ def import_data():
     global lastDatapointsUpdate
 
     url = "https://www.mohfw.gov.in/"
-    soup = BeautifulSoup(requests.get(url).text, "html.parser")
+    soup = BeautifulSoup(requests.get(url, timeout=10).text, "html.parser")
     body = soup.select_one("#state-data tbody")
     rows = body.select("tr")
 

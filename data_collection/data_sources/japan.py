@@ -12,7 +12,7 @@ def import_data():
     global lastDatapointsUpdate
 
     datapoints = []
-    j = requests.get("https://data.covid19japan.com/summary/latest.json").json()
+    j = requests.get("https://data.covid19japan.com/summary/latest.json", timeout=10).json()
     for row in j['prefectures']:
         datapoints.append({
             "country": "Japan",

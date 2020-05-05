@@ -10,7 +10,7 @@ def import_data():
     global lastDatapointsUpdate
 
     url = 'https://www.gov.bm/coronavirus'
-    soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+    soup = BeautifulSoup(requests.get(url, timeout=10).text, 'html.parser')
     statsTable = soup.select(  "table"  )[1]
     statsRows = statsTable.select("tr")
     tests = int(statsRows[1].select("td")[-1].text)

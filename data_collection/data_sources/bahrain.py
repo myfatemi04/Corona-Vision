@@ -13,7 +13,7 @@ def import_data():
     global lastDatapointsUpdate
 
     url = "https://www.moh.gov.bh/?lang=en"
-    soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+    soup = BeautifulSoup(requests.get(url, timeout=10).text, 'html.parser')
     stats = soup.select("table thead span")
     tests = stats[0].text
     active = stats[1].text

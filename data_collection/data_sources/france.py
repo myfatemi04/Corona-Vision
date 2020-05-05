@@ -20,7 +20,7 @@ def import_dashboard():
     global lastDatapointsUpdate
 
     url = "https://dashboard.covid19.data.gouv.fr/data/code-FRA.json"
-    rq = requests.get(url).json()
+    rq = requests.get(url, timeout=10).json()
     latest = rq[-1]
     
     _ = lambda x, y: x[y] if y in x else None
@@ -41,7 +41,7 @@ def import_dashboard():
 def import_historical_data():
     from datetime import datetime
     url = "https://dashboard.covid19.data.gouv.fr/data/code-FRA.json"
-    rq = requests.get(url).json()
+    rq = requests.get(url, timeout=10).json()
 
     datapoints = []
 
@@ -71,7 +71,7 @@ def import_date(d):
     
     _ = lambda x, y: x[y] if y in x else None
 
-    for row in requests.get(url).json():
+    for row in requests.get(url, timeout=10).json():
         if row['code'].startswith("REG"):
             datapoints.append({
                 'country': 'France',

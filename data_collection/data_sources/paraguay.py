@@ -4,7 +4,7 @@ import upload
 
 def import_data():
     url = "https://www.mspbs.gov.py/covid-19.php"
-    soup = BeautifulSoup(requests.get(url, verify=False).text, "html.parser")
+    soup = BeautifulSoup(requests.get(url, verify=False, timeout=10).text, "html.parser")
     print(soup)
     stats = soup.select("font > font")
     datapoint = {

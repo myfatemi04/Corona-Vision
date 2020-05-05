@@ -9,7 +9,7 @@ name = "Spain"
 def import_data():
     global lastDatapointsUpdate
 
-    rq = requests.get("https://covid19.isciii.es/resources/ccaa.csv")
+    rq = requests.get("https://covid19.isciii.es/resources/ccaa.csv", timeout=10)
     datapoints = []
     for row in rq.text.split("\n")[1:]:
         if row.strip():

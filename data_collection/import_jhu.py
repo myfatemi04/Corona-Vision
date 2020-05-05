@@ -103,7 +103,7 @@ def import_jhu_date(entry_date):
 	
 	# download from Github
 	github_raw_url = f"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/{date_formatted}.csv"
-	response = requests.get(github_raw_url)
+	response = requests.get(github_raw_url, timeout=10)
 	
 	if response.status_code == 200:
 		return import_csv_data(response.text, entry_date)
