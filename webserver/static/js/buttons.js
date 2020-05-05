@@ -48,19 +48,19 @@ function copyLink(country='', province='', county='') {
 }
 
 function setDate() {
-    window.location = "?country={{country}}&province={{province}}&county={{county}}&date=" + $("#date").val();
+    window.location = `?country=${country}&province=${province}&county=${county}&date=` + $("#date").val();
 }
 
 function setCountry() {
-    window.location = "?country=" + $("#countrySelector").val() + "&date={{entry_date}}";
+    window.location = "?country=" + $("#countrySelector").val() + "&date=" + entryDate;
 }
 
 function setProvince() {
-    window.location = "?country=" + country + "&province=" + $("#provinceSelector").val() + "&date={{entry_date}}";
+    window.location = "?country=" + country + "&province=" + $("#provinceSelector").val() + "&date=" + entryDate;
 }
 
 function setCounty() {
-    window.location = "?country=" + country + "&province=" + province + "&county=" + $("#countySelector").val() + "&date={{entry_date}}";
+    window.location = "?country=" + country + "&province=" + province + "&county=" + $("#countySelector").val() + "&date=" + entryDate;
 }
 
 function goYesterday() {

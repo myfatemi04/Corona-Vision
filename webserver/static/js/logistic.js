@@ -1,17 +1,20 @@
-import LM from "ml-levenberg-marquardt";
 
-/*
-Logistic growth curve function.
-Parameters:
-    MAX: maximum value of the function (the numerator).
-    T_INF: the time of the inflection point - when does the curve start to change direction?
-    T_RISE: the time for the curve to reach the inflection point
-    LIN: this parameter was added to model social distancing:
-        the time to reach the inflection point will increase over time,
-        as the disease is spreading more slowly.
+/**
+ * Logistic growth curve function.
+ * @param MAX: maximum value of the function (the numerator).
+ * @param T_INF: the time of the inflection point - when does the curve start to change direction?
+ * @param T_RISE: the time for the curve to reach the inflection point
+ * @param LIN: this parameter was added to model social distancing:
+ * the time to reach the inflection point will increase over time,
+ * as the disease is spreading more slowly.
+ * @author Michael Fatemi, Fredrik Fatemi
 */
 function logisticFunction([MAX, T_INF, T_RISE, LIN]) {
-    return (t: number) => MAX / ( 1 + Math.exp(-(t - T_INF)/(T_RISE + LIN * t)));
+    return t => (MAX / (1 + Math.exp(-(t - T_INF)/(T_RISE + LIN * t))));
+}
+
+function stringsToDates(entryDateStrings) {
+    return entryDateStrings.map(x => new Date(x));
 }
 
 /**
@@ -22,7 +25,7 @@ function logisticFunction([MAX, T_INF, T_RISE, LIN]) {
  * @param entryDates The list of dates to convert into indexed numbers.
  * @returns A list of numbers, 0-indexed based on the start date.
  */
-function datesToNumbers(entryDates: Date[]): number[] {
+function datesToNumbers(entryDates) {
     let minDate = entryDates[0];
     let dateLength = 86400 * 1000;
     return entryDates.map(x => (x.getTime() - minDate.getTime()) / dateLength);
@@ -35,7 +38,7 @@ function datesToNumbers(entryDates: Date[]): number[] {
  * @returns The parameters for a logistic regression that fit these stats.
  * @author Michael Fatemi, Fredrik Fatemi
  */
-function fit(x: number[], y: number[]) {
+function fit(x, y) {
     let data = {
         x: x,
         y: y
@@ -53,31 +56,25 @@ function fit(x: number[], y: number[]) {
         7.3e9, // world population
         800, // upper bound for T_INF
         800, // upper bound for T_RISE
-        20
+        0
     ];
 
 	let startingValues = [
         y[y.length - 1], // max: starts at highest value
         x[Math.floor(x.length/2)], // t_inf: starts at middle value
         40, // t_rise: starts at 40 days
-        1 // lin: starts at a slope of one day per day
+        0 // lin: starts at a slope of one day per day
     ];
 
     let options = {
+        damping: 1,
         initialValues: startingValues,
         minValues: minValues,
         maxValues: maxValues,
-        gradientDifference: 10e-2,
-        maxIterations: 1000,
-        errorTolerance: 10e-3
+        maxIterations: 100,
+        errorTolerance: 0
     };
 
     let fittedParams = LM(data, logisticFunction, options);
     return fittedParams;
 }
-
-module.exports = {
-    fit: fit,
-    logisticFunction: logisticFunction,
-    datesToNumbers: datesToNumbers
-};

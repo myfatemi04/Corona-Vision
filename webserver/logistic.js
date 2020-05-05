@@ -70,6 +70,14 @@ function fit(x, y) {
     var fittedParams = ml_levenberg_marquardt_1["default"](data, logisticFunction, options);
     return fittedParams;
 }
+/*
+This allows the code to be used from the browser.
+In addition, be sure to run "--s logistic" to expose the module.exports in the browser
+under the global variable "logistic"!
+*/
+window.fit = fit;
+window.logisticFunction = logisticFunction;
+window.datesToNumbers = datesToNumbers;
 module.exports = {
     fit: fit,
     logisticFunction: logisticFunction,

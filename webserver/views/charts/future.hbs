@@ -1,21 +1,22 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Corona Vision - COVID-19 Predictions</title>
+		<title>Corona Vision - COVID-19 Charts</title>
 		{{>styles}}
 		<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
 		<script src="/js/chart.min.js"></script>
 		<script src="/js/corona_chart.js"></script>
+		<script src="/js/ml.dist.js"></script>
+		<script src="/js/logistic.js"></script>
 		<script>
 			let country = "{{country}}";
 			let province = "{{province}}";
 			let county = "{{county}}";
 			let charts = {};
 			function init() {
-				let locationData = {country: "{{country}}", province: "{{province}}", county: "{{county}}"};
-				let label = locationData.country || "the World";
-				if (locationData.province) label = locationData.province + ", " + label;
-				if (locationData.county) label = locationData.county + ", " + label;
+				let label = country || "the World";
+				if (province) label = province + ", " + label;
+				if (county) label = county + ", " + label;
 
 				$("#countrySelector").val(country);
 				$("#provinceSelector").val(province);
@@ -57,16 +58,18 @@
 				drecoveredChart.update();
 				charts['drecovered'] = drecoveredChart;
 
-				let logisticChart = newChart("#predictions-logistic", logisticPredictionDatasets);
+				{{!-- let logisticChart = newChart("#predictions-logistic", logisticPredictionDatasets);
 				charts['predictions-logistic'] = logisticChart;
 
 				logisticChart.options.title.text = "Fitting growth model...";
-				logisticChart.update();
+				logisticChart.update(); --}}
 
 				$.getJSON(
 					"/cases/totals_sequence",
-					locationData,
+					{country: country, province: province, county: county},
 					data => {
+						window.data = data;
+
 						// addData(totalChart, data, ['total']); // positive cases/tests
 						addData(totalChart, data, ['total']);
 						addTrendline(totalChart);
@@ -86,30 +89,35 @@
 						addData(drecoveredChart, data, ['drecovered']);
 						addTrendline(drecoveredChart);
 
-						addData(logisticChart, data, ['total']);
+						{{!-- addData(logisticChart, data, ['total']);
+
 						let extendedDates = extendDates([...data.entry_date]);
-						$.getJSON(
-							"//prediction-dot-tactile-welder-255113.uc.r.appspot.com/predict/log",
-							locationData,
-							(fit) => {
-								logisticChart.options.title.text = "Logistic curve fit for " + label;
-								logisticChart.data.labels = extendedDates;
-								let logisticData = logisticChart.data.datasets[1];
-								logisticData.data = []
-								{{!-- let originalLength = logisticData.data.length; --}}
-								for (let day = 0; day < logisticChart.data.labels.length; day++) {
-									logisticData.data.push(logPredict(fit, day));
-								}
-								setTimeout(() => {logisticChart.update()}, 500);
-							}
-						);
+						logisticChart.options.title.text = "Logistic curve fit for " + label;
+						logisticChart.data.labels = extendedDates;
+
+						let x = datesToNumbers(stringsToDates(data.entry_date));
+						let y = data['total'];
+						let fitParams = fit(x, y);
+						
+						setLogParams(fitParams.parameterValues); --}}
 					}
 				);
 			}
 
+			{{!-- function setLogParams(params) {
+				let logisticChart = charts['predictions-logistic'];
+				let logFunction = logisticFunction(params);
+				let logisticData = logisticChart.data.datasets[1];
+				logisticData.data = []
+				for (let day = 0; day < logisticChart.data.labels.length; day++) {
+					logisticData.data.push(logFunction(day));
+				}
+				setTimeout(() => {logisticChart.update()}, 500);
+			}
+
 			function logPredict(fit, x) {
 				return fit.MAX/(1 + Math.exp(-(x - fit.T_INF)/(fit.T_RISE + fit.LIN * x)));
-			}
+			} --}}
 
 			function isoDate(date) {
 				if (typeof date == 'string') {
@@ -141,7 +149,7 @@
 		<div class="container p-2">
 			<div class="box d-flex flex-column">
 				<a id="download-chart" style="display: none;"></a>
-                <span class="text-center font-weight-bold">Please note: predictions will not always be accurate, please do not base decisions off of them.</span>
+                {{!-- <span class="text-center font-weight-bold">Please note: predictions will not always be accurate, please do not base decisions off of them.</span> --}}
 				<div id="chart-container" class="p-2 d-flex flex-column" style="flex: 1;">
 					<div class="d-flex flex-column">
 						Select a location:
@@ -226,11 +234,7 @@
 						</select>
 					</div>
 
-					<canvas id="predictions-logistic"></canvas>
-					{{!-- <button class="btn custom-button-color my-2" onclick="download('predictions-logistic')">
-						Save Image
-					</button> --}}
-					
+					{{!-- <canvas id="predictions-logistic"></canvas>					
 					<div>Scale <small>(change Y-axis type)</small></div>
 					<select onchange="scale(getChart('predictions-logistic'), this.value)" name="scale-type" class="custom-input-color form-control my-2">
 						<option value="linear">Linear</option>
@@ -238,9 +242,9 @@
 					</select>
 					<span>
 						The logistic regression chart models population growth.</i>.
-					</span>
+					</span> --}}
 					<div>
-						<a href="/charts/info">More info about the charts</a> | <a href="/disclaimer">Disclaimer about predictions</a>
+						<a href="/charts/info">More info about the charts</a>
 					</div>
 				</div>
 			</div>
