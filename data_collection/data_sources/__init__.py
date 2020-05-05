@@ -38,52 +38,54 @@ from . import usa_testing
 from . import us_states
 
 live = [
-	albania,
-	argentina,
-	# australia,
-	azerbaijan,
-	bahrain,
-	bermuda,
-	brazil,
-	canada,
-	czechia,
-	france,
-	gabon,
-	germany,
-	india,
-	italy,
-	japan,
-	netherlands,
-	niger,
-	nigeria,
-	norway,
-	portugal,
-	russia,
-	south_korea,
-	spain,
-	turkey,
-	united_states,
-	uganda,
-	worldometers,
+    albania,
+    argentina,
+    # australia,
+    azerbaijan,
+    bahrain,
+    bermuda,
+    brazil,
+    canada,
+    czechia,
+    france,
+    gabon,
+    germany,
+    india,
+    italy,
+    japan,
+    netherlands,
+    niger,
+    nigeria,
+    norway,
+    portugal,
+    russia,
+    south_korea,
+    spain,
+    turkey,
+    united_states,
+    uganda,
+    worldometers,
 
-	usa_testing,
-	us_states
+    usa_testing,
+    us_states
 ]
 
 def import_group(l):
-	for module in l:
-		try:
-			print("Importing data from", module.__name__, "...")
-			module.import_data()
-		except Exception as e:
-			sys.stderr.write("Exception during group data import: {} [type {}]".format(e, type(e)))
-			traceback.print_tb(e.__traceback__)
+    import server
+    for module in l:
+        try:
+            print("Importing data from", module.__name__, "...")
+            server.current = module.__name__
+            module.import_data()
+        except Exception as e:
+            sys.stderr.write("Exception during group data import: {} [type {}]".format(e, type(e)))
+            traceback.print_tb(e.__traceback__)
 
 def import_live():
-	import_group(live)
+    import_group(live)
 
 def import_jhu_historical():
-	from import_jhu import import_jhu_date, import_jhu_historical
-	import upload
-	for data in import_jhu_historical():
-		upload.upload(data)
+    from import_jhu import import_jhu_date, import_jhu_historical
+    import upload
+    for data in import_jhu_historical():
+        upload.upload(data)
