@@ -6,15 +6,17 @@ Data Preparation
 def prepare_datapoint_data(datapoint_data):
     import numpy as np
     import standards
-    from datetime import datetime
+    from datetime import datetime, date
 
     keys = set(datapoint_data.keys())
     for key in keys:
         if type(datapoint_data[key]) == float and np.isnan(datapoint_data[key]):
             del datapoint_data[key]
-
-    datapoint_data = {"country": "", "province": "", "county": "", "entry_date": datetime.utcnow().date(), **datapoint_data}
+	
+    defaultDate = datetime.utcnow().date()
+    datapoint_data = {"country": "", "province": "", "county": "", "entry_date": defaultDate, **datapoint_data}
     datapoint_data['country'], datapoint_data['province'], datapoint_data['county'] = standards.normalize_name(datapoint_data['country'], datapoint_data['province'], datapoint_data['county'])
+    # datapoint_data['entry_date'] = date(2020, 5, 8)
 
     return datapoint_data
 
