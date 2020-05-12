@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Corona Vision - COVID-19 Charts</title>
+		<title>COVID-19 Current Trends - Corona Vision</title>
 		{{>styles}}
 		<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
 		<script src="/js/chart.min.js"></script>
@@ -17,6 +17,8 @@
 				let label = country || "the World";
 				if (province) label = province + ", " + label;
 				if (county) label = county + ", " + label;
+
+				$("#locationLabel").html(`Location: <i>${label}</i>`);
 
 				$("#countrySelector").val(country);
 				$("#provinceSelector").val(province);
@@ -147,10 +149,13 @@
 	<body onload="init()">
 		{{>navbar}}
 		<div class="container p-2">
+			<div class="text-center">
+				<h1>Current Coronavirus Trends</h1>
+				<span id="locationLabel"></span>
+			</div>
 			<div class="box d-flex flex-column">
 				<a id="download-chart" style="display: none;"></a>
-                {{!-- <span class="text-center font-weight-bold">Please note: predictions will not always be accurate, please do not base decisions off of them.</span> --}}
-				<div id="chart-container" class="p-2 d-flex flex-column" style="flex: 1;">
+                <div id="chart-container" class="p-2 d-flex flex-column" style="flex: 1;">
 					<div class="d-flex flex-column">
 						Select a location:
 						<select id="countrySelector" class="custom-input-color form-control m-2" onchange="setCountry()">
