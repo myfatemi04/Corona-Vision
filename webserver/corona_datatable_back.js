@@ -28,10 +28,6 @@ function table_col(options) {
     if (number != 0 && typeof number != 'undefined') {
         if (options.hasOwnProperty("digits")) innerText = nFormatter(number, options.digits);
         else innerText = number;
-
-        // if (options.source) {
-        //     innerText = `<a href='${options.source}' style='color: inherit; text-decoration: underline;'>` + innerText + `</a>`;
-        // }
     }
     
     let color = options.color || COLORS.fg;

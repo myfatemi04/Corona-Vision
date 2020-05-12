@@ -36,6 +36,7 @@ a {
 
 a.country-link {
 	color: #fdff8a;
+	text-decoration: underline;
 }
 
 .custom-nav-color {

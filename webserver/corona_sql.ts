@@ -241,7 +241,7 @@ function getCountries(entryDate: string): Promise<string[]> {
 
 function getProvinces(entryDate: string, country: string): Promise<string[]> {
     return new Promise((resolve, reject) => {
-        let key = makeKey(entryDate);
+        let key = makeKey(entryDate, country);
         if (key in provincesCache) {
             let {cacheUpdate, content} = provincesCache[key];
             if (Date.now() - cacheUpdate < 60000) {
@@ -270,7 +270,7 @@ function getProvinces(entryDate: string, country: string): Promise<string[]> {
 
 function getCounties(entryDate: string, country: string, province: string): Promise<string[]> {
     return new Promise((resolve, reject) => {
-        let key = makeKey(entryDate);
+        let key = makeKey(entryDate, country, province);
         if (key in countiesCache) {
             let {cacheUpdate, content} = countiesCache[key];
             if (Date.now() - cacheUpdate < 60000) {

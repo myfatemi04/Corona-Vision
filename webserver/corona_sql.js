@@ -158,7 +158,7 @@ function getCountries(entryDate) {
 exports.getCountries = getCountries;
 function getProvinces(entryDate, country) {
     return new Promise(function (resolve, reject) {
-        var key = makeKey(entryDate);
+        var key = makeKey(entryDate, country);
         if (key in provincesCache) {
             var _a = provincesCache[key], cacheUpdate = _a.cacheUpdate, content = _a.content;
             if (Date.now() - cacheUpdate < 60000) {
@@ -178,7 +178,7 @@ function getProvinces(entryDate, country) {
 exports.getProvinces = getProvinces;
 function getCounties(entryDate, country, province) {
     return new Promise(function (resolve, reject) {
-        var key = makeKey(entryDate);
+        var key = makeKey(entryDate, country, province);
         if (key in countiesCache) {
             var _a = countiesCache[key], cacheUpdate = _a.cacheUpdate, content = _a.content;
             if (Date.now() - cacheUpdate < 60000) {
