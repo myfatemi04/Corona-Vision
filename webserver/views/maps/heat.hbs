@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<title>Interactive Coronavirus Heatmap - Corona Vision</title>
-		{{>styles}}
+		{{>coronavisionStyles}}
 
 		<script async defer
 		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAMm-5SUX6ELt2KfUfEF49RpvgRIj8J6w4&callback=init&libraries=visualization">
@@ -95,7 +95,7 @@
 		</script>
 	</head>
 	<body onload="init()">
-		{{>navbar}}
+		{{>coronavisionNavbar}}
 		<div class="scroll box">
 			<h3>Map</h3>
 			Source: Local government websites, Worldometers, publicly-available location data.<br/>

@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<title>Interactive Coronavirus Map - Corona Vision</title>
-		{{>styles}}
+		{{>coronavisionStyles}}
 		<link rel="stylesheet" href="/css/svgMap.css">
 		<script src="https://polyfill.io/v3/polyfill.min.js?features=Element.prototype.classList%2CObject.assign"></script>
 		<script src="/js/svgMap.js"></script>
@@ -314,7 +314,7 @@
 			</div>
 		</div>
 		<div id="header">
-			{{>navbar}}
+			{{>coronavisionNavbar}}
 			<div id="mapHeader" class="text-center" style="border-bottom: 1px solid var(--color-fg-light, #f5f5f5);">
 				<h1 style="margin: 0;">Map of {{label}}</h1>
 				Source: Local government websites, ESRI ARCGIS dashboards.<br/>
