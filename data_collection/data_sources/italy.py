@@ -1,7 +1,6 @@
 import requests
 import time
 import upload
-from import_gis import import_gis
 from data_parser import import_df
 
 lastDatapointsUpdate = 0

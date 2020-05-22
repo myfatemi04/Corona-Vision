@@ -1,0 +1,5 @@
+Brazil: invalid int()
+Uganda: invalid int()
+Spain: index out of range
+India: invalid int(): ''
+Bermuda: invalid int()

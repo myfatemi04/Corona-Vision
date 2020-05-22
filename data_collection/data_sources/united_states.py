@@ -1,7 +1,7 @@
 import requests
 import time
 import upload
-from import_gis import import_geojson
+from data_imports.import_gis import import_geojson
 from data_sources import minWait
 from datetime import datetime
 

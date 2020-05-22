@@ -20,9 +20,13 @@ def import_data():
         if "total" in row.text.lower():
             continue
         stats = row.select("td")
+
+        print(stats)
+
         if len(stats) < 5:
             continue
-
+        
+        _rank = stats[0].text
         province = stats[1].text
         total = stats[2].text
         recovered = stats[3].text

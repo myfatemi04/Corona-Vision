@@ -4,38 +4,20 @@ minWait = 60 * 5
 import traceback
 import sys
 
-from . import albania
-from . import australia
-from . import argentina
-from . import azerbaijan
-from . import bahrain
-from . import brazil
-from . import bermuda
-from . import canada
-from . import china
-from . import czechia
+from . import albania, australia, argentina, azerbaijan
+from . import bahrain, brazil, bermuda
+from . import canada, china, czechia
 from . import france
-from . import gabon
-from . import germany
-from . import india
-from . import italy
+from . import gabon, germany
+from . import india, italy
 from . import japan
-from . import netherlands
-from . import niger
-from . import nigeria
-from . import norway
+from . import netherlands, niger, nigeria, norway
 from . import portugal
 from . import russia
-from . import south_korea
-from . import spain
+from . import south_korea, spain
 from . import turkey
-from . import united_states
-from . import uganda
-
+from . import united_states, uganda, us_states, usa_testing
 from . import worldometers
-from . import usa_testing
-
-from . import us_states
 
 live = [
     albania,
