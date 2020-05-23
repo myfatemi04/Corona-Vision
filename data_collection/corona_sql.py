@@ -62,39 +62,6 @@ class Location(Base):
 				if abs(new_value - old_value) > 1e-5:
 					setattr(self, key, new_value)
 
-	#### Generated keys are commented out and replaced with functions ####
-	@staticmethod
-	def add_location_data(new_data, cache=None, session=None, add_new=True):
-		import prepare_data
-		new_data = prepare_data.prepare_location_data(new_data)
-		
-		country = new_data['country'] if 'country' in new_data else ''
-		province = new_data['province'] if 'province' in new_data else ''
-		county = new_data['county'] if 'county' in new_data else ''
-		location_tuple = (country, province, county)
-
-		if cache:
-			if location_tuple not in cache:
-				if add_new:
-					location = Location(country=country, province=province, county=county)
-					session.add(location)
-					cache[location_tuple] = location
-				else:
-					return None
-			location = cache[location_tuple]
-		else:
-			location = session.query(Location).filter_by(country=country, province=province, county=county).first()
-			if location is None:
-				if add_new:
-					location = Location(country=country, province=province, county=county)
-					session.add(location)
-				else:
-					return None
-
-		location.update(new_data)
-		return location
-
-
 	def __str__(self):
 		return self.__repr__()
 
@@ -128,7 +95,7 @@ class Datapoint(Base):
 	tests = Column(Integer, default=0)
 	hospitalized = Column(Integer, default=0)
 
-	def update_data(self, data, requireIncreasing: bool = False) -> bool:
+	def update(self, data, requireIncreasing: bool = False) -> bool:
 		change = False
 		
 		def _update(label, new_val):
@@ -143,7 +110,7 @@ class Datapoint(Base):
 			if my_val is None:
 				_update(label, data[label])
 				change = True
-			elif label in increase_labels and requireIncreasing == True:
+			elif label in increase_labels and requireIncreasing:
 				if data[label] > my_val:
 					_update(label, data[label])
 					change = True
@@ -156,70 +123,32 @@ class Datapoint(Base):
 			self.update_time = datetime.utcnow()
 
 		return change
-	
-	def update_differences(self, prev_row):
-		for label in stat_labels:
-			original_value = getattr(self, "d" + label)
-			if prev_row is not None:
-				calculated_value = getattr(self, label) - getattr(prev_row, label)
-				if original_value is None or float(calculated_value) != float(original_value):
-					setattr(self, "d" + label, calculated_value)
-			else:
-				if getattr(self, label) is not None:
-					setattr(self, "d" + label, None)
-
-	@staticmethod
-	def add_datapoint_data(datapoint_data, session, cache=None):
-		import prepare_data
-		was_changed = False
-		datapoint_data = prepare_data.prepare_datapoint_data(datapoint_data)
-		if cache is not None:
-			t = datapoint_data['country'], datapoint_data['province'], datapoint_data['county'], datapoint_data['entry_date'].isoformat()
-			if t in cache:
-				datapoint = cache[t]
-				was_changed = datapoint.update_data(data=datapoint_data, )
-			else:
-				datapoint = Datapoint(data=datapoint_data)
-				session.add(datapoint)
-				cache[datapoint.t] = datapoint
-				was_changed = True
-			return datapoint, was_changed
-		else:
-			datapoint = session.query(
-				country=datapoint_data['country'],
-				province=datapoint_data['province'],
-				county=datapoint_data['county'],
-				entry_date=datapoint_data['entry_date']
-			).first()
-
-			if datapoint is not None:
-				was_changed = datapoint.update_data(data=datapoint_data)
-			else:
-				datapoint = Datapoint(data=datapoint_data)
-				session.add(datapoint)
-				was_changed = True
-			return datapoint, was_changed
 
 	def location_tuple(self):
-		return (self.country, self.province, self.county)
+		return self.country, self.province, self.county
 
-	def ripples(self):
+	def date_str(self):
 		if type(self.entry_date) == str:
-			date_str = self.entry_date
+			return self.entry_date
 		elif type(self.entry_date) == date:
-			date_str = self.entry_date.isoformat()
-		else:
-			raise ValueError("Entry date not found! Date=", date_str)
-		result = set()
-		result.add(('', '', '', date_str))
-		result.add((self.country, '', '', date_str))
-		result.add((self.country, self.province, '', date_str))
-		result.add((self.country, self.province, self.county, date_str))
-		return result
+			return self.entry_date.isoformat()
+		raise ValueError(f"Bad date! {self.entry_date}")
+
+	def parents(self):
+		date_str = self.date_str()
+		
+		if self.country:
+			yield ("", "", "", date_str)
+		
+		if self.province:
+			yield (self.country, "", "", date_str)
+
+		if self.county:
+			yield (self.country, self.province, "", date_str)
 
 	@property
 	def t(self):
-		return self.country, self.province, self.county, self.entry_date
+		return self.country, self.province, self.county, self.date_str()
 
 	def __str__(self):
 		return self.__repr__()
@@ -248,8 +177,8 @@ class Hospital(Base):
 def try_commit(sess):
 	try:
 		sess.commit()
-		sess.close()
 	except:
 		sess.rollback()
-		sess.close()
 		raise
+	finally:
+		sess.close()

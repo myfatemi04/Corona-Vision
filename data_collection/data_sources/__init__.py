@@ -24,18 +24,15 @@ import data_sources.south_america
 
 import data_sources.worldometers
 
-def import_group(name):
+def import_group(name, verbose=False):
     for func, func_name in data_groups[name]:
         try:
             print("Importing data from", func_name, "...")
             results = [datapoint for datapoint in func()]
-            upload.upload_datapoints(results)
+            upload.upload_datapoints(results, verbose)
         except Exception as e:
             sys.stderr.write("Exception during group data import: {} [type {}]".format(e, type(e)))
             traceback.print_tb(e.__traceback__)
-
-def import_live():
-    import_group('live')
 
 def import_jhu_historical():
     from import_jhu import import_jhu_date, import_jhu_historical

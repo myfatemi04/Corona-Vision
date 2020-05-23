@@ -37,7 +37,7 @@ def prepare_datapoint_data(datapoint_data):
 
     for stat in ['total', 'recovered', 'deaths', 'serious', 'hospitalized', 'tests']:
         if stat in datapoint_data:
-            datapoint_data[stat] = number(stat)
+            datapoint_data[stat] = number(datapoint_data[stat])
 
     return datapoint_data
 

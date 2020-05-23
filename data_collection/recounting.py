@@ -11,103 +11,53 @@ Step 3. Update the parent datapoint
 
 """
 def recount(updated, session, cache=None):
-    import caching
+    from caching import LocationCache
     from corona_sql import Location, try_commit
     
-    i = 0
-    unique_days = set()
-    location_cache = caching.get_location_cache(updated, session=session)
+    location_cache = LocationCache.create(updated, session=session)
 
     if not silent_mode:
         print("\rRecounting...", end="\r")
 
     for country, province, county, entry_date in sorted(updated, reverse=True):
-        i += 1
-        if type(entry_date) == str:
-            entry_date = datetime.strptime(entry_date, "%Y-%m-%d").date()
-
-        unique_days.add(entry_date)
-        if county == '':
+        if not county:
+            location_cache.update_data({
+                'country': country,
+                'province': province,
+                'county': county,
+                'entry_date': entry_date
+            })
             update_overall(country, province, county, entry_date, session)
-            Location.add_location_data({"country": country, "province": province, "county": county}, cache=location_cache, session=session)
-
-    # we no longer need to update daily changes; we do it on-the-fly instead
-    # but this is just for keeping track
-    # for day in sorted(unique_days):
-    #     update_deltas(day, updated)
     
     try_commit(session)
 
 def filter_children(results, country, province, county):
-    if not country: # sum entire world
-        results = results.filter(Datapoint.country != '', Datapoint.province == '', Datapoint.county == '')
-    elif not province: # sum entire country
-        results = results.filter(Datapoint.country == country, Datapoint.province != '', Datapoint.county == '')
-    else: # sum entire state
-        results = results.filter(Datapoint.country == country, Datapoint.province == province, Datapoint.county != '')
-    return results
+    if not country:
+        # sum entire world
+        return results.filter(Datapoint.country != '', Datapoint.province == '', Datapoint.county == '')
+    elif not province:
+        # sum entire country
+        return results.filter(Datapoint.country == country, Datapoint.province != '', Datapoint.county == '')
+    else:
+        # sum entire state
+        return results.filter(Datapoint.country == country, Datapoint.province == province, Datapoint.county != '')
 
 stat_labels = ['total', 'deaths', 'recovered', 'serious', 'tests', 'hospitalized']
-sums = tuple(func.sum(getattr(Datapoint, label)) for label in stat_labels)
+sums = [func.sum(getattr(Datapoint, label)) for label in stat_labels]
+
 def update_overall(country, province, county, entry_date, session):
     results = session.query(*sums).filter_by(entry_date=entry_date)
-    results = filter_children(results, country, province, county)
-    result = results.first()
-    if not result or not any(result):
-        return
-    
-    labelled = {x[0]: x[1] for x in zip(stat_labels, result)}
-    _filter = {"country": country, "province": province, "county": '', "entry_date": entry_date}
+    result = filter_children(results, country, province, county).first()
 
-    overall_dp = session.query(Datapoint).filter_by(**_filter).first()
-    if not overall_dp:
-        overall_dp = Datapoint(_filter)
-        session.add(overall_dp)
-    
-    overall_dp.update_data(labelled, requireIncreasing=True)
+    if any(result):
+        overall_filter = {"country": country, "province": province, "county": "", "entry_date": entry_date}
+        overall_dp = session.query(Datapoint).filter_by(**overall_filter).first()
 
-def update_deltas(day, updated=None):
-    compare_day = day + timedelta(days=-1)
-    sess = Session()
-    today_datapoints = sess.query(Datapoint).filter_by(entry_date=day)
-    yesterday_datapoints = sess.query(Datapoint).filter_by(entry_date=compare_day)
-
-    today_dict = {d.t: d for d in today_datapoints}
-    yesterday_dict = {d.location_tuple(): d for d in yesterday_datapoints}
-
-    if not silent_mode:
-        print("Updating deltas    ", end='\r')
-
-    i = skipped = 0
-    for data_tuple, today_dp in today_dict.items():
-        i += 1
-        # print(f"Updating deltas {i}/{len(today_dict)} {data_tuple}                              ", end='\r')
-        # skip updating datapoints that didn't change
-        if updated is not None and data_tuple not in updated:
-            # print("Skipping delta update", data_tuple, "                       ")
-            skipped += 1
-            continue
-
-        country, province, county, _ = data_tuple
-        if (country, province, county) in yesterday_dict:
-            most_recent_dp = yesterday_dict[country, province, county]
-        else:
-            most_recent_date = sess.query(func.max(Datapoint.entry_date))\
-                .filter(Datapoint.entry_date < day)\
-                .filter_by(country=country, province=province, county=county)\
-                .first()
-            if most_recent_date:
-                most_recent_dp = sess.query(Datapoint).filter_by(
-                    entry_date=most_recent_date,
-                    country=country,
-                    province=province,
-                    county=county
-                ).first()
-            else:
-                most_recent_dp = None
+        if not overall_dp:
+            overall_dp = Datapoint(overall_filter)
+            session.add(overall_dp)
         
-        today_dp.update_differences(most_recent_dp)
-
-    if not silent_mode:
-        print("Committing deltas", end='\r')
-    try_commit(sess)
+        labelled = {stat: aggregated for stat, aggregated in zip(stat_labels, result)}
+        
+        # always require aggregations to be at or above the original count
+        overall_dp.update(labelled, requireIncreasing=True)
