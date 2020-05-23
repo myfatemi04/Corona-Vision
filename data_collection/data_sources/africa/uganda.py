@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from data_sources import source
+import re
 
 @source('live', name='Uganda')
 def import_data():
@@ -8,17 +9,20 @@ def import_data():
     soup = BeautifulSoup(requests.get(url, verify=False, timeout=10).text, 'html.parser')
     stats = soup.select(  "div.number font"  )
 
-    yield {
+    num = lambda text: int(re.sub("\\D", "", text))
+
+    datapoint = {
         "country": "Uganda",
-        "tests": int(stats[0].text.replace(",", "")),
-        "total": int(stats[1].text.replace(",", "")),
-        "recovered": int(stats[2].text.replace(",", "")),
+        "tests": num(stats[0].text),
+        "total": num(stats[1].text),
+        "recovered": num(stats[2].text),
     }
 
-    active = int(stats[3].text.replace(",", ""))
+    active = int(stats[3].text)
 
     datapoint['deaths'] = datapoint['total'] - active - datapoint['recovered']
-    
+
+    yield datapoint
     
 
 if __name__ == "__main__":

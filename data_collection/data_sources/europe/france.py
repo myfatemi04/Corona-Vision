@@ -4,14 +4,19 @@ from bs4 import BeautifulSoup
 from data_sources import source
 
 def parse_datapoint(row):
+    if row['deces'] == 'NaN':
+        row['deces'] = 0
+    if row.get('decesEhpad', 0) == 'NaN':
+        row['decesEhpad'] = 0
+        
     return {
         'country': "France",
         'total': row['casConfirmes'],
         'deaths': int(row['deces']) + int(row.get('decesEhpad', 0)),
-        'serious': _(row, 'reanimation'),
-        'hospitalized': _(row, 'hospitalises'),
-        'recovered': _(row, 'gueris'),
-        'tests': _(row, 'testsRealises'),
+        'serious': row.get('reanimation', None),
+        'hospitalized': row.get('hospitalises', None),
+        'recovered': row.get('gueris', None),
+        'tests': row.get('testsRealises', None),
         'entry_date': datetime.strptime(row['date'], "%Y-%m-%d").date()
     }
 

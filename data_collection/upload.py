@@ -1,7 +1,7 @@
 from corona_sql import Session, Datapoint, Location, try_commit
 from sqlalchemy import or_, between, func
 from datetime import date
-from caching import DatapointCache
+from caching import DatapointCache, LocationCache
 import prepare_data
 import typing
 
@@ -25,20 +25,30 @@ import typing
 #     try_commit(session)
 
 def upload_datapoints(datapoints: typing.List, verbose: bool = False) -> bool:
+    if len(datapoints) == 0:
+        return
+
+    end = ' ' * 15 + '\r'
+
+    if verbose:
+        print("\rStarting upload", end=end)
+
     session = Session()
 
     datapoints = prepare_data.prepare_datapoints(datapoints)
     
     cache = DatapointCache.create(datapoints, session)
     cache.update_all(datapoints)
+
+    location_cache = LocationCache.create(datapoints, session)
     
     if verbose:
-        print("\rRecounting             ", end='\r')
+        print("\rRecounting", end=end)
         
     cache.recount_changes()
 
     if verbose:
-        print("\rCommitting             ", end='\r')
+        print("\rCommitting", end=end)
 
     try_commit(session)
 

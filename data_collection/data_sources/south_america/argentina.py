@@ -15,14 +15,13 @@ def import_data():
     
     rq_evening = requests.get(urlv, timeout=10)
     if rq_evening.status_code == 200:
-        import_pdf(rq_evening.content, ar_date)
-    else:
-        print(f"\r{rq_evening.status_code} on evening report download")
-        rq_morning = requests.get(urlm, timeout=10)
-        if rq_morning.status_code == 200:
-            import_pdf(rq_morning.content, ar_date)
-        else:
-            print(f"\r{rq_morning.status_code} on morning report download")
+        return import_pdf(rq_evening.content, ar_date)
+        
+    rq_morning = requests.get(urlm, timeout=10)
+    if rq_morning.status_code == 200:
+        return import_pdf(rq_morning.content, ar_date)
+
+    return iter(())
 
 # def import_historical_data() -> None:
 #     # use argentina date

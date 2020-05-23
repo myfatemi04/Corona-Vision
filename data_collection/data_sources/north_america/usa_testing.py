@@ -11,7 +11,7 @@ def import_data():
 	for row in j:
 		yield {
 			'country': 'United States',
-			'province': standards.us_state_codes[row['state']],
+			'province': standards.state_codes['United States'][row['state']],
 			'tests': row['totalTestResults'] or 0,
 			'hospitalized': row['hospitalizedCurrently'] or 0,
 			'recovered': row['recovered'] or 0

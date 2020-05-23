@@ -28,6 +28,7 @@ def import_group(name, verbose=False):
     for func, func_name in data_groups[name]:
         try:
             print("Importing data from", func_name, "...")
+
             results = [datapoint for datapoint in func()]
             upload.upload_datapoints(results, verbose)
         except Exception as e:

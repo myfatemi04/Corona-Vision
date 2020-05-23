@@ -26,14 +26,10 @@ def import_data():
 		}
 	)
 	
-	newDatapoints = []
 	for result in results['datapoint']:
 		result['country'], _, _ = standards.normalize_name(result['country'], '', '')
 		if result['country'] not in disallowed:
-			newDatapoints.append(result)
-
-	for datapoint in newDatapoints:
-		yield datapoint
+			yield result
 
 def getSources():
 	from bs4 import BeautifulSoup

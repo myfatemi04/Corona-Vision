@@ -18,14 +18,14 @@ class DatapointCache(dict):
         self[datapoint.t] = datapoint
 
     def recount_changes(self):
-        recounting.recount(self.potential_changes, session=self.session, cache=self)
+        recounting.recount(self.potential_changes, cache=self)
 
     # "datas" is wrong but it's clear
     def update_all(self, datapoint_datas):
         for datapoint_data in datapoint_datas:
             self.update_data(datapoint_data)
 
-    def update_data(self, datapoint_data):
+    def update_data(self, datapoint_data, requireIncreasing=False):
         """Updates the data
 
         Arguments:
@@ -34,7 +34,13 @@ class DatapointCache(dict):
         Returns:
             tuple -- the new datapoint, and whether it was updated or not
         """
-        t = datapoint_data['country'], datapoint_data['province'], datapoint_data['county'], datapoint_data['entry_date'].isoformat()
+        def iso(d):
+            if type(d) == date:
+                return d.isoformat()
+            else:
+                return d
+
+        t = datapoint_data['country'], datapoint_data['province'], datapoint_data['county'], iso(datapoint_data['entry_date'])
         
         if t in self.seen:
             return self[t], False
@@ -42,7 +48,7 @@ class DatapointCache(dict):
             self.seen.add(t)
 
         if t in self:
-            if self[t].update(datapoint_data):
+            if self[t].update(datapoint_data, requireIncreasing=requireIncreasing):
                 self.potential_changes.update(self[t].parents())
                 self.was_updated = True
         else:
@@ -55,8 +61,8 @@ class DatapointCache(dict):
 
     @staticmethod
     def create(rows, session):
-        countries = set()
-        provinces = set()
+        countries = {''}
+        provinces = {''}
 
         max_entry_date = min_entry_date = rows[0]['entry_date']
 
@@ -65,8 +71,10 @@ class DatapointCache(dict):
             provinces.add(row['province'])
 
             row_date = row['entry_date']
-            min_entry_date = min(min_entry_date, row_date)
-            max_entry_date = max(max_entry_date, row_date)
+            if row_date < min_entry_date:
+                min_entry_date = row_date
+            if row_date > max_entry_date:
+                max_entry_date = row_date
 
         datapoints = session.query(Datapoint).filter(Datapoint.entry_date.between(min_entry_date, max_entry_date))
         
@@ -103,20 +111,19 @@ class LocationCache(dict):
 
     @staticmethod
     def create(rows, session):
-        countries = set()
-        provinces = set()
+        countries = {''}
+        provinces = {''}
 
         for row in rows:
-            country, province, county, entry_date = row
-            countries.add(country)
-            provinces.add(province)
+            countries.add(row['country'])
+            provinces.add(row['province'])
 
         locations = session.query(Location)
         
         if len(countries) <= 2:
-            locations = locations.filter(Datapoint.country.in_(countries))
+            locations = locations.filter(Location.country.in_(countries))
 
         if len(provinces) <= 2:
-            locations = locations.filter(Datapoint.province.in_(provinces))
+            locations = locations.filter(Location.province.in_(provinces))
 
         return LocationCache(locations, session)

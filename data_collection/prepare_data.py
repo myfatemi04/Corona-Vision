@@ -1,21 +1,31 @@
 import standards
+import re
 
 def number(string):
 
-    if type(string) == float or type(string) == int:
+    if type(string) in [float, int]:
         return string
 
+    if string is None:
+        return None
+
+    if type(string) != str:
+        raise ValueError(f"Number argument is invalid. type: {type(string)}. value: {string}")
+
     string = string.strip()
-    if not string:
+    if len(string) == 0:
         return 0
 
     string = string.split()[0]
-    number = string.replace(",", "").replace("+", "").replace(".", "").replace("*", "").replace("#", "")
+    number = re.sub(r"[,\+\.\*#]", "", string)
+
+    if number.lower() == 'nan':
+        return None
 
     try:
         return int(number)
     except:
-        return 0
+        return None
 
 """
 
@@ -30,7 +40,7 @@ def prepare_datapoint_data(datapoint_data):
     for key in keys:
         if type(datapoint_data[key]) == float and np.isnan(datapoint_data[key]):
             del datapoint_data[key]
-	
+    
     defaultDate = datetime.utcnow().date()
     datapoint_data = {"country": "", "province": "", "county": "", "entry_date": defaultDate, **datapoint_data}
     datapoint_data['country'], datapoint_data['province'], datapoint_data['county'] = standards.normalize_name(datapoint_data['country'], datapoint_data['province'], datapoint_data['county'])

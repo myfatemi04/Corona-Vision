@@ -4,8 +4,7 @@ from data_sources import source
 
 @source('live', name='Netherlands')
 def import_data():
-	
-	for result in import_gis(
+	return import_gis(
 		"https://services.arcgis.com/nSZVuSZjHpEZZbRo/arcgis/rest/services/Coronavirus_RIVM_vlakken_actueel/FeatureServer/0//",
 		table_labels={
 			"datapoint": {
@@ -15,14 +14,6 @@ def import_data():
 				"total": ["Meldingen"],
 				"hospitalized": ["Ziekenhuisopnamen"],
 				"deaths": ["Overleden"]
-			},
-			"location": {
-				"country": "Netherlands",
-				"province": ["Provincie"],
-				"county": ["Gemeentenaam"],
-				"population": ["Bevolkingsaantal", "::dividethousands"]
 			}
 		}
-	):
-		yield result
-
+	)['datapoint']
