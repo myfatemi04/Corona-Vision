@@ -1,6 +1,3 @@
-
-minWait = 60 * 5
-
 from collections import defaultdict
 
 data_groups = defaultdict(list)
@@ -18,20 +15,14 @@ import traceback
 import sys
 import upload
 
-from . import albania, australia, argentina, azerbaijan
-from . import bahrain, brazil, bermuda
-from . import canada, china, czechia
-from . import france
-from . import gabon, germany
-from . import india, italy
-from . import japan
-from . import netherlands, niger, nigeria, norway
-from . import portugal
-from . import russia
-from . import south_korea, spain
-from . import turkey
-from . import united_states, uganda, us_states, usa_testing
-from . import worldometers
+import data_sources.africa
+import data_sources.australia
+import data_sources.asia
+import data_sources.europe
+import data_sources.north_america
+import data_sources.south_america
+
+import data_sources.worldometers
 
 def import_group(name):
     for func, func_name in data_groups[name]:

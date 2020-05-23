@@ -7,7 +7,6 @@ import zipfile
 
 # Massachusetts data - from a ZIP file containing raw data.
 def import_data():
-
     now = datetime.datetime.now()
     import_date(now)
 
