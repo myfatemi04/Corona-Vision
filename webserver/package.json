@@ -4,8 +4,8 @@
   "description": "Coronavirus Tracker",
   "main": "corona_web.js",
   "scripts": {
-    "test": "node corona_web.js",
-    "start": "node corona_web.js"
+    "test": "tsc && node index.js",
+    "start": "tsc && node index.js"
   },
   "repository": {
     "type": "git",

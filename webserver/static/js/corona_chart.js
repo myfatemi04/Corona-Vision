@@ -90,7 +90,7 @@ function addData(chart, data, datasets) {
 	chart.data.labels = data.entry_date;
 
 	for (let i in datasets) {
-		chart.data.datasets[i].data = data[datasets[i]];
+		chart.data.datasets[i].data = data[datasets[i]].map(d => Math.max(0, d));
 	}
 	
 	chart.update();

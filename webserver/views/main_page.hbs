@@ -44,42 +44,31 @@
 					}
 				)
 			}
-		</script>
-		<style type="text/css">
-			.stats-row {
-				display: flex;
-				align-items: center;
-			}
-			.stats-row > :nth-child(1) {
-				text-align: right;
-				flex: 1;
-				margin-right: 1em;
-			}
-			.stats-row > :nth-child(2) {
-				text-align: left;
-				flex: 2;
-				margin-left: 1em;
-			}
-			.stats-row a {
-				color: inherit;
-				text-decoration: underline;
-			}
-			.stats-detail {
-				font-size: 0.75em;
-			}
-			#countrySelector, #provinceSelector, #countySelector {
-				text-align: center;
-				text-align-last: center;
-			}
-			#datatable {
-				background-color: inherit;
-			}
 
-			.dateSelector > * {
-				margin-left: 1em;
-				margin-right: 1em;
+			function loadStateCols() {
+				let countries = [
+					"United States",
+					"Albania",
+					"Brazil",
+					"Canada",
+					"Germany",
+					"India",
+					"Italy",
+					"Japan",
+					"Mexico",
+					"Netherlands",
+					"Portugal",
+					"South Korea"
+				];
+
+				countries.forEach((countryName, index) => {
+					let col = (index % 2) + 1;
+					let ul = $("#statesCol" + col);
+					ul.append(`<li><a href="/?country=${countryName}#statesBox">${countryName}</a></li>`);
+				});
 			}
-		</style>
+		</script>
+		<link rel="stylesheet" href="/css/mainpage.css">
 	</head>
 	<body onload="init()">
 		{{> coronavisionNavbar}}
@@ -236,34 +225,48 @@
 					</select>
 				</div>
 			</div>
-		</div>
-		<div id="datatableBox" class="box">
-			<h1 class='text-center'>Live Data: {{label}} <i onclick='copyLink(country, province, county)' class="fas fa-link"></i></h1>
-			<table class="d-flex flex-column hover stripe" id="datatable">
-				<thead class="border-bottom pos-sticky datatable-head">
-					<tr class="d-flex py-2" style="font-size: 0.9rem;">
-						<th style="flex: 1;">#</th>
-						<th style="flex: 4;">Location</th>
-						<th style="flex: 2;">Total</th>
-						<th style="flex: 2;">Today</th>
-						<th style="flex: 2;">Recovered</th>
-						<th style="flex: 2;">Deaths</th>
-						<th style="flex: 2;">Tests</th>
-						{{#unless country}}
-							<th style="flex: 2;">Tests/mil</th>
-						{{/unless}}
-					</tr>
-				</thead>
-				<tbody id="tablebody">
-					{{{table_rows}}}
-				</tbody>
-				<tfoot>
-					<div class="small">
-						Data changed: {{last_update}}. Click on any stat to see its source. Daily counts reset at UTC-0.
-						<a href="/statisticsInfo">Statistics Definitions</a>
-					</div>
-				</tfoot>
-			</table>
+			<div id="statesBox" class="box">
+				<h3>State-level data</h3>
+				<div class="column-container">
+					<ul id="statesCol1">
+						
+					</ul>
+					<ul id="statesCol2">
+
+					</ul>
+					<script>
+						loadStateCols();
+					</script>
+				</div>
+			</div>
+			<div id="datatableBox" class="box">
+				<h1 class='text-center'>Live Data: {{label}} <i onclick='copyLink(country, province, county)' class="fas fa-link"></i></h1>
+				<table class="d-flex flex-column hover stripe" id="datatable">
+					<thead class="border-bottom pos-sticky datatable-head">
+						<tr class="d-flex py-2" style="font-size: 0.9rem;">
+							<th style="flex: 1;">#</th>
+							<th style="flex: 4;">Location</th>
+							<th style="flex: 2;">Total</th>
+							<th style="flex: 2;">Today</th>
+							<th style="flex: 2;">Recovered</th>
+							<th style="flex: 2;">Deaths</th>
+							<th style="flex: 2;">Tests</th>
+							{{#unless country}}
+								<th style="flex: 2;">Tests/mil</th>
+							{{/unless}}
+						</tr>
+					</thead>
+					<tbody id="tablebody">
+						{{{table_rows}}}
+					</tbody>
+					<tfoot>
+						<div class="small">
+							Data changed: {{last_update}}. Click on any stat to see its source. Daily counts reset at UTC-0.
+							<a href="/statisticsInfo">Statistics Definitions</a>
+						</div>
+					</tfoot>
+				</table>
+			</div>
 		</div>
 	</body>
 </html>

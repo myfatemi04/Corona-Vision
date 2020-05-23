@@ -43,15 +43,15 @@ function table_col(options) {
 let ico = ""; // <i class="fas fa-angle-right"></i>
 
 function set_country_link(entry_date, country) {
-    return `<a class='country-link' href='?date=${entry_date}&country=${country}'>${country} ${ico}</a>`;
+    return `<a class='country-link' href='?country=${country}'>${country} ${ico}</a>`;
 }
 
 function set_province_link(entry_date, country, province) {
-    return `<a class='country-link' href='?date=${entry_date}&country=${country}&province=${province}'>${province} ${ico}</a>`;
+    return `<a class='country-link' href='?country=${country}&province=${province}'>${province} ${ico}</a>`;
 }
 
 function set_county_link(entry_date, country, province, county) {
-    return `<a class='country-link' href='?date=${entry_date}&country=${country}&province=${province}&county=${county}';>${county} ${ico}</a>`;
+    return `<a class='country-link' href='?country=${country}&province=${province}&county=${county}';>${county} ${ico}</a>`;
 }
 
 function format_update_time(update_time) {
