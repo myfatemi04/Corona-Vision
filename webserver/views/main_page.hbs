@@ -46,11 +46,11 @@
 			}
 
 			function loadStateCols() {
-				$.getJSON('/api/countrieswithstates', countries => {
+				$.getJSON('/api/countrieswithstates?date=' + entryDate, countries => {
 					countries.forEach((countryName, index) => {
 						let col = (index % 2) + 1;
 						let ul = $("#statesCol" + col);
-						ul.append(`<li><a href="/?country=${countryName}#statesBox">${countryName}</a></li>`);
+						ul.append(`<li><a href="/?country=${countryName}&date=${entryDate}#statesBox">${countryName}</a></li>`);
 					});
 				});
 			}
@@ -227,7 +227,8 @@
 				</div>
 			</div>
 			<div id="datatableBox" class="box">
-				<h1 class='text-center'>Live Data: {{label}} <i onclick='copyLink(country, province, county)' class="fas fa-link"></i></h1>
+				<h1 class='text-center'>{{label}} <i onclick='copyLink(country, province, county)' class="fas fa-link"></i></h1>
+				<h6 class='text-center'>{{entry_date}}</h6>
 				<table class="d-flex flex-column hover stripe" id="datatable">
 					<thead class="border-bottom pos-sticky datatable-head">
 						<tr class="d-flex py-2" style="font-size: 0.9rem;">
