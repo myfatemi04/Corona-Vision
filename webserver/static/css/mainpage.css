@@ -34,26 +34,21 @@
     margin-right: 1em;
 }
 
-#statesBox ul {
-    list-style-type: none;
-    flex: 1;
+#countriesWithStatesList {
+    display: flex;
+    flex-wrap: wrap;
 }
 
-#statesBox li {
-    font-size: 1.5rem;
-    margin: 5px;
-    padding: 5px;
-}
-
-#statesBox li:hover {
-    margin: 2px; /* so the view doesn't shift */
-    border: 3px solid var(--color-fg-light);
-    border-radius: 0.5rem;
-}
-
-#statesBox a {
+#countriesWithStatesList > a {
     display: inline-block;
     box-sizing: border-box;
-    width: 100%;
-    height: 100%;
+    padding: 5px;
+    margin: 5px;
+}
+
+#countriesWithStatesList > a:hover {
+    border: 2px solid var(--color-fg-light);
+    border-radius: 2px;
+    margin: 1px 5px;
+    color: var(--color-fg-light);
 }
