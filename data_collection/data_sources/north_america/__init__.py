@@ -1,1 +1,1 @@
-from . import bermuda, canada, united_states, usa_testing, us_states
+from . import bermuda, canada, mexico, united_states, usa_testing, us_states

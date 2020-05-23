@@ -4,6 +4,7 @@ from datetime import date
 from caching import DatapointCache, LocationCache
 import prepare_data
 import typing
+import inspect
 
 # def upload_locations(locations):
 #     if not silent_mode:
@@ -24,7 +25,10 @@ import typing
 #         print("\rCommitting locations             ", end='\r')
 #     try_commit(session)
 
-def upload_datapoints(datapoints: typing.List, verbose: bool = False) -> bool:
+def upload_datapoints(datapoints: typing.List, verbose: bool = False, force_update: bool = False) -> bool:
+    if inspect.isgenerator(datapoints):
+        datapoints = list(datapoints)
+
     if len(datapoints) == 0:
         return
 
@@ -38,6 +42,7 @@ def upload_datapoints(datapoints: typing.List, verbose: bool = False) -> bool:
     datapoints = prepare_data.prepare_datapoints(datapoints)
     
     cache = DatapointCache.create(datapoints, session)
+    cache.force_update = force_update
     cache.update_all(datapoints)
 
     location_cache = LocationCache.create(datapoints, session)

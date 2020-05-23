@@ -5,11 +5,12 @@ from datetime import date, datetime
 import recounting
 
 class DatapointCache(dict):
-    def __init__(self, datapoints, session):
+    def __init__(self, datapoints, session, force_update=False):
         for datapoint in datapoints:
             self.add(datapoint)
 
         self.session = session
+        self.force_update = force_update
         self.seen = set()
         self.was_updated = False
         self.potential_changes = set()
@@ -18,14 +19,16 @@ class DatapointCache(dict):
         self[datapoint.t] = datapoint
 
     def recount_changes(self):
-        recounting.recount(self.potential_changes, cache=self)
+        for country, province, county, entry_date in sorted(self.potential_changes, reverse=True):
+            if overall := recounting.sum_children(county, province, county, entry_date, self.session):
+                self.update_data(overall)
 
     # "datas" is wrong but it's clear
     def update_all(self, datapoint_datas):
         for datapoint_data in datapoint_datas:
             self.update_data(datapoint_data)
 
-    def update_data(self, datapoint_data, requireIncreasing=False):
+    def update_data(self, datapoint_data):
         """Updates the data
 
         Arguments:
@@ -48,7 +51,7 @@ class DatapointCache(dict):
             self.seen.add(t)
 
         if t in self:
-            if self[t].update(datapoint_data, requireIncreasing=requireIncreasing):
+            if self[t].update(datapoint_data, requireIncreasing=self.force_update) or self.force_update:
                 self.potential_changes.update(self[t].parents())
                 self.was_updated = True
         else:
