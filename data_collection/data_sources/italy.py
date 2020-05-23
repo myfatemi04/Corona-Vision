@@ -1,20 +1,15 @@
 import requests
-import time
-import upload
 from data_parser import import_df
+from data_sources import source
 
-lastDatapointsUpdate = 0
 minWait = 600
 
 def import_data():
-	global lastDatapointsUpdate
-
 	import_provinces()
 	import_counties()
 
+@source('live', name='Italy Counties')
 def import_counties():
-	print("Loading from Italy counties...")
-	global lastDatapointsUpdate
 	import io
 	import pandas as pd
 	import datetime
@@ -28,32 +23,17 @@ def import_counties():
 	locations = []
 	for _, row in dataframe.iterrows():
 		date, _, _, province, _, county, _, latitude, longitude, total, _, _ = row
-		locations.append({
-			"country": "Italy",
-			"province": province,
-			"county": county,
-			"latitude": latitude,
-			"longitude": longitude
-		})
-		datapoints.append({
+		yield {
 			"country": "Italy",
 			"province": province,
 			"county": county,
 			"total": total,
 			# "entry_date": datetime.datetime.strptime(date[:10], "%Y-%m-%d").date()
-		})
+		}
 
-	overall = {
-		'datapoint': datapoints,
-		'location': locations
-	}
-
-	if upload.upload(overall):
-		lastDatapointsUpdate = time.time()
-
+@source('live', name='Italy provinces')
 def import_provinces():
 	print("Loading from Italy provinces...")
-	global lastDatapointsUpdate
 	import io
 	import pandas as pd
 	import datetime
@@ -68,13 +48,8 @@ def import_provinces():
 	for _, row in dataframe.iterrows():
 		# Hospitalized != Hospitalized with symptoms
 		date, countryCode, provinceCode, province, latitude, longitude, hosp_symptoms, serious, hospitalized, homeIsolation, activeCases, variationActive, newActive, recovered, deaths, total, swabs, caseTests, noteIt, noteEn = row
-		locations.append({
-			"country": "Italy",
-			"province": province,
-			"latitude": latitude,
-			"longitude": longitude
-		})
-		datapoints.append({
+
+		yield {
 			"country": "Italy",
 			"province": province,
 			"total": total,
@@ -84,19 +59,11 @@ def import_provinces():
 			"deaths": deaths,
 			"tests": caseTests,
 			# "entry_date": datetime.datetime.strptime(date[:10], "%Y-%m-%d").date()
-		})
+		}
 
-	overall = {
-		'datapoint': datapoints,
-		'location': locations
-	}
-
-	if upload.upload(overall):
-		lastDatapointsUpdate = time.time()
-
+@source('historical', name='Italy Provinces')
 def import_provinces_historical():
 	print("Loading from historical Italy provinces...")
-	global lastDatapointsUpdate
 	import io
 	import pandas as pd
 	import datetime
@@ -114,13 +81,7 @@ def import_provinces_historical():
 		date = datetime.datetime.strptime(dateStr[:10], "%Y-%m-%d").date()
 		
 		if date >= datetime.date(2020, 4, 10):
-			locations.append({
-				"country": "Italy",
-				"province": province,
-				"latitude": latitude,
-				"longitude": longitude
-			})
-			datapoints.append({
+			yield {
 				"country": "Italy",
 				"province": province,
 				"total": total,
@@ -130,12 +91,4 @@ def import_provinces_historical():
 				"deaths": deaths,
 				"tests": caseTests,
 				"entry_date": date
-			})
-
-	overall = {
-		'datapoint': datapoints,
-		'location': locations
-	}
-
-	if upload.upload(overall):
-		lastDatapointsUpdate = time.time()
+			}

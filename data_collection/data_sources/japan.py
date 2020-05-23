@@ -1,26 +1,16 @@
 import requests
-import json_extractor
-import upload
-import time
-import upload
-from data_parser import import_json
-from data_sources import minWait
+from data_sources import source
 
-lastDatapointsUpdate = 0
-
+@source('live', name='Japan')
 def import_data():
-    global lastDatapointsUpdate
-
     datapoints = []
     j = requests.get("https://data.covid19japan.com/summary/latest.json", timeout=10).json()
     for row in j['prefectures']:
-        datapoints.append({
+        yield {
             "country": "Japan",
             "province": row['name'],
             "total": row['confirmed'],
             "deaths": row['deaths'],
             "recovered": row['recovered']
-        })
+        }
     
-    if upload.upload_datapoints(datapoints):
-        lastDatapointsUpdate = time.time()

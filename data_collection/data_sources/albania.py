@@ -1,38 +1,22 @@
 import requests
-import json_extractor
-import upload
-import time
-from data_sources import minWait
+from data_sources import source
 
-lastDatapointsUpdate = 0
-name = "Albania"
-
+@source('live', name='Albania')
 def import_data():
-    global lastDatapointsUpdate
 
     rq = requests.get('https://coronavirus.al/api/qarqet.php', timeout=10)
     j = rq.json()
     datapoints = []
     locations = []
-    for row in j:
-        datapoints.append({
-            'country': 'Albania',
-            'province': row['qarku'],
-            'total': int(row['raste_gjithsej']),
-            'recovered': int(row['sheruar']),
-            'deaths': int(row['vdekur']),
-            'serious': int(row['terapi_int']),
-            'hospitalized': int(row['mjekim_spitalor']),
-            'tests': int(row['teste'])
-        })
-        locations.append({
-            'country': 'Albania',
-            'province': row['qarku'],
-            'latitude': float(row['lat']),
-            'longitude': float(row['lon'])
-        })
     
-    if upload.upload_datapoints(datapoints):
-        lastDatapointsUpdate = time.time()
-        
-    upload.upload_locations(locations)
+    for row in j:
+        yield {
+            'country': 'Albania',
+            'province': row['qarku'],
+            'total': row['raste_gjithsej'],
+            'recovered': row['sheruar'],
+            'deaths': row['vdekur'],
+            'serious': row['terapi_int'],
+            'hospitalized': row['mjekim_spitalor'],
+            'tests': row['teste']
+        }

@@ -1,12 +1,8 @@
 import requests
-import upload
-import time
-from data_sources import minWait
+from data_sources import source
 
-lastDatapointsUpdate = 0
-
+@source('live', 'NAME')
 def import_data():
-    global lastDatapointsUpdate
 
     # if upload.upload(result):
     #     lastDatapointsUpdate = time.time()

@@ -1,17 +1,12 @@
 import requests
-import upload
-import time
-from data_sources import minWait
 
-lastDatapointsUpdate = 0
 
 def import_data():
-    global lastDatapointsUpdate
-
+    
     queryURL = "https://www.vdh.virginia.gov/content/uploads/sites/182/2020/03/VDH-COVID-19-PublicUseDataset-Cases.csv"
     sourceURL = "http://vdh.virginia.gov/coronavirus/"
 
-    text = requests.get(queryURL, verify=False, timeout=10).text
+    # text = requests.get(queryURL, verify=False, timeout=10).text
     
 
 

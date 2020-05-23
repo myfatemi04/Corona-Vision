@@ -1,16 +1,10 @@
 import requests
-import json_extractor
-import upload
-import time
 from bs4 import BeautifulSoup
-from data_sources import minWait
+from data_sources import source
 
-lastDatapointsUpdate = 0
-name = "Turkey"
-
+@source('live', name='Turkey')
 def import_data():
-    global lastDatapointsUpdate
-
+    
     url = "https://covid19.saglik.gov.tr/"
     soup = BeautifulSoup(requests.get(url, timeout=10).text, 'html.parser')
     stats = soup.select("li.baslik-k > :nth-child(2)")
@@ -21,7 +15,7 @@ def import_data():
     serious = stats[3].text
     recovered = stats[5].text
 
-    datapoint = {
+    yield {
         "country": "Turkey",
         "tests": int(tests.replace(".", "")),
         "total": int(total.replace(".", "")),
@@ -30,8 +24,7 @@ def import_data():
         "recovered": int(recovered.replace(".", ""))
     }
     
-    if upload.upload_datapoints([datapoint]):
-        lastDatapointsUpdate = time.time()
+    
 
 if __name__ == "__main__":
     import_data()

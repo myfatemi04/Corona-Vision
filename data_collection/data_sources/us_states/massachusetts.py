@@ -1,13 +1,9 @@
 import requests
-import upload
-import time
 import datetime
-from data_sources import minWait
 import calendar
 import io
 import zipfile
 
-lastDatapointsUpdate = 0
 
 # Massachusetts data - from a ZIP file containing raw data.
 def import_data():
@@ -16,7 +12,6 @@ def import_data():
     import_date(now)
 
 def import_date(now):
-    global lastDatapointsUpdate
     month = calendar.month_name[now.month].lower()
     day = now.day
     year = now.year
@@ -39,13 +34,13 @@ def import_date(now):
             dateVal = datetime.datetime.strptime(dateStr, "%m/%d/%Y").date()
             if dateVal != now.date():
                 continue
-            datapoints.append({
+            yield {
                 "entry_date": dateVal,
                 "country": "United States",
                 "province": "Massachusetts",
                 "total": int(totalStr or 0),
                 "deaths": int(deathsStr or 0)
-            })
+            }
 
         if upload.upload_datapoints(datapoints):
             lastDatapointsUpdate = time.time()

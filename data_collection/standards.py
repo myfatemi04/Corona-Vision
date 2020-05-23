@@ -2,11 +2,15 @@ import pandas as pd
 import numpy as np
 import json
 
+def switch_keys(myDict):
+	return {value: key for key, value in myDict.items()}
+
 state_codes = {}
 state_codes['United States'] = json.load(open("./location_data/state_codes_us.json"))
 state_codes['China'] = json.load(open("./location_data/cn_province_names.json", encoding="utf-8"))
 
 country_codes = json.load(open("./location_data/country_codes.json"))
+country_codes_reverse = switch_keys(country_codes)
 alpha2_to_continent = json.load(open("./location_data/continents.json"))
 
 aliases = json.load(open("./location_data/aliases.json"))

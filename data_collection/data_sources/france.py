@@ -1,68 +1,38 @@
 import requests
-import json_extractor
-import upload
-import time
+from datetime import datetime
 from bs4 import BeautifulSoup
+from data_sources import source
 
-lastDatapointsUpdate = 0
-name = "France"
+def parse_datapoint(row):
+    return {
+        'country': "France",
+        'total': row['casConfirmes'],
+        'deaths': int(row['deces']) + int(row.get('decesEhpad', 0)),
+        'serious': _(row, 'reanimation'),
+        'hospitalized': _(row, 'hospitalises'),
+        'recovered': _(row, 'gueris'),
+        'tests': _(row, 'testsRealises'),
+        'entry_date': datetime.strptime(row['date'], "%Y-%m-%d").date()
+    }
 
-def import_data():
-    global lastDatapointsUpdate
-    
-    # france_today = datetime.utcnow() + timedelta(hours=2)
-    # import_date(france_today)
-    import_dashboard()
-
+@source('live', name='France')
 def import_dashboard():
-    global lastDatapointsUpdate
-
     url = "https://dashboard.covid19.data.gouv.fr/data/code-FRA.json"
     rq = requests.get(url, timeout=10).json()
     latest = rq[-1]
-    
-    _ = lambda x, y: x[y] if y in x else None
 
-    datapoint = {
-        'country': "France",
-        "total": latest['casConfirmes'],
-        'deaths': latest['deces'] + (_(latest, 'decesEhpad') or 0),
-        'serious': latest['reanimation'],
-        'hospitalized': latest['hospitalises'],
-        'recovered': latest['gueris'],
-        'tests': None
-    }
+    yield parse_datapoint(latest)
 
-    if upload.upload_datapoints([datapoint]):
-        lastDatapointsUpdate = time.time()
-
+@source('historical', name='France')
 def import_historical_data():
     from datetime import datetime
     url = "https://dashboard.covid19.data.gouv.fr/data/code-FRA.json"
     rq = requests.get(url, timeout=10).json()
 
-    datapoints = []
-
-    _ = lambda x, y: x[y] if y in x else None
-
     for row in rq:
-        datapoints.append({
-            'country': "France",
-            "total": row['casConfirmes'],
-            'deaths': row['deces'] + (_(row, 'decesEhpad') or 0),
-            'serious': _(row, 'reanimation'),
-            'hospitalized': _(row, 'hospitalises'),
-            'recovered': _(row, 'gueris'),
-            'tests': _(row, 'testsRealises'),
-            'entry_date': datetime.strptime(row['date'], "%Y-%m-%d").date()
-        })
-
-    print(datapoints)
-
-    upload.upload_datapoints(datapoints)
+        yield parse_datapoint(row)
 
 def import_date(d):
-    global lastDatapointsUpdate
     url = d.strftime("https://dashboard.covid19.data.gouv.fr/data/date-%Y-%m-%d.json")
 
     datapoints = []
@@ -71,17 +41,12 @@ def import_date(d):
 
     for row in requests.get(url, timeout=10).json():
         if row['code'].startswith("REG"):
-            datapoints.append({
+            yield {
                 'country': 'France',
                 'province': row['nom'],
                 'recovered': row['gueris'],
                 'hospitalized': row['hospitalises'],
                 'deaths': row['deces'] + (_(row, 'decesEhpad') or 0),
                 'entry_date': d
-            })
+            }
 
-    if upload.upload_datapoints(datapoints):
-        lastDatapointsUpdate = time.time()
-
-if __name__ == "__main__":
-    import_data()

@@ -1,13 +1,9 @@
 import requests
-import upload
-import time
 from bs4 import BeautifulSoup
-from data_sources import minWait
+from data_sources import source
 
-lastDatapointsUpdate = 0
-
+@source('live', name='Gabon')
 def import_data():
-    global lastDatapointsUpdate
 
     url = "https://infocovid.ga"
 
@@ -23,16 +19,13 @@ def import_data():
     deaths = int(stats[2].select("p")[1].text)
     recovered = int(stats[3].select("p")[1].text)
 
-    datapoint = {
+    yield {
         "country": "Gabon",
         "tests": tests,
         "total": total,
         "deaths": deaths,
         "recovered": recovered
     }
-    
-    if upload.upload_datapoints([datapoint]):
-        lastDatapointsUpdate = time.time()
 
 if __name__ == "__main__":
     import_data()

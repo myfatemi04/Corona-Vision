@@ -1,14 +1,11 @@
 import requests
-import time
-import upload
 from data_imports.import_gis import import_gis
-from data_sources import minWait
+from data_sources import source
 
-lastDatapointsUpdate = 0
+@source('live', name='Netherlands')
 def import_data():
-	global lastDatapointsUpdate
-
-	results = import_gis(
+	
+	for result in import_gis(
 		"https://services.arcgis.com/nSZVuSZjHpEZZbRo/arcgis/rest/services/Coronavirus_RIVM_vlakken_actueel/FeatureServer/0//",
 		table_labels={
 			"datapoint": {
@@ -26,8 +23,6 @@ def import_data():
 				"population": ["Bevolkingsaantal", "::dividethousands"]
 			}
 		}
-	)
-
-	if upload.upload(results):
-		lastDatapointsUpdate = time.time()
+	):
+		yield result
 

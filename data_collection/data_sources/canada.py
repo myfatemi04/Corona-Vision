@@ -1,29 +1,17 @@
 import requests
-import json_extractor
-import upload
-import time
 import datetime
-from data_sources import minWait
 from bs4 import BeautifulSoup
+from data_sources import source
 
-lastDatapointsUpdate = 0
-name = "Canada"
-
+@source('live', name='Canada')
 def import_data():
-    global lastDatapointsUpdate
+    for result in import_news():
+        yield result
 
-    import_news()
-    import_gov()
-
-def intify(x):
-    x = x.replace(",","").strip()
-    if not x.isdigit():
-        return None
-    else:
-        return int(x)
+    for result in import_gov():
+        yield result
 
 def import_news():
-    global lastDatapointsUpdate
     import string
     sourceURL = "https://www.ctvnews.ca/health/coronavirus/tracking-every-case-of-covid-19-in-canada-1.4852102"
     jsonURL = "https://stats.ctvnews.ca/covidDapi/getAllCovidData"
@@ -42,10 +30,10 @@ def import_news():
             province = string.capwords(data['provinceLabel'])
 
             total = data['totalCases']
-            recovered = data['recoveries'] if 'recoveries' in data else None
-            deaths = data['deaths'] if 'deaths' in data else None
-            tests = data['totalTests'] if 'totalTests' in data else None
-            datapoints.append({
+            recovered = data.get('recoveries', None)
+            deaths = data.get('deaths', None)
+            tests = data.get('totalTests', None)
+            yield {
                 "entry_date": entryDate,
                 "country": "Canada",
                 "province": province,
@@ -53,13 +41,9 @@ def import_news():
                 "recovered": recovered,
                 "deaths": deaths,
                 "tests": tests
-            })
-    
-    if upload.upload_datapoints(datapoints):
-        lastDatapointsUpdate = time.time()
+            }
 
 def import_gov():
-    global lastDatapointsUpdate
     url = "https://www.canada.ca/en/public-health/services/diseases/2019-novel-coronavirus-infection.html"
     soup = BeautifulSoup(requests.get(url, timeout=10).text, 'html.parser')
     stats = soup.select("#dataTable tbody tr")
@@ -70,15 +54,12 @@ def import_gov():
         total = int(tds[1].text.replace(",", ""))
         deaths = int(tds[3].text.replace(",", ""))
         if province != "Canada":
-            datapoints.append({
+            yield {
                 'country': "Canada",
                 'province': province,
                 'total': total,
                 'deaths': deaths
-            })
-    
-    if upload.upload_datapoints(datapoints):
-        lastDatapointsUpdate = time.time()
+            }
 
 if __name__ == "__main__":
     import_data()

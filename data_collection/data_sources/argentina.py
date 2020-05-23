@@ -1,16 +1,10 @@
 import requests
-import json_extractor
-import upload
-import time
 from bs4 import BeautifulSoup
-from data_sources import minWait
 from datetime import date, datetime, timedelta
+from data_sources import source
 
-lastDatapointsUpdate = 0
-name = "Argentina"
-
-def import_data() -> None:
-    global lastDatapointsUpdate
+@source('live', name='Argentina')
+def import_data():
 
     # use argentina date
     ar_time = datetime.now() + timedelta(hours=-3)
@@ -71,15 +65,16 @@ def import_pdf(content: bytes, entry_date: date) -> None:
     from PyPDF2 import PdfFileReader
     from PyPDF2.pdf import ContentStream
     import re
-    global lastDatapointsUpdate
     bytesio = BytesIO(content)
     reader = PdfFileReader(bytesio)
     firstPage = reader.getPage(0)
     secondPage = reader.getPage(1)
     i = 0
-    datapoints = []
 
     tokens = re.split(r'\s+', firstPage.extractText() + '\n' + secondPage.extractText())
+
+    found = True
+
     while i < len(tokens):
         if tokens[i] == '-':
             i = i + 1
@@ -95,20 +90,20 @@ def import_pdf(content: bytes, entry_date: date) -> None:
             else:
                 i += 1
             total = int(tokens[i].replace("*", ""))
-            datapoints.append({
+            yield {
                 'country': 'Argentina',
                 'province': province,
                 'total': total,
                 'entry_date': entry_date
-            })
+            }
+
+            found = True
         else:
-            if len(datapoints) > 0:
+            if found:
                 break
         
         i = i + 1
-
-    if upload.upload_datapoints(datapoints):
-        lastDatapointsUpdate = time.time()
+        
 
 if __name__ == "__main__":
     import_data()

@@ -1,15 +1,10 @@
 import requests
-import json_extractor
-import upload
-import time
-from data_sources import minWait
+from data_sources import source
 from bs4 import BeautifulSoup
 
-lastDatapointsUpdate = 0
-
+@source('live', name='India')
 def import_data():
-    global lastDatapointsUpdate
-
+    
     url = "https://www.mohfw.gov.in/"
     soup = BeautifulSoup(requests.get(url, timeout=10).text, "html.parser")
     body = soup.select_one("#state-data tbody")
@@ -21,8 +16,6 @@ def import_data():
             continue
         stats = row.select("td")
 
-        print(stats)
-
         if len(stats) < 5:
             continue
         
@@ -32,13 +25,11 @@ def import_data():
         recovered = stats[3].text
         deaths = stats[4].text
         
-        datapoints.append({
+        yield {
             "country": "India",
             "province": province,
-            "total": int(total),
-            "recovered": int(recovered),
-            "deaths": int(deaths)
-        })
+            "total": total,
+            "recovered": recovered,
+            "deaths": deaths
+        }
 
-    if upload.upload_datapoints(datapoints):
-        lastDatapointsUpdate = time.time()

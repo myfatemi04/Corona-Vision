@@ -1,8 +1,22 @@
 
 minWait = 60 * 5
 
+from collections import defaultdict
+
+data_groups = defaultdict(list)
+
+def source(*group_names, name=''):
+    def add_source(func):
+        for group_name in group_names:
+            data_groups[group_name].append((func, name))
+
+        return func
+
+    return add_source
+
 import traceback
 import sys
+import upload
 
 from . import albania, australia, argentina, azerbaijan
 from . import bahrain, brazil, bermuda
@@ -19,52 +33,18 @@ from . import turkey
 from . import united_states, uganda, us_states, usa_testing
 from . import worldometers
 
-live = [
-    albania,
-    argentina,
-    # australia,
-    azerbaijan,
-    bahrain,
-    bermuda,
-    brazil,
-    canada,
-    czechia,
-    france,
-    gabon,
-    germany,
-    india,
-    italy,
-    japan,
-    netherlands,
-    niger,
-    nigeria,
-    norway,
-    portugal,
-    russia,
-    south_korea,
-    spain,
-    turkey,
-    united_states,
-    uganda,
-    worldometers,
-
-    usa_testing,
-    us_states
-]
-
-def import_group(l):
-    import server
-    for module in l:
+def import_group(name):
+    for func, func_name in data_groups[name]:
         try:
-            print("Importing data from", module.__name__, "...")
-            server.current = module.__name__
-            module.import_data()
+            print("Importing data from", func_name, "...")
+            results = [datapoint for datapoint in func()]
+            upload.upload_datapoints(results)
         except Exception as e:
             sys.stderr.write("Exception during group data import: {} [type {}]".format(e, type(e)))
             traceback.print_tb(e.__traceback__)
 
 def import_live():
-    import_group(live)
+    import_group('live')
 
 def import_jhu_historical():
     from import_jhu import import_jhu_date, import_jhu_historical

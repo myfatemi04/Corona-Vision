@@ -1,8 +1,9 @@
 import corona_sql
 corona_sql.silent_mode = False
 
-from . import india
-india.import_data()
+from . import bermuda
+for row in bermuda.import_data():
+    print(row)
 
 # import import_jhu
 # import upload

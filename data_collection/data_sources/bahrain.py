@@ -1,15 +1,9 @@
 import requests
-import json_extractor
-import upload
-import time
 from bs4 import BeautifulSoup
+from data_sources import source
 
-lastDatapointsUpdate = 0
-name = "Bahrain"
-
+@source('live', name='Bahrain')
 def import_data():
-    global lastDatapointsUpdate
-
     url = "https://www.moh.gov.bh/?lang=en"
     soup = BeautifulSoup(requests.get(url, timeout=10).text, 'html.parser')
     stats = soup.select("table thead span")
@@ -18,7 +12,7 @@ def import_data():
     serious = stats[3].text
     recovered = stats[4].text
     deaths = stats[5].text
-    datapoint = {
+    yield {
         "country": "Bahrain",
         "tests": int(tests),
         "total": int(active) + int(recovered) + int(deaths),
@@ -26,9 +20,6 @@ def import_data():
         "deaths": int(deaths),
         "serious": int(serious)
     }
-    
-    if upload.upload_datapoints([datapoint]):
-        lastDatapointsUpdate = time.time()
 
 if __name__ == "__main__":
     import_data()

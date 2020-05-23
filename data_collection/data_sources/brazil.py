@@ -1,16 +1,9 @@
 import requests
-import json_extractor
-import upload
-import time
 from bs4 import BeautifulSoup
-from data_sources import minWait
+from data_sources import source
 
-lastDatapointsUpdate = 0
-name = "Brazil"
-
+@source('live', name='Brazil')
 def import_data():
-    global lastDatapointsUpdate
-
     headers = {
         'x-parse-application-id': 'unAFkcaNDeXajurGB7LChj8SgQYS2ptm'
     }
@@ -23,23 +16,12 @@ def import_data():
     locations = []
 
     for row in content['results']:
-        datapoints.append({
+        yield {
             "country": "Brazil",
             "province": row['nome'],
             "total": row['qtd_confirmado'],
             "deaths": row['qtd_obito']
-        })
-
-        locations.append({
-            "country": "Brazil",
-            "province": row['nome'],
-            "latitude": row['latitude'],
-            "longitude": row['longitude']
-        })
-
-    upload.upload_locations(locations)
-    if upload.upload_datapoints(datapoints):
-        lastDatapointsUpdate = time.time()
+        }
 
 if __name__ == "__main__":
     import_data()

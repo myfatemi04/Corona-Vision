@@ -11,12 +11,12 @@ Step 3. Update the parent datapoint
 
 """
 def recount(updated, session, cache=None):
-    import data_caching
+    import caching
     from corona_sql import Location, try_commit
     
     i = 0
     unique_days = set()
-    location_cache = data_caching.get_location_cache(updated, session=session)
+    location_cache = caching.get_location_cache(updated, session=session)
 
     if not silent_mode:
         print("\rRecounting...", end="\r")

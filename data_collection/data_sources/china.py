@@ -1,16 +1,12 @@
-from . import minWait
-from standards import china_provinces
-import upload
+from standards import state_codes
+from data_sources import source
 
-name = "China"
-
+@source('live', name='China')
 def import_data():
     import requests
     import datetime
     rawURL = "https://raw.githubusercontent.com/canghailan/Wuhan-2019-nCoV/master/Wuhan-2019-nCoV.csv"
     sourceURL = "https://github.com/canghailan/Wuhan-2019-nCoV"
-
-    datapoints = []
 
     for row in requests.get(rawURL, timeout=10).text.split("\n")[1:]:
         if row:
@@ -18,8 +14,8 @@ def import_data():
             date = datetime.datetime.strptime(dateStr, "%Y-%m-%d").date()
             if province == '':
                 if countryCode == 'CN':
-                    provinceEng = china_provinces[province]
-                    datapoints.append({
+                    provinceEng = state_codes['China'][province]
+                    yield {
                         "country": "China",
                         "province": provinceEng,
                         "county": cityCode,
@@ -27,11 +23,11 @@ def import_data():
                         "recovered": int(cured),
                         "deaths": int(dead),
                         "entry_date": date
-                    })
+                    }
                 # for some reason they switch
                 elif country == 'CN':
-                    provinceEng = china_provinces[provinceCode]
-                    datapoints.append({
+                    provinceEng = state_codes['China'][provinceCode]
+                    yield {
                         "country": "China",
                         "province": provinceEng,
                         "county": city,
@@ -39,6 +35,4 @@ def import_data():
                         "recovered": int(cured),
                         "deaths": int(dead),
                         "entry_date": date
-                    })
-
-    upload.upload_datapoints(datapoints)
+                    }

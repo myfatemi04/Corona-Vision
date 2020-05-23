@@ -1,5 +1,22 @@
 import standards
 
+def number(string):
+
+    if type(string) == float or type(string) == int:
+        return string
+
+    string = string.strip()
+    if not string:
+        return 0
+
+    string = string.split()[0]
+    number = string.replace(",", "").replace("+", "").replace(".", "").replace("*", "").replace("#", "")
+
+    try:
+        return int(number)
+    except:
+        return 0
+
 """
 
 Data Preparation
@@ -18,12 +35,17 @@ def prepare_datapoint_data(datapoint_data):
     datapoint_data = {"country": "", "province": "", "county": "", "entry_date": defaultDate, **datapoint_data}
     datapoint_data['country'], datapoint_data['province'], datapoint_data['county'] = standards.normalize_name(datapoint_data['country'], datapoint_data['province'], datapoint_data['county'])
 
+    for stat in ['total', 'recovered', 'deaths', 'serious', 'hospitalized', 'tests']:
+        if stat in datapoint_data:
+            datapoint_data[stat] = number(stat)
+
     return datapoint_data
 
 def prepare_location_data(location_data):
     location_data = {"country": "", "province": "", "county": "", **location_data}
     location_data['country'], location_data['province'], location_data['county'] = standards.normalize_name(location_data['country'], location_data['province'], location_data['county'])
-    continent = standards.get_continent(location_data['country'])
+    country_code = standards.country_codes_reverse.get(location_data['country'], '')
+    continent = standards.alpha2_to_continent.get(country_code, '')
     if continent:
         location_data['group'] = continent
 

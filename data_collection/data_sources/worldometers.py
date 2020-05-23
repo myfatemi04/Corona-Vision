@@ -1,19 +1,16 @@
 import requests
-import time
-import upload
 import standards
 from data_parser import import_table
+from data_sources import source
 
-lastDatapointsUpdate = 0
 minWait = 60
 
 disallowed = [
 	"France"    # clear data disputes between the countries
 ]
 
+@source('live', name='Worldometers')
 def import_data():
-	global lastDatapointsUpdate
-
 	results = import_table(
 		"http://www.worldometers.info/coronavirus",
 		["#main_table_countries_today", 0],
@@ -28,10 +25,6 @@ def import_data():
 			}
 		}
 	)
-
-	# def delif(result, key):
-	# 	if key in result:
-	# 		del result[key]
 	
 	newDatapoints = []
 	for result in results['datapoint']:
@@ -39,8 +32,8 @@ def import_data():
 		if result['country'] not in disallowed:
 			newDatapoints.append(result)
 
-	if upload.upload_datapoints(newDatapoints):			
-		lastDatapointsUpdate = time.time()
+	for datapoint in newDatapoints:
+		yield datapoint
 
 def getSources():
 	from bs4 import BeautifulSoup

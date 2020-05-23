@@ -1,15 +1,10 @@
 import requests
-import upload
-import time
-from data_sources import minWait
 
-lastDatapointsUpdate = 0
 
 ### Don't use this. ###
 
 def import_data():
-    global lastDatapointsUpdate
-
+    
     queryURL = "https://wabi-south-central-us-api.analysis.windows.net/public/reports/querydata?synchronous=true"
     headers = {
         "accept": "application/json, text/plain, */*",
@@ -166,7 +161,7 @@ def import_data():
     
     data = response['results'][0]['result']['data']['dsr']['DS'][0]['PH'][0]['DM0'][0]['C']
 
-    datapoint = {
+    yield {
         'country': "Peru",
         'total': data[2],
         'deaths': data[3]

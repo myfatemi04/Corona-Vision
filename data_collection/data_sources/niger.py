@@ -1,13 +1,9 @@
 import requests
-import upload
-import time
 from bs4 import BeautifulSoup
-from data_sources import minWait
+from data_sources import source
 
-lastDatapointsUpdate = 0
-
+@source('live', name='Niger')
 def import_data():
-    global lastDatapointsUpdate
     import json
 
     headers = {
@@ -21,16 +17,15 @@ def import_data():
     deaths = json.loads(stats[1]['data-options'])['endVal']
     recovered = json.loads(stats[2]['data-options'])['endVal']
     tests = json.loads(stats[4]['data-options'])['endVal']
-    datapoint = {
+    
+    yield {
         "country": "Niger",
         "total": total,
         "deaths": deaths,
         "recovered": recovered,
         "tests": tests
     }
-    
-    if upload.upload_datapoints([datapoint]):
-        lastDatapointsUpdate = time.time()
+
 
 if __name__ == "__main__":
     import_data()

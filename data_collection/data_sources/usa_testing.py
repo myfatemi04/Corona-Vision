@@ -1,34 +1,23 @@
 import requests
 import json_extractor
-import upload
-import time
 import standards
-from data_sources import minWait
+from data_sources import source
 
-lastDatapointsUpdate = 0
-
+@source('live', name='USA Testing')
 def import_data():
-	global lastDatapointsUpdate
-
+	
 	rq = requests.get("https://covidtracking.com/api/v1/states/current.json", timeout=10)
 	j = rq.json()
-	datapoints = []
-	locations = []
 	for row in j:
-		datapoints.append({
+		yield {
 			'country': 'United States',
 			'province': standards.us_state_codes[row['state']],
 			'tests': row['totalTestResults'] or 0,
 			'hospitalized': row['hospitalizedCurrently'] or 0,
 			'recovered': row['recovered'] or 0
-		})
-	
-	if upload.upload_datapoints(datapoints):
-		lastDatapointsUpdate = time.time()
+		}
 
-	upload.upload_locations(locations)
-
-
+@source('historical', name='USA Testing')
 def import_historical_data():
 	from data_parser import import_json
 	print("Uploading historical USA testing data...")
