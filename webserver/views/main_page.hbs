@@ -23,7 +23,7 @@
 				$("#date").val(entryDate);
 				$("#datatable").DataTable();
 
-				dtotalChart = newChart("#standard-chart", [totalsDataset]);
+				dtotalChart = newChart("#standard-chart", [totalsDataset, trendDataset]);
 
 				let label = country || "World";
 				if (province) label = province + ", " + label;
@@ -41,6 +41,7 @@
 					},
 					function(data) {
 						addData(dtotalChart, data, ['dtotal']);
+						addTrendline(dtotalChart);
 					}
 				)
 			}
