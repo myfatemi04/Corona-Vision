@@ -46,25 +46,12 @@
 			}
 
 			function loadStateCols() {
-				let countries = [
-					"United States",
-					"Albania",
-					"Brazil",
-					"Canada",
-					"Germany",
-					"India",
-					"Italy",
-					"Japan",
-					"Mexico",
-					"Netherlands",
-					"Portugal",
-					"South Korea"
-				];
-
-				countries.forEach((countryName, index) => {
-					let col = (index % 2) + 1;
-					let ul = $("#statesCol" + col);
-					ul.append(`<li><a href="/?country=${countryName}#statesBox">${countryName}</a></li>`);
+				$.getJSON('/api/countrieswithstates', countries => {
+					countries.forEach((countryName, index) => {
+						let col = (index % 2) + 1;
+						let ul = $("#statesCol" + col);
+						ul.append(`<li><a href="/?country=${countryName}#statesBox">${countryName}</a></li>`);
+					});
 				});
 			}
 		</script>
