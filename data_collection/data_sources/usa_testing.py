@@ -17,7 +17,7 @@ def import_data():
 	for row in j:
 		datapoints.append({
 			'country': 'United States',
-			'province': standards.get_province_name("United States", row['state']),
+			'province': standards.us_state_codes[row['state']],
 			'tests': row['totalTestResults'] or 0,
 			'hospitalized': row['hospitalizedCurrently'] or 0,
 			'recovered': row['recovered'] or 0

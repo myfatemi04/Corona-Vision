@@ -28,10 +28,10 @@ json_methods = {
     "::dmy": lambda x: datetime.strptime(x, "%d%m%Y").date(),
     "::ymd": lambda x: datetime.strptime(x, "%Y%m%d").date(),
     "::date_t": date_t,
-    "::us_state_code": lambda x: standards.get_province_name("United States", x),
+    "::us_state_code": standards.us_state_codes.get,
     "::str": lambda x: str(x),
     "::dividethousands": lambda x: x/1000,
-    "::china_province_eng": standards.cn_province_eng
+    "::china_province_eng": standards.cn_provinces_eng.get
 }
 
 def find_json(head, selectors):

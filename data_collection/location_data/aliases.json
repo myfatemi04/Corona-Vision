@@ -1,0 +1,43 @@
+{
+    "country": {
+        "^uk$": "United Kingdom",
+        "^us$": "United States",
+        "^u\\.s\\.$": "United States",
+        "united states of america": "United States",
+        "^usa$": "United States",
+        "^uae$": "United Arab Emirates",
+        "^drc$": "Congo, Democratic Republic of the",
+        "^car$": "Central African Republic",
+        "^viet nam$": "Vietnam",
+        ".*china.*": "China",
+        ".*russia.*": "Russia",
+        "^(?=.*korea)(?=.*south).*$": "South Korea",
+        "^(?=.*korea)(?=.*north).*$": "North Korea",
+        "^overall$": "",
+        "^total$": "",
+        "^world$": "",
+        "^iran.+$": "Iran",
+        "^korea$": "Korea",
+        "^faeroe islands$": "Faroe Islands",
+        ".*hong kong.*": "Hong Kong",
+        "^the ": "",
+        "^republic of ": "",
+        ", the$": ""
+    },
+    "province": {
+        "us military": "US Military",
+        "grand princess": "Grand Princess",
+        "virgin islands": "Virgin Islands",
+        "diamond princess": "Diamond Princess",
+        "(?=.*wuhan)(?=.*repatriated)": "Wuhan (repatriated)",
+        "u\\.s\\.": "US"
+    },
+    "county": {
+        " census area$": "",
+        " and borough$": "",
+        " borough$": "",
+        " county$": "",
+        " municipality$": "",
+        "(?<!new york)(?<!fairfax) city": ""
+    }
+}

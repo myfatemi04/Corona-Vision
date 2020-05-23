@@ -1,3 +1,5 @@
+import standards
+
 """
 
 Data Preparation
@@ -5,7 +7,6 @@ Data Preparation
 """
 def prepare_datapoint_data(datapoint_data):
     import numpy as np
-    import standards
     from datetime import datetime, date
 
     keys = set(datapoint_data.keys())
@@ -16,13 +17,10 @@ def prepare_datapoint_data(datapoint_data):
     defaultDate = datetime.utcnow().date()
     datapoint_data = {"country": "", "province": "", "county": "", "entry_date": defaultDate, **datapoint_data}
     datapoint_data['country'], datapoint_data['province'], datapoint_data['county'] = standards.normalize_name(datapoint_data['country'], datapoint_data['province'], datapoint_data['county'])
-    # datapoint_data['entry_date'] = date(2020, 5, 8)
 
     return datapoint_data
 
 def prepare_location_data(location_data):
-    import standards
-
     location_data = {"country": "", "province": "", "county": "", **location_data}
     location_data['country'], location_data['province'], location_data['county'] = standards.normalize_name(location_data['country'], location_data['province'], location_data['county'])
     continent = standards.get_continent(location_data['country'])

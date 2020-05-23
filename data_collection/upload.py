@@ -1,8 +1,7 @@
 from corona_sql import Session, Datapoint, Location, Hospital, try_commit, silent_mode
 from sqlalchemy import or_, between, func
 from datetime import date
-import data_caching
-import location_data
+import caching
 import prepare_data
 import typing
 
@@ -44,7 +43,7 @@ def upload_locations(locations):
         print("\rUploading locations", end="\r")
     session = Session()
     locations = prepare_data.prepare_locations(locations)
-    cache = data_caching.get_location_cache(locations, session)
+    cache = caching.get_location_cache(locations, session)
     seen = set()
     i = 0
     for location_row in locations:
@@ -66,7 +65,7 @@ def upload_datapoints(datapoints: typing.List) -> bool:
     
     session = Session()
     datapoints = prepare_data.prepare_datapoints(datapoints)
-    cache = data_caching.get_datapoint_cache(datapoints, session)
+    cache = caching.get_datapoint_cache(datapoints, session)
     was_updated = False
     updates = set()
     seen = set()
