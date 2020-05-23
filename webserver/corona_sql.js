@@ -15,6 +15,7 @@ var heatmapDataCache = {};
 var dateCache = {};
 var sequencesCache = {};
 var countriesCache = {};
+var countriesWithStatesCache = {};
 var provincesCache = {};
 var countiesCache = {};
 var DAILY_CHANGE_QUERY = "\nselect\n    today.entry_date,\n    today.update_time,\n    today.country,\n    today.province,\n    today.county,\n    today.total,\n    yesterday.total as yesterday_total,\n    today.total - yesterday.total as dtotal,\n    today.recovered,\n    yesterday.recovered as yesterday_recovered,\n    today.recovered - yesterday.recovered as drecovered,\n    today.deaths,\n    yesterday.deaths as yesterday_deaths,\n    today.deaths - yesterday.deaths as ddeaths,\n    today.serious,\n    yesterday.serious as yesterday_serious,\n    today.serious - yesterday.serious as dserious,\n    today.tests,\n    yesterday.tests as yesterday_tests,\n    today.tests - yesterday.tests as dtests\nfrom datapoints today\nleft join datapoints yesterday on \n    date(yesterday.entry_date) = date(today.entry_date - interval 1 day) and\n    yesterday.country=today.country and\n    yesterday.province=today.province and\n    yesterday.county=today.county\n";
@@ -156,6 +157,26 @@ function getCountries(entryDate) {
     });
 }
 exports.getCountries = getCountries;
+function getCountriesWithStates(entryDate) {
+    return new Promise(function (resolve, reject) {
+        var key = makeKey(entryDate);
+        if (key in countriesWithStatesCache) {
+            var _a = countriesWithStatesCache[key], cacheUpdate = _a.cacheUpdate, content = _a.content;
+            if (Date.now() - cacheUpdate < 60000) {
+                resolve(content);
+            }
+        }
+        var query = sqlstring.format("\n        select distinct country from datapoints\n        where province != ''\n        and entry_date=?", [entryDate]);
+        con.query(query, function (err, result, fields) {
+            if (err)
+                reject(err);
+            result = result.map(function (row) { return row.country; });
+            countriesWithStatesCache[key] = { cacheUpdate: Date.now(), content: result };
+            resolve(result);
+        });
+    });
+}
+exports.getCountriesWithStates = getCountriesWithStates;
 function getProvinces(entryDate, country) {
     return new Promise(function (resolve, reject) {
         var key = makeKey(entryDate, country);

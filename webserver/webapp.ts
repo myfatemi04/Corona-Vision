@@ -33,7 +33,7 @@ function registerPartials() {
     });
 }
 
-import { totalsAPI, totalsSequenceAPI, dateCasesAPI, countriesAPI, provincesAPI, countiesAPI, listDates } from "./api";
+import { totalsAPI, totalsSequenceAPI, dateCasesAPI, countriesAPI, countriesWithStatesAPI, provincesAPI, countiesAPI, listDates } from "./api";
 import { getNews } from "./news";
 import { countryMap, mapDataAPI, heatmapAPI } from "./maps";
 
@@ -50,6 +50,7 @@ function getRouter(): express.Router {
     router.get("/list/dates", listDates);
     
     router.get("/api/countries", countriesAPI);
+    router.get("/api/countrieswithstates", countriesWithStatesAPI);
     router.get("/api/provinces", provincesAPI);
     router.get("/api/counties", countiesAPI);
     router.get("/api/mapdata", mapDataAPI);

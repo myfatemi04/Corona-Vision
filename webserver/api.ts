@@ -119,6 +119,15 @@ let countiesAPI = (req, res) => {
     );
 };
 
+let countriesWithStatesAPI = (req, res) => {
+    let params = url.parse(req.url, true).query;
+    let entryDate = params.date as string || utc_iso(new Date());
+
+    corona_sql.getCountriesWithStates(entryDate).then(
+        content => res.json(content)
+    );
+}
+
 /* Dates API - list all dates that we have on record */
 let listDates = (req, res) => {
     let params = url.parse(req.url, true).query;
@@ -147,6 +156,7 @@ export {
     listDates,
 
     countriesAPI,
+    countriesWithStatesAPI,
     provincesAPI,
     countiesAPI
 };

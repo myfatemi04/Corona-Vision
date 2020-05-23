@@ -95,6 +95,7 @@ function getRouter() {
     router.get("/cases/date", api_1.dateCasesAPI);
     router.get("/list/dates", api_1.listDates);
     router.get("/api/countries", api_1.countriesAPI);
+    router.get("/api/countrieswithstates", api_1.countriesWithStatesAPI);
     router.get("/api/provinces", api_1.provincesAPI);
     router.get("/api/counties", api_1.countiesAPI);
     router.get("/api/mapdata", maps_1.mapDataAPI);

@@ -149,6 +149,12 @@ var countiesAPI = function (req, res) {
     corona_sql.getCounties(entryDate, country, province).then(function (content) { return res.json(content); });
 };
 exports.countiesAPI = countiesAPI;
+var countriesWithStatesAPI = function (req, res) {
+    var params = url.parse(req.url, true).query;
+    var entryDate = params.date || util_1.utc_iso(new Date());
+    corona_sql.getCountriesWithStates(entryDate).then(function (content) { return res.json(content); });
+};
+exports.countriesWithStatesAPI = countriesWithStatesAPI;
 /* Dates API - list all dates that we have on record */
 var listDates = function (req, res) {
     var params = url.parse(req.url, true).query;

@@ -17,6 +17,7 @@ let heatmapDataCache = {};
 let dateCache = {};
 let sequencesCache = {};
 let countriesCache = {};
+let countriesWithStatesCache = {};
 let provincesCache = {};
 let countiesCache = {};
 
@@ -239,6 +240,31 @@ function getCountries(entryDate: string): Promise<string[]> {
     });
 }
 
+function getCountriesWithStates(entryDate: string): Promise<string[]> {
+    return new Promise((resolve, reject) => {
+        let key = makeKey(entryDate);
+        if (key in countriesWithStatesCache) {
+            let {cacheUpdate, content} = countriesWithStatesCache[key];
+            if (Date.now() - cacheUpdate < 60000) {
+                resolve(content);
+            }
+        }
+        
+        let query = sqlstring.format(`
+        select distinct country from datapoints
+        where province != ''
+        and entry_date=?`, [entryDate]);
+
+        con.query(query, (err, result, fields) => {
+            if (err) reject(err);
+
+            result = result.map(row => row.country);
+            countriesWithStatesCache[key] = { cacheUpdate: Date.now(), content: result };
+            resolve(result);
+        });
+    }); 
+}
+
 function getProvinces(entryDate: string, country: string): Promise<string[]> {
     return new Promise((resolve, reject) => {
         let key = makeKey(entryDate, country);
@@ -334,6 +360,7 @@ export {
     getDatapointSequence,
     getHeatmap,
     getCountries,
+    getCountriesWithStates,
     getProvinces,
     getCounties,
 };
