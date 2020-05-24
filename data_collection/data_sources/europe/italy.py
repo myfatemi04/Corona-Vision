@@ -33,7 +33,6 @@ def import_counties():
 
 @source('live', name='Italy provinces')
 def import_provinces():
-	print("Loading from Italy provinces...")
 	import io
 	import pandas as pd
 	import datetime

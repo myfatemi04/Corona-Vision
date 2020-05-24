@@ -12,27 +12,28 @@ def import_data():
         if row:
             dateStr, country, countryCode, province, provinceCode, city, cityCode, confirmed, suspected, cured, dead = row.split(",")
             date = datetime.datetime.strptime(dateStr, "%Y-%m-%d").date()
-            if province == '':
-                if countryCode == 'CN':
-                    provinceEng = state_codes['China'][province]
-                    yield {
-                        "country": "China",
-                        "province": provinceEng,
-                        "county": cityCode,
-                        "total": int(confirmed),
-                        "recovered": int(cured),
-                        "deaths": int(dead),
-                        "entry_date": date
-                    }
-                # for some reason they switch
-                elif country == 'CN':
-                    provinceEng = state_codes['China'][provinceCode]
-                    yield {
-                        "country": "China",
-                        "province": provinceEng,
-                        "county": city,
-                        "total": int(confirmed),
-                        "recovered": int(cured),
-                        "deaths": int(dead),
-                        "entry_date": date
-                    }
+            if date > datetime.date.today() + datetime.timedelta(days=-1):
+                if province == '':
+                    if countryCode == 'CN':
+                        provinceEng = state_codes['China'][province]
+                        yield {
+                            "country": "China",
+                            "province": provinceEng,
+                            "county": cityCode,
+                            "total": int(confirmed),
+                            "recovered": int(cured),
+                            "deaths": int(dead),
+                            "entry_date": date
+                        }
+                    # for some reason they switch
+                    elif country == 'CN':
+                        provinceEng = state_codes['China'][provinceCode]
+                        yield {
+                            "country": "China",
+                            "province": provinceEng,
+                            "county": city,
+                            "total": int(confirmed),
+                            "recovered": int(cured),
+                            "deaths": int(dead),
+                            "entry_date": date
+                        }

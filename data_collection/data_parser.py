@@ -25,11 +25,9 @@ def import_table(url, table_selector, table_labels, rows=slice(None, None, None)
 def import_df(df, table_labels, rows):
 	content = {'datapoint': []}
 
-	defaults = get_defaults()
-
 	for table in table_labels.keys():
 		content[table] = []
-		labels = {**defaults[table], **table_labels[table]}
+		labels = table_labels[table]
 		for _, feature in df.iloc[rows].iterrows():
 			content[table].append(extract_json_row(feature, labels))
 		

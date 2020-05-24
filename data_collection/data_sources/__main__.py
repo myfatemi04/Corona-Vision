@@ -3,6 +3,10 @@ corona_sql.silent_mode = False
 
 import upload
 
-from data_sources.north_america import mexico as data
+import data_sources.europe.italy as data
 
-upload.upload_datapoints(data.import_data(), verbose=True, force_update=True)
+upload.upload_datapoints(data.import_counties(), verbose=True)
+
+import data_sources.worldometers
+
+upload.upload_datapoints(data_sources.worldometers.import_data())

@@ -20,10 +20,10 @@ class DatapointCache(dict):
 
     def recount_changes(self):
         for country, province, county, entry_date in sorted(self.potential_changes, reverse=True):
-            if overall := recounting.sum_children(county, province, county, entry_date, self.session):
+            overall = recounting.sum_children(country, province, county, entry_date, self.session)
+            if overall:
                 self.update_data(overall)
 
-    # "datas" is wrong but it's clear
     def update_all(self, datapoint_datas):
         for datapoint_data in datapoint_datas:
             self.update_data(datapoint_data)
@@ -51,7 +51,7 @@ class DatapointCache(dict):
             self.seen.add(t)
 
         if t in self:
-            if self[t].update(datapoint_data, requireIncreasing=self.force_update) or self.force_update:
+            if self[t].update(datapoint_data, requireIncreasing=not self.force_update) or self.force_update:
                 self.potential_changes.update(self[t].parents())
                 self.was_updated = True
         else:
@@ -100,9 +100,9 @@ class LocationCache(dict):
         self[location.location_tuple()] = location
 
     def update_data(self, new_data):
-        country = new_data['country'] if 'country' in new_data else ''
-        province = new_data['province'] if 'province' in new_data else ''
-        county = new_data['county'] if 'county' in new_data else ''
+        country = new_data.get('country', '')
+        province = new_data.get('province', '')
+        county = new_data.get('county', '')
         location_tuple = (country, province, county)
 
         if location_tuple in self:
