@@ -14,17 +14,17 @@ def import_data():
     soup = BeautifulSoup(requests.get(url, headers=headers, timeout=10).text, 'html.parser')
     stats = soup.select(".vc_col-sm-3 > .vc_column-inner")
 
-    tests = int(stats[0].select("p")[1].text)
-    total = int(stats[1].select("p")[1].text)
-    deaths = int(stats[2].select("p")[1].text)
-    recovered = int(stats[3].select("p")[1].text)
+    tests = stats[0].select("p")[1].text
+    total = stats[1].select("p")[1].text
+    deaths = stats[2].select("p")[1].text
+    recovered = stats[3].select("p")[1].text
 
     yield {
         "country": "Gabon",
-        "tests": tests,
-        "total": total,
-        "deaths": deaths,
-        "recovered": recovered
+        "tests": tests.replace(" ", ""),
+        "total": total.replace(" ", ""),
+        "deaths": deaths.replace(" ", ""),
+        "recovered": recovered.replace(" ", "")
     }
 
 if __name__ == "__main__":
