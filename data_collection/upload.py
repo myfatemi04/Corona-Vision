@@ -39,12 +39,25 @@ def upload_datapoints(datapoints: typing.List, verbose: bool = False, force_upda
 
     session = Session()
 
+    if verbose:
+        print("\rPreparing datapoints", end=end)
+
     datapoints = prepare_data.prepare_datapoints(datapoints)
     
+    if verbose:
+        print("\rCreating datapoints cache", end=end)
+
     cache = DatapointCache.create(datapoints, session)
     cache.force_update = force_update
+
+    if verbose:
+        print("\rUpdating...", end=end)
+
     cache.update_all(datapoints)
 
+    if verbose:
+        print("\rCreating location cache...", end=end)
+        
     location_cache = LocationCache.create(datapoints, session)
     
     if verbose:

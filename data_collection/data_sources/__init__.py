@@ -1,11 +1,13 @@
 from collections import defaultdict
 
 data_groups = defaultdict(list)
+data_names = {}
 
 def source(*group_names, name=''):
     def add_source(func):
         for group_name in group_names:
             data_groups[group_name].append((func, name))
+            data_names[name] = func
 
         return func
 
@@ -23,6 +25,14 @@ import data_sources.north_america
 import data_sources.south_america
 
 import data_sources.worldometers
+
+def import_by_name(name, verbose=False, force_update=False):
+    if name in data_names:
+        func = data_names[name]
+        print("Importing data from", name, "...")
+
+        results = [datapoint for datapoint in func()]
+        upload.upload_datapoints(results, verbose, force_update)
 
 def import_group(name, verbose=False, force_update=False):
     for func, func_name in data_groups[name]:

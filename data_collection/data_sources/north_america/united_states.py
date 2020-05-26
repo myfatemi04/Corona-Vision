@@ -18,9 +18,7 @@ def import_data():
 			}
 		})['datapoint']
 
-def import_hist():
-	pass
-
+@source('historical', 'us-states', name="United States Historical")
 def import_hist_states():
 	stateList = requests.get("https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv", timeout=10).text
 	#"https://github.com/nytimes/covid-19-data"
@@ -36,14 +34,14 @@ def import_hist_states():
 				'deaths': int(deaths)
 			}
 	print(f"Uploading {len(datapoints)} historical datapoints")
-	upload.upload_datapoints(datapoints)
 
+@source('historical', 'us-counties', name='United States Counties Historical')
 def import_hist_counties():
 	countyList = requests.get("https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv", timeout=10).text
-	datapoints = []
+
 	for row in countyList.split("\n")[1:]:
 		dateStr, county, province, fips, cases, deaths = row.split(",")
-		if dateStr > '2020-04-28':
+		if dateStr > '2020-05-20':
 			yield {
 				'entry_date': datetime.strptime(dateStr, "%Y-%m-%d").date(),
 				'country': 'United States',
@@ -52,8 +50,6 @@ def import_hist_counties():
 				'total': int(cases),
 				'deaths': int(deaths)
 			}
-	print(f"Uploading {len(datapoints)} historical datapoints")
-	upload.upload_datapoints(datapoints)
 
 
 def import_uk():
