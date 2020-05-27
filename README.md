@@ -38,7 +38,7 @@ Thanks for reading!
 If you have any questions then reach out to me at myfatemi04@gmail.com.
 
 ## Credits
-Lead Developer - Michael Fatemi
-Machine Learning - Suhas Nandiraju
-App Development - Autin Mitra
-Additional Help - Joshua Hsueh
+- Lead Developer - Michael Fatemi
+- Machine Learning - Suhas Nandiraju
+- App Development - Autin Mitra
+- Additional Help - Joshua Hsueh
