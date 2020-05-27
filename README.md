@@ -36,3 +36,9 @@ The data collection backend probably will be outdated in a few years, but you ca
 Soon, I will make a mode where it will do this automatically for you.
 Thanks for reading!
 If you have any questions then reach out to me at myfatemi04@gmail.com.
+
+## Credits
+Lead Developer - Michael Fatemi
+Machine Learning - Suhas Nandiraju
+App Development - Autin Mitra
+Additional Help - Joshua Hsueh
