@@ -4,7 +4,7 @@ from data_sources import source
 
 @source('live', name='Bermuda')
 def import_data():
-    url = 'https://www.gov.bm/coronavirus'
+    url = 'https://www.gov.bm/coronavirus-covid19-update'
     soup = BeautifulSoup(requests.get(url, timeout=10).text, 'html.parser')
     statsTable = soup.select(  "table"  )[1]
     statsRows = statsTable.select("tr")
