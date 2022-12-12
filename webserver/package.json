@@ -29,7 +29,7 @@
     "@types/node": "^13.13.4",
     "@types/sqlstring": "^2.2.1",
     "countryjs": "^1.8.0",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "hbs": "^4.1.1",
     "mysql": "^2.18.1",
     "newsapi": "^2.4.0",
